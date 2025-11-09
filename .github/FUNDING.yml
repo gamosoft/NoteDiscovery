@@ -1,0 +1,7 @@
+# GitHub Sponsors configuration
+# This adds a "Sponsor" button to your repository
+
+# PayPal donation link (can add up to 4 custom links)
+custom:
+  - 'https://paypal.me/gamosoft'
+

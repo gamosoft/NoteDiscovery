@@ -81,6 +81,10 @@ function noteApp() {
         sidebarWidth: CONFIG.DEFAULT_SIDEBAR_WIDTH,
         isResizing: false,
         
+        // Split view resize state
+        editorWidth: 50, // percentage
+        isResizingSplit: false,
+        
         // DOM element cache (to avoid repeated querySelector calls)
         _domCache: {
             editor: null,
@@ -96,6 +100,7 @@ function noteApp() {
             await this.loadNotes();
             await this.checkStatsPlugin();
             this.loadSidebarWidth();
+            this.loadEditorWidth();
             this.loadViewMode();
             
             // Parse URL and load specific note if provided
@@ -2023,6 +2028,55 @@ function noteApp() {
             
             document.addEventListener('mousemove', resize);
             document.addEventListener('mouseup', stopResize);
+        },
+        
+        // Start resizing split panes (editor/preview)
+        startSplitResize(event) {
+            this.isResizingSplit = true;
+            event.preventDefault();
+            
+            const container = event.target.parentElement;
+            
+            const resize = (e) => {
+                if (!this.isResizingSplit) return;
+                
+                const containerRect = container.getBoundingClientRect();
+                const mouseX = e.clientX - containerRect.left;
+                const percentage = (mouseX / containerRect.width) * 100;
+                
+                // Clamp between 20% and 80%
+                if (percentage >= 20 && percentage <= 80) {
+                    this.editorWidth = percentage;
+                }
+            };
+            
+            const stopResize = () => {
+                if (this.isResizingSplit) {
+                    this.isResizingSplit = false;
+                    this.saveEditorWidth();
+                    document.removeEventListener('mousemove', resize);
+                    document.removeEventListener('mouseup', stopResize);
+                }
+            };
+            
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+        },
+        
+        // Load editor width from localStorage
+        loadEditorWidth() {
+            const saved = localStorage.getItem('editorWidth');
+            if (saved) {
+                const width = parseFloat(saved);
+                if (width >= 20 && width <= 80) {
+                    this.editorWidth = width;
+                }
+            }
+        },
+        
+        // Save editor width to localStorage
+        saveEditorWidth() {
+            localStorage.setItem('editorWidth', this.editorWidth.toString());
         },
         
         // Scroll to top of editor and preview

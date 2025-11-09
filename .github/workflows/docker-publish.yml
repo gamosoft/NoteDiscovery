@@ -1,16 +1,15 @@
 name: Build and Push Docker Image to GHCR
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - main
       - master
+  push:
     tags:
       - 'v*.*.*'
-  pull_request:
-    branches:
-      - main
-      - master
   workflow_dispatch:
 
 env:
@@ -19,6 +18,11 @@ env:
 
 jobs:
   build-and-push:
+    # Only run if PR was merged (not just closed) or if triggered by tag/manual
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
+      github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -44,19 +48,17 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest,enable=true
 
       - name: Build and push Docker image
         id: build-push
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha

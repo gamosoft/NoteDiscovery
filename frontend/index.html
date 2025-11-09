@@ -340,7 +340,7 @@
             top: 0;
             bottom: 0;
             width: 1px;
-            background-color: var(--border-primary);
+            background-color: var(--text-tertiary);
             opacity: 0.4;
         }
         
@@ -389,6 +389,21 @@
         }
         
         .resize-handle:active {
+            background-color: var(--accent-hover) !important;
+        }
+        
+        /* Split view resize handle */
+        .split-resize-handle {
+            position: relative;
+            user-select: none;
+            flex-shrink: 0;
+        }
+        
+        .split-resize-handle:hover {
+            background-color: var(--accent-primary) !important;
+        }
+        
+        .split-resize-handle:active {
             background-color: var(--accent-hover) !important;
         }
         
@@ -870,14 +885,13 @@
                     </div>
                     
                     <!-- Editor/Preview -->
-                    <div class="flex-1 flex" style="min-height: 0;">
+                    <div class="flex-1 flex relative" style="min-height: 0;">
                         <!-- Editor -->
                         <div 
                             x-show="viewMode === 'edit' || viewMode === 'split'"
-                            :class="viewMode === 'split' ? 'w-1/2' : 'w-full'"
                             class="flex flex-col"
                             style="min-height: 0;"
-                            :style="'border-right: ' + (viewMode === 'split' ? '1px solid var(--border-primary)' : 'none')"
+                            :style="viewMode === 'split' ? `width: ${editorWidth}%;` : 'width: 100%;'"
                         >
                             <textarea 
                                 x-model="noteContent"
@@ -892,12 +906,22 @@
                             ></textarea>
                         </div>
                         
+                        <!-- Split view resize handle -->
+                        <div 
+                            x-show="viewMode === 'split'"
+                            @mousedown="startSplitResize($event)"
+                            class="split-resize-handle"
+                            style="width: 4px; cursor: col-resize; background-color: transparent; transition: background-color 0.2s; position: relative; z-index: 10;"
+                            @mouseover="$el.style.backgroundColor='var(--accent-primary)'"
+                            @mouseout="if(!isResizingSplit) $el.style.backgroundColor='transparent'"
+                        ></div>
+                        
                         <!-- Preview -->
                         <div 
                             x-show="viewMode === 'preview' || viewMode === 'split'"
-                            :class="viewMode === 'split' ? 'w-1/2' : 'w-full'"
                             class="overflow-y-auto overflow-x-hidden custom-scrollbar"
                             style="background-color: var(--bg-primary); min-height: 0;"
+                            :style="viewMode === 'split' ? `width: ${100 - editorWidth}%;` : 'width: 100%;'"
                         >
                             <div 
                                 class="p-6 markdown-preview"

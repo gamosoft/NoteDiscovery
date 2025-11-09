@@ -45,6 +45,8 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 
 Use the pre-built image directly from GHCR - no building required!
 
+> **💡 Tip**: Always use `ghcr.io/gamosoft/notediscovery:latest` to get the newest features and fixes. Images are automatically built when PRs are merged to main.
+
 > **📁 Important - Volume Mapping**: The container needs local folders/files to work:
 > - **Required**: `data` folder (your notes will be stored here)
 > - **Required**: `themes` folder with theme `.css` files (at least light.css and dark.css)
@@ -200,6 +202,10 @@ Once you've started NoteDiscovery, you'll find comprehensive guides on:
 
 💡 **Tip:** These documentation files are regular markdown notes—edit them, add your own notes, or use them as templates. It's your knowledge base!
 
+## 💖 Support Development
+
+If you find NoteDiscovery useful, consider [☕ buying me a coffee](https://paypal.me/gamosoft) to help keep the project going. Every bit helps with new features, bug fixes, and improvements. Thank you!
+
 ## 🔒 Security Considerations
 
 NoteDiscovery is designed for **self-hosted, private use**. Please keep these security considerations in mind:
@@ -229,18 +235,6 @@ NoteDiscovery is designed for **self-hosted, private use**. Please keep these se
 - Set appropriate file permissions on the `data/` directory
 
 **TL;DR**: Perfect for personal use on your local machine or home network. Add a reverse proxy with authentication if exposing to wider networks.
-
-## 💖 Support Development
-
-If NoteDiscovery makes your life easier, consider buying me a coffee! Your support helps keep this project alive and growing.
-
-**[☕ Buy Me a Coffee](https://paypal.me/gamosoft)**
-
-Every contribution, no matter how small, is deeply appreciated and helps fund:
-- 🛠️ New features and improvements
-- 🐛 Bug fixes and maintenance
-- 📚 Documentation and tutorials
-- 🎨 Design enhancements
 
 ## 📄 License
 
