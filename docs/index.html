@@ -3,9 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NoteDiscovery - Your Self-Hosted Knowledge Base. A lightweight, privacy-focused note-taking application that puts you in complete control.">
+    
+    <!-- Primary Meta Tags -->
     <title>NoteDiscovery - Your Self-Hosted Knowledge Base</title>
+    <meta name="title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
+    <meta name="description" content="A lightweight, privacy-focused note-taking application. Self-hosted, free, and open source. Write, organize, and discover your notes with markdown support.">
+    <meta name="keywords" content="note taking, markdown editor, self-hosted, knowledge base, open source, privacy, notes app, docker, second brain, obsidian alternative">
+    <meta name="author" content="Gamosoft">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://www.notediscovery.com/">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.notediscovery.com/">
+    <meta property="og:title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
+    <meta property="og:description" content="A lightweight, privacy-focused note-taking application. Self-hosted, free, and open source.">
+    <meta property="og:image" content="https://www.notediscovery.com/logo.svg">
+    <meta property="og:site_name" content="NoteDiscovery">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://www.notediscovery.com/">
+    <meta name="twitter:title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
+    <meta name="twitter:description" content="A lightweight, privacy-focused note-taking application. Self-hosted, free, and open source.">
+    <meta name="twitter:image" content="https://www.notediscovery.com/logo.svg">
+    
+    <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="apple-touch-icon" href="logo.svg">
+    
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#667eea">
     <style>
         :root {
             --bg-gradient-start: #667eea;
@@ -432,6 +460,34 @@
             const icon = document.getElementById('theme-icon');
             icon.textContent = savedTheme === 'light' ? '🌙' : '☀️';
         })();
+    </script>
+
+    <!-- Structured Data / JSON-LD for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "NoteDiscovery",
+      "description": "A lightweight, privacy-focused note-taking application. Self-hosted, free, and open source.",
+      "url": "https://www.notediscovery.com",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Linux, Windows, macOS",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Gamosoft"
+      },
+      "softwareVersion": "1.0",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "1"
+      }
+    }
     </script>
 </body>
 </html>
