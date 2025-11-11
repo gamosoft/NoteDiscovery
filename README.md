@@ -46,6 +46,8 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 Use the pre-built image directly from GHCR - no building required!
 
 > **💡 Tip**: Always use `ghcr.io/gamosoft/notediscovery:latest` to get the newest features and fixes. Images are automatically built when PRs are merged to main.
+>
+> **🖥️ Multi-Architecture Support**: Images are built for `x86_64`, `ARM64` (Raspberry Pi 3/4/5), and `ARM v7` (older Raspberry Pi models). Docker will automatically pull the correct version for your device.
 
 > **📁 Important - Volume Mapping**: The container needs local folders/files to work:
 > - **Required**: `data` folder (your notes will be stored here)
