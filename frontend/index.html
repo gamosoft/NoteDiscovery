@@ -950,9 +950,9 @@
                             x-show="viewMode === 'split'"
                             @mousedown="startSplitResize($event)"
                             class="split-resize-handle"
-                            style="width: 4px; cursor: col-resize; background-color: transparent; transition: background-color 0.2s; position: relative; z-index: 10;"
-                            @mouseover="$el.style.backgroundColor='var(--accent-primary)'"
-                            @mouseout="if(!isResizingSplit) $el.style.backgroundColor='transparent'"
+                            style="width: 6px; cursor: col-resize; background: linear-gradient(90deg, transparent 0%, var(--border-secondary) 50%, transparent 100%); transition: all 0.2s; position: relative; z-index: 10; opacity: 0.5;"
+                            @mouseover="$el.style.opacity='1'; $el.style.background='var(--accent-primary)'"
+                            @mouseout="if(!isResizingSplit) { $el.style.opacity='0.5'; $el.style.background='linear-gradient(90deg, transparent 0%, var(--border-secondary) 50%, transparent 100%)' }"
                         ></div>
                         
                         <!-- Preview -->
