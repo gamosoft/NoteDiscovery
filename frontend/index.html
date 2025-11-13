@@ -568,15 +568,119 @@
         .markdown-preview pre code.language-ps .hljs-operator {
             color: #f472b6 !important; /* Pink for operators */
         }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            /* Hide sidebar by default on mobile */
+            .mobile-sidebar {
+                position: fixed;
+                left: -100%;
+                top: 0;
+                height: 100vh;
+                width: 80% !important;
+                max-width: 300px !important;
+                z-index: 1000;
+                transition: left 0.3s ease;
+            }
+            
+            /* Show sidebar when open */
+            .mobile-sidebar-open {
+                left: 0;
+            }
+            
+            /* Mobile overlay */
+            .mobile-overlay {
+                position: fixed;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+                display: none;
+            }
+            
+            .mobile-overlay-visible {
+                display: block;
+            }
+            
+            /* Hamburger button */
+            .mobile-menu-button {
+                display: flex !important;
+            }
+            
+            /* Hide desktop resize handle on mobile */
+            .sidebar-resize-handle,
+            .resize-handle {
+                display: none;
+            }
+            
+            /* Make editor take full width on mobile */
+            .mobile-editor {
+                width: 100% !important;
+            }
+            
+            /* Stack view modes vertically on mobile */
+            .mobile-view-toggle {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+            
+            /* Smaller buttons on mobile */
+            .mobile-toolbar button {
+                padding: 0.5rem;
+                font-size: 0.875rem;
+            }
+            
+            /* Smaller text input on mobile */
+            .mobile-toolbar input {
+                min-width: 100px !important;
+                max-width: 200px !important;
+                font-size: 1rem !important;
+            }
+            
+            /* Hide split view on mobile (not enough space) */
+            .mobile-hide-split {
+                display: none !important;
+            }
+            
+            /* Make toolbar wrap on very small screens */
+            .mobile-toolbar {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
+            /* Larger touch targets */
+            .note-item,
+            .folder-item {
+                padding: 0.75rem !important;
+                min-height: 44px;
+            }
+        }
+        
+        /* Hide mobile menu button on desktop */
+        @media (min-width: 769px) {
+            .mobile-menu-button {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body x-data="noteApp()" x-init="init()" style="background-color: var(--bg-primary);">
+    
+    <!-- Mobile Overlay -->
+    <div 
+        @click="mobileSidebarOpen = false"
+        :class="{'mobile-overlay': true, 'mobile-overlay-visible': mobileSidebarOpen}"
+        x-show="mobileSidebarOpen"
+    ></div>
     
     <!-- Main Container -->
     <div class="flex h-screen overflow-hidden">
         
         <!-- Sidebar -->
-        <div class="flex flex-col" :style="'width: ' + sidebarWidth + 'px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); min-width: 200px; max-width: 600px;'">
+        <div 
+            class="flex flex-col mobile-sidebar" 
+            :class="{'mobile-sidebar-open': mobileSidebarOpen}"
+            :style="'width: ' + sidebarWidth + 'px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); min-width: 200px; max-width: 600px;'"
+        >
             <!-- Header -->
             <div class="p-4 border-b" style="border-color: var(--border-primary);">
                 <div class="flex items-center gap-2 mb-3">
@@ -839,14 +943,27 @@
                 <!-- Editor Area -->
                 <div class="flex-1 flex flex-col overflow-hidden" style="background-color: var(--bg-primary);">
                     <!-- Toolbar -->
-                    <div class="px-4 py-3 flex items-center justify-between" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-primary);">
+                    <div class="px-4 py-3 flex items-center justify-between mobile-toolbar" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-primary);">
                         <div class="flex items-center space-x-2">
+                            <!-- Mobile Menu Button -->
+                            <button 
+                                @click="mobileSidebarOpen = !mobileSidebarOpen"
+                                class="mobile-menu-button p-2 rounded-lg"
+                                style="color: var(--text-primary); display: none;"
+                                onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                                onmouseout="this.style.backgroundColor='transparent'"
+                                title="Toggle sidebar"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
                             <input 
                                 type="text" 
                                 x-model="currentNoteName"
                                 @blur="renameNote()"
                                 class="text-xl font-semibold border-none focus:outline-none focus:ring-2 rounded px-3 py-1.5"
-                                style="background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary); min-width: 300px;"
+                                style="background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary); min-width: 150px; max-width: 300px;"
                             >
                             <!-- Undo Button -->
                             <button 
@@ -900,21 +1017,21 @@
                             <div class="flex rounded-lg p-1" style="background-color: var(--bg-tertiary);">
                                 <button 
                                     @click="viewMode = 'edit'"
-                                    class="px-3 py-1 text-sm rounded transition"
+                                    class="px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'edit' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
                                 >
                                     Edit
                                 </button>
                                 <button 
                                     @click="viewMode = 'split'"
-                                    class="px-3 py-1 text-sm rounded transition"
+                                    class="mobile-hide-split px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'split' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
                                 >
                                     Split
                                 </button>
                                 <button 
                                     @click="viewMode = 'preview'"
-                                    class="px-3 py-1 text-sm rounded transition"
+                                    class="px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'preview' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
                                 >
                                     Preview
@@ -925,11 +1042,12 @@
                             <button 
                                 x-show="currentNote"
                                 @click="exportToHTML()"
-                                class="px-3 py-1.5 text-sm rounded transition hover:opacity-80"
+                                class="px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded transition hover:opacity-80"
                                 style="background-color: var(--accent-secondary); color: var(--text-primary);"
                                 title="Export as HTML"
                             >
-                                📄 Export HTML
+                                <span class="hidden md:inline">📄 Export HTML</span>
+                                <span class="md:hidden">📄</span>
                             </button>
                         </div>
                     </div>

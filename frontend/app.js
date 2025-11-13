@@ -81,6 +81,9 @@ function noteApp() {
         sidebarWidth: CONFIG.DEFAULT_SIDEBAR_WIDTH,
         isResizing: false,
         
+        // Mobile sidebar state
+        mobileSidebarOpen: false,
+        
         // Split view resize state
         editorWidth: 50, // percentage
         isResizingSplit: false,
@@ -128,6 +131,9 @@ function noteApp() {
             this.$nextTick(() => {
                 this.refreshDOMCache();
             });
+            
+            // Setup mobile view mode handler
+            this.setupMobileViewMode();
             
             // Watch view mode changes and auto-save
             this.$watch('viewMode', (newValue) => {
@@ -832,6 +838,9 @@ function noteApp() {
         // Load a specific note
         async loadNote(notePath, updateHistory = true, searchQuery = '') {
             try {
+                // Close mobile sidebar when a note is selected
+                this.mobileSidebarOpen = false;
+                
                 const response = await fetch(`/api/notes/${notePath}`);
                 
                 // Check if note exists
@@ -2079,6 +2088,33 @@ function noteApp() {
             
             document.addEventListener('mousemove', resize);
             document.addEventListener('mouseup', stopResize);
+        },
+        
+        // Setup mobile view mode handler (auto-switch from split to edit on mobile)
+        setupMobileViewMode() {
+            const MOBILE_BREAKPOINT = 768; // Match CSS breakpoint
+            let previousWidth = window.innerWidth;
+            
+            const handleResize = () => {
+                const currentWidth = window.innerWidth;
+                const wasMobile = previousWidth <= MOBILE_BREAKPOINT;
+                const isMobile = currentWidth <= MOBILE_BREAKPOINT;
+                
+                // If switching from desktop to mobile and in split mode
+                if (!wasMobile && isMobile && this.viewMode === 'split') {
+                    this.viewMode = 'edit';
+                }
+                
+                previousWidth = currentWidth;
+            };
+            
+            // Listen for window resize
+            window.addEventListener('resize', handleResize);
+            
+            // Check initial state
+            if (window.innerWidth <= MOBILE_BREAKPOINT && this.viewMode === 'split') {
+                this.viewMode = 'edit';
+            }
         },
         
         // Load editor width from localStorage
