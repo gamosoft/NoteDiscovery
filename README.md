@@ -225,7 +225,7 @@ NoteDiscovery is designed for **self-hosted, private use**. Please keep these se
 
 ### Authentication
 - **Optional password protection** is available (disabled by default)
-- See **[AUTHENTICATION.md](AUTHENTICATION.md)** for setup instructions
+- See **AUTHENTICATION.md** for setup instructions
 - Simple to enable with Docker: `docker-compose exec notediscovery /app/generate_password_hash.sh`
 - Perfect for single-user or small team deployments
 - For multi-user setups, consider a reverse proxy with OAuth/SSO
