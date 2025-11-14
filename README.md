@@ -84,6 +84,8 @@ Use the pre-built image directly from GHCR - no building required!
 >    # Now you have everything - run docker-compose below
 >    ```
 
+> **🔐 Security Note**: Authentication is **enabled by default** with password `admin`. For testing/local use, this is fine. If exposing to a network, **change the password immediately** - see [AUTHENTICATION.md](data/notes/AUTHENTICATION.md) for instructions.
+
 **Option 1: Docker Compose (Recommended)**
 
 > 💡 **Multi-Architecture Support**: Docker images are available for both `x86_64` and `ARM64` (Raspberry Pi, Apple Silicon, etc.)
@@ -224,9 +226,11 @@ NoteDiscovery is designed for **self-hosted, private use**. Please keep these se
 - By default, the app listens on `0.0.0.0:8000` (all network interfaces)
 
 ### Authentication
-- **Optional password protection** is available (disabled by default)
-- See **AUTHENTICATION.md** for setup instructions
-- Simple to enable with Docker: `docker-compose exec notediscovery /app/generate_password_hash.sh`
+- **Password protection is ENABLED by default** with password: `admin`
+- ⚠️ **CHANGE THE DEFAULT PASSWORD IMMEDIATELY** if exposing to a network!
+- See **[AUTHENTICATION.md](data/notes/AUTHENTICATION.md)** for complete setup instructions
+- To disable auth, set `security.enabled: false` in `config.yaml`
+- Change password with Docker: `docker-compose exec notediscovery /app/generate_password_hash.sh`
 - Perfect for single-user or small team deployments
 - For multi-user setups, consider a reverse proxy with OAuth/SSO
 

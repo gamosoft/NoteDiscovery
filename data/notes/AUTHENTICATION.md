@@ -1,5 +1,15 @@
 # 🔒 NoteDiscovery Authentication Guide
 
+## ⚠️ **IMPORTANT: Default Password Warning**
+
+> **The default `config.yaml` includes authentication enabled with password: `admin`**
+>
+> 🔴 **CHANGE THIS IMMEDIATELY if you're exposing NoteDiscovery to a network!**
+>
+> The default configuration is provided for **quick testing only**. Follow the setup guide below to set your own secure password and secret key.
+
+---
+
 ## Overview
 
 NoteDiscovery includes a simple, secure authentication system for single-user deployments. When enabled, users must log in with a password before accessing the application.
@@ -16,7 +26,30 @@ NoteDiscovery includes a simple, secure authentication system for single-user de
 
 ## 🚀 Quick Setup
 
-**⚠️ IMPORTANT:** Authentication is **disabled by default**. Follow these steps to enable it:
+**Default Configuration:**
+- Authentication is **enabled by default**
+- Default password is `admin`
+- Default secret key is insecure
+
+**⚠️ IMPORTANT:** For production or network-exposed deployments, **change both the password and secret key immediately**. Follow these steps:
+
+---
+
+### 🧪 **Quick Test (Use Default Password)**
+
+For **local testing only**, you can use the default configuration:
+
+1. Start NoteDiscovery (Docker or locally)
+2. Navigate to `http://localhost:8000`
+3. Log in with password: `admin`
+
+**⚠️ Only use this for local testing on your own machine!**
+
+---
+
+### 🔒 **Production Setup (Change Password & Secret Key)**
+
+For any deployment exposed to a network, follow these steps:
 
 ### Step 1: Generate a Password Hash
 
