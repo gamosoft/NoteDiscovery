@@ -702,7 +702,20 @@
                         </template>
                     </select>
                 </div>
-                <p class="text-xs" style="color: var(--text-secondary);" x-text="appTagline"></p>
+                <p class="text-xs mb-3" style="color: var(--text-secondary);" x-text="appTagline"></p>
+                
+                <!-- Logout Button (only show if auth is enabled) -->
+                <div x-data="{ authEnabled: false }" x-init="fetch('/api/config').then(r => r.json()).then(d => authEnabled = d.security?.enabled || false)">
+                    <a x-show="authEnabled" 
+                       href="/logout" 
+                       class="flex items-center justify-center gap-2 px-3 py-2 text-sm rounded transition-colors"
+                       style="background-color: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-primary);"
+                       onmouseover="this.style.backgroundColor='var(--bg-hover)'; this.style.color='var(--text-primary)'"
+                       onmouseout="this.style.backgroundColor='var(--bg-secondary)'; this.style.color='var(--text-secondary)'">
+                        <span>🔒</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
             </div>
             
             <!-- Search -->

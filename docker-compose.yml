@@ -5,7 +5,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Persist notes and data (inside 'notes' folder)
+      # Persist notes and data
       - ./data:/app/data
       # Custom plugins
       - ./plugins:/app/plugins

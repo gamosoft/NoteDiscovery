@@ -67,14 +67,6 @@
 - **Event hooks** - React to note saves, deletes, searches
 - **API access** - Full access to backend functionality
 
-### Example Use Cases
-- Git auto-sync
-- Note encryption
-- Export to PDF
-- Daily note creation
-- Backlinks tracking
-- Tag management
-
 ## 🔍 Search
 
 - **Full-text search** - Find notes by content

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - NoteDiscovery</title>
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+    
+    <!-- Theme styles will be loaded dynamically -->
+    <script>
+        // Load theme immediately (same approach as index.html)
+        (async function() {
+            const savedTheme = localStorage.getItem('noteDiscoveryTheme') || 'light';
+            
+            try {
+                const response = await fetch(`/api/themes/${savedTheme}`);
+                const data = await response.json();
+                
+                // Create style element with theme CSS
+                const styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-theme';
+                styleEl.textContent = data.css;
+                document.head.appendChild(styleEl);
+                
+                // Set data attribute for theme-specific selectors
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } catch (error) {
+                console.error('Failed to load theme:', error);
+            }
+        })();
+    </script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        .login-container {
+            background-color: var(--bg-secondary);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 1px solid var(--border-primary);
+        }
+        
+        .logo {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        h1 {
+            color: var(--text-primary);
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+        
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        form > div {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        input[type="password"] {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-primary);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+        
+        input[type="password"]:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px var(--accent-light, rgba(102, 126, 234, 0.1));
+        }
+        
+        button {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--accent-light);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .error-message {
+            color: var(--error, #c53030);
+            font-size: 0.813rem;
+            margin-top: 0.5rem;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            animation: fadeInDown 0.3s ease-out;
+        }
+        
+        .error-message::before {
+            content: "⚠️";
+            flex-shrink: 0;
+            font-size: 0.875rem;
+        }
+        
+        /* Shake animation for password input on error */
+        input.error {
+            animation: shake 0.4s ease-in-out;
+            border-color: var(--error, #c53030);
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+            20%, 40%, 60%, 80% { transform: translateX(8px); }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .footer {
+            margin-top: 2rem;
+            color: var(--text-tertiary, var(--text-secondary));
+            font-size: 0.75rem;
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 2rem 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <img src="/static/logo.svg" alt="NoteDiscovery" class="logo">
+        <h1>NoteDiscovery</h1>
+        <p class="tagline">Your Self-Hosted Knowledge Base</p>
+        
+        <form method="post" action="/login">
+            <div>
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="password"
+                    placeholder="Enter your password" 
+                    required 
+                    autofocus
+                    <!-- ERROR_CLASS_PLACEHOLDER -->
+                >
+                <!-- ERROR_MESSAGE_PLACEHOLDER -->
+            </div>
+            <button type="submit">🔓 Unlock</button>
+        </form>
+        
+        <div class="footer">
+            🔒 Secure & Self-Hosted
+        </div>
+    </div>
+</body>
+</html>
+

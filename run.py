@@ -20,8 +20,7 @@ def main():
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
     
     # Create data directories
-    Path("data/notes").mkdir(parents=True, exist_ok=True)
-    Path("data/search_index").mkdir(parents=True, exist_ok=True)
+    Path("data").mkdir(parents=True, exist_ok=True)
     Path("plugins").mkdir(parents=True, exist_ok=True)
     
     print("✓ Dependencies installed")
@@ -32,7 +31,7 @@ def main():
     print("\n📝 Open your browser to: http://localhost:8000")
     print("\n💡 Tips:")
     print("   - Press Ctrl+C to stop the server")
-    print("   - Your notes are in ./data/notes/")
+    print("   - Your notes are in ./data/")
     print("   - Plugins go in ./plugins/")
     print("\n" + "="*50 + "\n")
     

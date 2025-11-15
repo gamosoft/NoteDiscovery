@@ -1,12 +1,6 @@
 name: Build and Push Docker Image to GHCR
 
 on:
-  pull_request:
-    types:
-      - closed
-    branches:
-      - main
-      - master
   push:
     tags:
       - 'v*.*.*'
@@ -18,19 +12,16 @@ env:
 
 jobs:
   build-and-push:
-    # Only run if PR was merged (not just closed) or if triggered by tag/manual
-    if: |
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
-      github.event_name == 'push' ||
-      github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for release notes
 
       - name: Set up QEMU for multi-architecture builds
         uses: docker/setup-qemu-action@v3
@@ -72,4 +63,71 @@ jobs:
 
       - name: Image digest
         run: echo "Image pushed with digest ${{ steps.build-push.outputs.digest }}"
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          # Generate commit log - extract PR descriptions from merge commits
+          if [ -z "$PREVIOUS_TAG" ]; then
+            # First release, get only merge commits (PR merges)
+            RAW_COMMITS=$(git log --merges --pretty=format:"%s|||%b|||%h" --first-parent)
+          else
+            # Get merge commits since last tag
+            RAW_COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --merges --pretty=format:"%s|||%b|||%h" --first-parent)
+          fi
+          
+          # Process commits to extract meaningful messages
+          COMMITS=""
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              SUBJECT=$(echo "$line" | cut -d'|' -f1)
+              BODY=$(echo "$line" | cut -d'|' -f4 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+              HASH=$(echo "$line" | cut -d'|' -f7)
+              
+              # If body exists and is not empty, use it; otherwise use subject
+              if [ -n "$BODY" ] && [ "$BODY" != "" ]; then
+                # Capitalize first letter of body
+                MESSAGE=$(echo "$BODY" | sed 's/^./\U&/')
+                COMMITS="${COMMITS}- ${MESSAGE} (${HASH})"$'\n'
+              else
+                COMMITS="${COMMITS}- ${SUBJECT} (${HASH})"$'\n'
+              fi
+            fi
+          done <<< "$RAW_COMMITS"
+          
+          # Create release notes
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+          if [ -z "$COMMITS" ]; then
+            echo "- Minor updates and improvements" >> release_notes.md
+          else
+            echo "$COMMITS" >> release_notes.md
+          fi
+          echo "" >> release_notes.md
+          echo "## Docker Images" >> release_notes.md
+          echo "" >> release_notes.md
+          echo "This release is available as a Docker image:" >> release_notes.md
+          echo '```bash' >> release_notes.md
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${GITHUB_REF_NAME#v}" >> release_notes.md
+          echo '```' >> release_notes.md
+          echo "" >> release_notes.md
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/commits/${GITHUB_REF_NAME}" >> release_notes.md
+          else
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${GITHUB_REF_NAME}" >> release_notes.md
+          fi
+          
+          cat release_notes.md
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

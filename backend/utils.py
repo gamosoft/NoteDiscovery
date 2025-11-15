@@ -35,8 +35,6 @@ def ensure_directories(config: dict):
         config['storage']['notes_dir'],
         config['storage']['plugins_dir'],
     ]
-    if config['search']['enabled']:
-        dirs.append(config['search']['index_dir'])
     
     for dir_path in dirs:
         Path(dir_path).mkdir(parents=True, exist_ok=True)

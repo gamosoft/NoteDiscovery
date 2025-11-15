@@ -46,7 +46,7 @@ Content-Type: application/json
 }
 ```
 
-**Note:** When creating a new note, the `on_note_create` hook is triggered, allowing plugins (like Template Generator) to modify the initial content. The response includes the potentially modified content.
+**Note:** When creating a new note, the `on_note_create` hook is triggered, allowing plugins to modify the initial content. The response includes the potentially modified content.
 
 **Linux/Mac:**
 ```bash
@@ -241,11 +241,6 @@ All endpoints return JSON responses:
   "detail": "Error message"
 }
 ```
-
-## 🔑 Authentication
-
-Currently, no authentication is required. Suitable for self-hosted local environments.
-
 ---
 
 💡 **Tip:** Use the `/api` endpoint to get a live, self-documented list of all available endpoints!

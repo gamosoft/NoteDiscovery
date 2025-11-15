@@ -28,7 +28,7 @@ env/
 .venv
 
 # Data directories
-search_index/
+data/
 *.db
 *.sqlite
 

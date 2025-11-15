@@ -12,14 +12,24 @@ server:
   reload: false  # Set to true for development
   
 storage:
-  notes_dir: "./data/notes"
+  notes_dir: "./data"
   plugins_dir: "./plugins"
   
 search:
   enabled: true
-  index_dir: "./data/search_index"
   
 security:
-  # Add authentication later if needed
-  require_auth: false
+  # Authentication settings
+  # Set enabled to true to require login
+  enabled: false
+  
+  # Session secret key - CHANGE THIS TO A RANDOM STRING!
+  # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+  secret_key: "change_this_to_a_random_secret_key_in_production"
+  
+  # Password hash - Generate with: python generate_password.py
+  password_hash: "$2b$12$t/6PGExFzdpU2PUta0iVY.eDQwvu63kH.c/d4bEnnHaQ5CspH1yrG"  # Default: "admin"
+  
+  # Session expiry in seconds (default: 7 days)
+  session_max_age: 604800
 
