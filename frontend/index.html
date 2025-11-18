@@ -911,16 +911,26 @@
                             </div>
                             <!-- Dual-purpose: hint text OR root drop zone when dragging -->
                             <div 
-                                class="text-xs px-2 py-1 rounded transition-all border-2"
-                                :class="(draggedNote || draggedFolder) ? 'border-dashed font-medium text-center' : 'border-transparent'"
-                                :style="(draggedNote || draggedFolder) ? (dragOverFolder === '' ? 'color: var(--accent-primary); background-color: var(--accent-light); border-color: var(--accent-primary);' : 'color: var(--text-secondary); border-color: var(--border-primary);') : 'color: var(--text-tertiary); opacity: 0.8;'"
+                                class="text-xs px-2 py-1 mb-2 rounded transition-all font-medium text-center"
+                                :class="{
+                                    'border-2 border-dashed bg-accent-light': (draggedNote || draggedFolder) && dragOverFolder === '',
+                                    'border-2 border-dashed': (draggedNote || draggedFolder) && dragOverFolder !== '',
+                                    'border-2 border-transparent': !draggedNote && !draggedFolder
+                                }"
+                                :style="{
+                                    'color': (draggedNote || draggedFolder) ? (dragOverFolder === '' ? 'var(--accent-primary)' : 'var(--text-secondary)') : 'var(--text-tertiary)',
+                                    'opacity': (draggedNote || draggedFolder) ? '1' : '0.8',
+                                    'border-color': (draggedNote || draggedFolder) && dragOverFolder === '' ? 'var(--accent-primary)' : 'var(--border-secondary)',
+                                    'background-color': dragOverFolder === '' ? 'var(--accent-light)' : ''
+                                }"
                                 @dragover.prevent="if(draggedNote || draggedFolder) dragOverFolder = '';"
                                 @dragenter.prevent="if(draggedNote || draggedFolder) dragOverFolder = '';"
                                 @dragleave="if(draggedNote || draggedFolder) dragOverFolder = null;"
                                 @drop="if(draggedNote || draggedFolder) onFolderDrop('')"
+                                style="height: 28px; line-height: 20px; display: flex; align-items: center; justify-content: center;"
                             >
                                 <span x-show="!draggedNote && !draggedFolder">💡 Drag=Move | <kbd style="padding: 1px 4px; border-radius: 3px; background: var(--bg-tertiary); font-size: 10px;">Ctrl</kbd>+Drag=Link</span>
-                                <span x-show="draggedNote || draggedFolder">📂 Drop here for Root</span>
+                                <span x-show="draggedNote || draggedFolder">📂 Root folder</span>
                             </div>
                         </div>
                         
@@ -982,16 +992,6 @@
             @mouseout="if(!isResizing) $el.style.backgroundColor='transparent'"
         ></div>
         
-        <!-- Drag Mode Indicator (floating) -->
-        <div 
-            x-show="draggedNote || draggedNoteForLink"
-            class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg"
-            :style="'background-color: var(--accent-primary); color: white; font-weight: 600;'"
-            style="pointer-events: none;"
-        >
-            <span x-show="draggedNoteForLink">🔗 Link Mode - Drop in editor to create link</span>
-            <span x-show="draggedNote && !draggedNoteForLink">📦 Move Mode - Drop on folder to move</span>
-        </div>
         
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">
