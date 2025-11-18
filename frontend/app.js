@@ -59,6 +59,7 @@ function noteApp() {
         expandedFolders: new Set(),
         draggedNote: null,
         draggedFolder: null,
+        dragOverFolder: null,  // Track which folder is being hovered during drag
         
         // Scroll sync state
         isScrolling: false,
@@ -90,6 +91,9 @@ function noteApp() {
         
         // Dropdown state
         showNewDropdown: false,
+        
+        // Mermaid state cache
+        lastMermaidTheme: null,
         
         // DOM element cache (to avoid repeated querySelector calls)
         _domCache: {
@@ -294,6 +298,32 @@ function noteApp() {
                         highlightTheme.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
                     }
                 }
+                
+                // Re-render Mermaid diagrams with new theme if there's a current note
+                if (this.currentNote) {
+                    // Small delay to allow theme CSS to load
+                    setTimeout(() => {
+                        // Clear existing Mermaid renders
+                        const previewContent = document.querySelector('.markdown-preview');
+                        if (previewContent) {
+                            const mermaidContainers = previewContent.querySelectorAll('.mermaid-rendered');
+                            mermaidContainers.forEach(container => {
+                                // Replace with the original code block for re-rendering
+                                const parent = container.parentElement;
+                                if (parent && container.dataset.originalCode) {
+                                    const pre = document.createElement('pre');
+                                    const code = document.createElement('code');
+                                    code.className = 'language-mermaid';
+                                    code.textContent = container.dataset.originalCode;
+                                    pre.appendChild(code);
+                                    parent.replaceChild(pre, container);
+                                }
+                            });
+                        }
+                        // Re-render with new theme
+                        this.renderMermaid();
+                    }, 100);
+                }
             } catch (error) {
                 console.error('Failed to load theme:', error);
             }
@@ -412,15 +442,25 @@ function noteApp() {
                     <div 
                         draggable="true"
                         x-data="{}"
-                        @dragstart="onFolderDragStart('${folder.path.replace(/'/g, "\\'")}' )"
+                        @dragstart="onFolderDragStart('${folder.path.replace(/'/g, "\\'")}', $event)"
                         @dragend="onFolderDragEnd()"
-                        @dragover.prevent
-                        @drop.stop="onFolderDrop('${folder.path.replace(/'/g, "\\'")}')"
-                        class="folder-item px-2 py-2 mb-1 text-sm rounded transition-all relative"
+                        @dragover.prevent="dragOverFolder = '${folder.path.replace(/'/g, "\\'")}'"
+                        @dragenter.prevent="dragOverFolder = '${folder.path.replace(/'/g, "\\'")}'"
+                        @dragleave="dragOverFolder = null"
+                        @drop.stop="onFolderDrop('${folder.path.replace(/'/g, "\\'")}' )"
+                        class="folder-item px-3 py-3 mb-1 text-sm rounded transition-all relative"
                         style="color: var(--text-primary); cursor: pointer;"
-                        :class="draggedNote || draggedFolder ? 'border-2 border-dashed border-accent-primary bg-accent-light' : 'border-2 border-transparent'"
+                        :class="{
+                            'border-2 border-dashed bg-accent-light': (draggedNote || draggedFolder) && dragOverFolder === '${folder.path.replace(/'/g, "\\'")}',
+                            'border-2 border-dashed': (draggedNote || draggedFolder) && dragOverFolder !== '${folder.path.replace(/'/g, "\\'")}',
+                            'border-2 border-transparent': !draggedNote && !draggedFolder
+                        }"
+                        :style="{
+                            'border-color': (draggedNote || draggedFolder) && dragOverFolder === '${folder.path.replace(/'/g, "\\'")}'  ? 'var(--accent-primary)' : 'var(--border-secondary)',
+                            'background-color': dragOverFolder === '${folder.path.replace(/'/g, "\\'")}'  ? 'var(--accent-light)' : ''
+                        }"
                         @mouseover="if(!draggedNote && !draggedFolder) $el.style.backgroundColor='var(--bg-hover)'"
-                        @mouseout="if(!draggedNote && !draggedFolder) $el.style.backgroundColor='transparent'"
+                        @mouseout="if(!draggedNote && !draggedFolder && dragOverFolder !== '${folder.path.replace(/'/g, "\\'")}'  ) $el.style.backgroundColor='transparent'"
                         @click="toggleFolder('${folder.path.replace(/'/g, "\\'")}')"
                     >
                         <div class="flex items-center gap-1">
@@ -496,7 +536,7 @@ function noteApp() {
                                 @dragstart="onNoteDragStart('${note.path.replace(/'/g, "\\'")}', $event)"
                                 @dragend="onNoteDragEnd()"
                                 @click="loadNote('${note.path.replace(/'/g, "\\'")}')"
-                                class="note-item px-3 py-2 mb-1 text-sm rounded relative"
+                                class="note-item px-3 py-2 mb-1 text-sm rounded relative border-2 border-transparent"
                                 style="${isCurrentNote ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);'} cursor: pointer;"
                                 @mouseover="if('${note.path}' !== currentNote) $el.style.backgroundColor='var(--bg-hover)'"
                                 @mouseout="if('${note.path}' !== currentNote) $el.style.backgroundColor='transparent'"
@@ -636,12 +676,21 @@ function noteApp() {
                 // Move mode: drag to move note
                 this.draggedNote = notePath;
                 event.dataTransfer.effectAllowed = 'move';
+                // Make drag image semi-transparent
+                if (event.target) {
+                    event.target.style.opacity = '0.5';
+                }
             }
         },
         
         onNoteDragEnd() {
             this.draggedNote = null;
             this.draggedNoteForLink = null;
+            this.dragOverFolder = null;
+            // Reset opacity of all note items
+            document.querySelectorAll('.note-item').forEach(el => {
+                el.style.opacity = '1';
+            });
         },
         
         // Handle dragover on editor to show cursor position
@@ -747,12 +796,21 @@ function noteApp() {
         },
         
         // Folder drag handlers
-        onFolderDragStart(folderPath) {
+        onFolderDragStart(folderPath, event) {
             this.draggedFolder = folderPath;
+            // Make drag image semi-transparent
+            if (event && event.target) {
+                event.target.style.opacity = '0.5';
+            }
         },
         
         onFolderDragEnd() {
             this.draggedFolder = null;
+            this.dragOverFolder = null;
+            // Reset opacity of all folder items
+            document.querySelectorAll('.folder-item').forEach(el => {
+                el.style.opacity = '1';
+            });
         },
         
         async onFolderDrop(targetFolderPath) {
@@ -1635,6 +1693,102 @@ function noteApp() {
             }
         },
         
+        // Render Mermaid diagrams
+        async renderMermaid() {
+            if (typeof window.mermaid === 'undefined') {
+                console.warn('Mermaid not loaded yet');
+                return;
+            }
+            
+            // Use requestAnimationFrame for better performance than setTimeout
+            requestAnimationFrame(async () => {
+                const previewContent = document.querySelector('.markdown-preview');
+                if (!previewContent) return;
+                
+                // Get the appropriate theme based on current app theme
+                const themeType = this.getThemeType();
+                const mermaidTheme = themeType === 'light' ? 'default' : 'dark';
+                
+                // Only reinitialize if theme changed (performance optimization)
+                if (this.lastMermaidTheme !== mermaidTheme) {
+                    window.mermaid.initialize({ 
+                        startOnLoad: false,
+                        theme: mermaidTheme,
+                        securityLevel: 'strict', // Use strict for better security
+                        fontFamily: 'inherit'
+                    });
+                    this.lastMermaidTheme = mermaidTheme;
+                }
+                
+                // Find all code blocks with language 'mermaid'
+                const mermaidBlocks = previewContent.querySelectorAll('pre code.language-mermaid');
+                
+                // Early return if no diagrams to render
+                if (mermaidBlocks.length === 0) return;
+                
+                for (let i = 0; i < mermaidBlocks.length; i++) {
+                    const block = mermaidBlocks[i];
+                    const pre = block.parentElement;
+                    
+                    // Skip if already rendered (performance optimization)
+                    if (pre.querySelector('.mermaid-rendered')) continue;
+                    
+                    try {
+                        const code = block.textContent;
+                        const id = `mermaid-diagram-${Date.now()}-${i}`;
+                        
+                        // Render the diagram
+                        const { svg } = await window.mermaid.render(id, code);
+                        
+                        // Create a container for the rendered diagram
+                        const container = document.createElement('div');
+                        container.className = 'mermaid-rendered';
+                        container.style.cssText = 'background-color: transparent; padding: 20px; text-align: center; overflow-x: auto;';
+                        container.innerHTML = svg;
+                        // Store original code for theme re-rendering
+                        container.dataset.originalCode = code;
+                        
+                        // Replace the code block with the rendered diagram
+                        pre.parentElement.replaceChild(container, pre);
+                    } catch (error) {
+                        console.error('Mermaid rendering error:', error);
+                        // Add error indicator to the code block
+                        const errorMsg = document.createElement('div');
+                        errorMsg.style.cssText = 'color: var(--error); padding: 10px; border-left: 3px solid var(--error); margin-top: 10px;';
+                        errorMsg.textContent = `⚠️ Mermaid diagram error: ${error.message}`;
+                        pre.parentElement.insertBefore(errorMsg, pre.nextSibling);
+                    }
+                }
+            });
+        },
+        
+        // Get current theme type (light or dark)
+        // Returns: 'light' or 'dark'
+        // Used by features that need to adapt to theme brightness (e.g., Mermaid diagrams, Chart.js)
+        getThemeType() {
+            // Handle system theme
+            if (this.currentTheme === 'system') {
+                const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                return isDark ? 'dark' : 'light';
+            }
+            
+            // Try to get theme type from loaded theme metadata
+            const currentThemeData = this.availableThemes.find(t => t.id === this.currentTheme);
+            if (currentThemeData && currentThemeData.type) {
+                // Use metadata from theme file (light or dark)
+                return currentThemeData.type; // Already 'light' or 'dark'
+            }
+            
+            // Backward compatibility: fallback to hardcoded map if metadata not available
+            const fallbackMap = {
+                'light': 'light',
+                'vs-blue': 'light'
+            };
+            
+            return fallbackMap[this.currentTheme] || 'dark';
+        },
+        
+        
         // Computed property for rendered markdown
         get renderedMarkdown() {
             if (!this.noteContent) return '<p style="color: var(--text-tertiary);">Nothing to preview yet...</p>';
@@ -1690,12 +1844,17 @@ function noteApp() {
             // Trigger MathJax rendering after DOM updates
             this.typesetMath();
             
+            // Render Mermaid diagrams
+            this.renderMermaid();
+            
             // Apply syntax highlighting and add copy buttons to code blocks
             setTimeout(() => {
                 // Use cached reference if available, otherwise query
                 const previewEl = this._domCache.previewContent || document.querySelector('.markdown-preview');
                 if (previewEl) {
-                    previewEl.querySelectorAll('pre code').forEach((block) => {
+                    // Exclude code blocks that are rendered by other tools (e.g., Mermaid diagrams)
+                    // Note: MathJax uses $$...$$ delimiters (not code blocks) so no exclusion needed
+                    previewEl.querySelectorAll('pre code:not(.language-mermaid)').forEach((block) => {
                         // Apply syntax highlighting
                         if (!block.classList.contains('hljs')) {
                             hljs.highlightElement(block);
@@ -2228,19 +2387,32 @@ function noteApp() {
                 
                 for (const sheet of styleSheets) {
                     try {
+                        // Skip external stylesheets (CDN resources) to avoid CORS errors
+                        // We link them directly in the exported HTML anyway
+                        if (sheet.href && (sheet.href.startsWith('http://') || sheet.href.startsWith('https://'))) {
+                            const currentOrigin = window.location.origin;
+                            const sheetURL = new URL(sheet.href);
+                            if (sheetURL.origin !== currentOrigin) {
+                                // Skip cross-origin stylesheets (they're linked directly in export)
+                                continue;
+                            }
+                        }
+                        
                         const rules = Array.from(sheet.cssRules || []);
                         for (const rule of rules) {
                             const cssText = rule.cssText;
-                            // Include rules that target markdown-preview or mjx-container
+                            // Include rules that target markdown-preview, mjx-container, or mermaid-rendered
                             if (cssText.includes('.markdown-preview') || 
                                 cssText.includes('mjx-container') ||
-                                cssText.includes('.MathJax')) {
+                                cssText.includes('.MathJax') ||
+                                cssText.includes('.mermaid-rendered')) {
                                 markdownStyles += cssText + '\n';
                             }
                         }
                     } catch (e) {
-                        // Skip stylesheets that can't be accessed (CORS)
-                        console.warn('Could not access stylesheet:', sheet.href, e);
+                        // Gracefully skip stylesheets that can't be accessed
+                        // (This should rarely happen now that we skip external stylesheets)
+                        console.debug('Skipping stylesheet:', sheet.href);
                     }
                 }
                 
@@ -2271,8 +2443,8 @@ function noteApp() {
             startup: {
                 pageReady: () => {
                     return MathJax.startup.defaultPageReady().then(() => {
-                        // Highlight code blocks after MathJax is done
-                        document.querySelectorAll('pre code').forEach((block) => {
+                        // Highlight code blocks after MathJax is done (exclude diagram renderers)
+                        document.querySelectorAll('pre code:not(.language-mermaid)').forEach((block) => {
                             hljs.highlightElement(block);
                         });
                     });
@@ -2281,6 +2453,39 @@ function noteApp() {
         };
     </script>
     <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Mermaid.js for diagrams (if used in note) -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        const isDark = ${this.getThemeType() === 'dark'};
+        mermaid.initialize({ 
+            startOnLoad: false,
+            theme: isDark ? 'dark' : 'default',
+            securityLevel: 'strict',
+            fontFamily: 'inherit'
+        });
+        
+        // Render any Mermaid code blocks
+        document.addEventListener('DOMContentLoaded', async () => {
+            const mermaidBlocks = document.querySelectorAll('pre code.language-mermaid');
+            for (let i = 0; i < mermaidBlocks.length; i++) {
+                const block = mermaidBlocks[i];
+                const pre = block.parentElement;
+                try {
+                    const code = block.textContent;
+                    const id = 'mermaid-diagram-' + i;
+                    const { svg } = await mermaid.render(id, code);
+                    const container = document.createElement('div');
+                    container.className = 'mermaid-rendered';
+                    container.style.cssText = 'background-color: transparent; padding: 20px; text-align: center; overflow-x: auto;';
+                    container.innerHTML = svg;
+                    pre.parentElement.replaceChild(container, pre);
+                } catch (error) {
+                    console.error('Mermaid rendering error:', error);
+                }
+            }
+        });
+    </script>
     
     <style>
         /* Theme CSS */

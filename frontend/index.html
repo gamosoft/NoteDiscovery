@@ -57,6 +57,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/http.min.js"></script>
     
+    <!-- Mermaid.js for diagram rendering -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        // Note: Mermaid is initialized dynamically by app.js renderMermaid() based on current theme
+        window.mermaid = mermaid;
+    </script>
+    
     <!-- Theme styles will be loaded dynamically -->
     <link rel="stylesheet" id="theme-stylesheet" href="">
     
@@ -321,6 +328,12 @@
             margin: 0 0.2rem;
         }
         
+        /* Mermaid diagram styling - minimal, let Mermaid handle its own rendering */
+        .markdown-preview .mermaid-rendered svg {
+            max-width: 100%;
+            height: auto;
+        }
+        
         /* Editor styling */
         .editor-textarea {
             font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -337,6 +350,7 @@
         /* Folder tree styling */
         .folder-item {
             user-select: none;
+            transition: all 0.2s ease;
         }
         
         .folder-item:hover {
@@ -349,6 +363,29 @@
         
         .note-item {
             padding-left: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        /* Drag and drop improvements */
+        .note-item[draggable="true"],
+        .folder-item[draggable="true"] {
+            cursor: grab;
+        }
+        
+        .note-item[draggable="true"]:active,
+        .folder-item[draggable="true"]:active {
+            cursor: grabbing;
+        }
+        
+        /* Smooth transitions for drag states */
+        .folder-item,
+        .note-item {
+            transition: opacity 0.2s ease, transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+        }
+        
+        /* Better drop zone visibility */
+        .folder-item:has(+ .folder-contents) {
+            position: relative;
         }
         
         .hover-buttons {
@@ -872,21 +909,28 @@
                                     >⊟</button>
                                 </div>
                             </div>
-                            <div class="text-xs" style="color: var(--text-tertiary); opacity: 0.8;">
-                                💡 Drag=Move | <kbd style="padding: 1px 4px; border-radius: 3px; background: var(--bg-tertiary); font-size: 10px;">Ctrl</kbd>+Drag=Link
-                            </div>
-                        </div>
-                        
-                        <!-- Root drop zone - only visible when dragging -->
-                        <div 
-                            x-show="draggedNote || draggedFolder"
-                            @dragover.prevent
-                            @drop="onFolderDrop('')"
-                            class="mb-3 px-3 py-2 rounded-lg border-2 border-dashed transition-all"
-                            style="border-color: var(--accent-primary); background-color: var(--accent-light);"
-                        >
-                            <div class="text-xs text-center font-medium" style="color: var(--accent-primary);">
-                                📂 Drop here to move to root folder
+                            <!-- Dual-purpose: hint text OR root drop zone when dragging -->
+                            <div 
+                                class="text-xs px-2 py-1 mb-2 rounded transition-all font-medium text-center"
+                                :class="{
+                                    'border-2 border-dashed bg-accent-light': (draggedNote || draggedFolder) && dragOverFolder === '',
+                                    'border-2 border-dashed': (draggedNote || draggedFolder) && dragOverFolder !== '',
+                                    'border-2 border-transparent': !draggedNote && !draggedFolder
+                                }"
+                                :style="{
+                                    'color': (draggedNote || draggedFolder) ? (dragOverFolder === '' ? 'var(--accent-primary)' : 'var(--text-secondary)') : 'var(--text-tertiary)',
+                                    'opacity': (draggedNote || draggedFolder) ? '1' : '0.8',
+                                    'border-color': (draggedNote || draggedFolder) && dragOverFolder === '' ? 'var(--accent-primary)' : 'var(--border-secondary)',
+                                    'background-color': dragOverFolder === '' ? 'var(--accent-light)' : ''
+                                }"
+                                @dragover.prevent="if(draggedNote || draggedFolder) dragOverFolder = '';"
+                                @dragenter.prevent="if(draggedNote || draggedFolder) dragOverFolder = '';"
+                                @dragleave="if(draggedNote || draggedFolder) dragOverFolder = null;"
+                                @drop="if(draggedNote || draggedFolder) onFolderDrop('')"
+                                style="height: 28px; line-height: 20px; display: flex; align-items: center; justify-content: center;"
+                            >
+                                <span x-show="!draggedNote && !draggedFolder">💡 Drag=Move | <kbd style="padding: 1px 4px; border-radius: 3px; background: var(--bg-tertiary); font-size: 10px;">Ctrl</kbd>+Drag=Link</span>
+                                <span x-show="draggedNote || draggedFolder">📂 Root folder</span>
                             </div>
                         </div>
                         
@@ -902,7 +946,7 @@
                                 @dragstart="onNoteDragStart(note.path, $event)"
                                 @dragend="onNoteDragEnd()"
                                 @click="loadNote(note.path)"
-                                class="note-item px-3 py-2 mb-1 text-sm rounded relative"
+                                class="note-item px-3 py-2 mb-1 text-sm rounded relative border-2 border-transparent"
                                 :style="(currentNote === note.path ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);') + (draggedNote || draggedFolder ? ' cursor: grabbing;' : ' cursor: pointer;')"
                                 @mouseover="if(currentNote !== note.path) $el.style.backgroundColor='var(--bg-hover)'"
                                 @mouseout="if(currentNote !== note.path) $el.style.backgroundColor='transparent'"
@@ -948,16 +992,6 @@
             @mouseout="if(!isResizing) $el.style.backgroundColor='transparent'"
         ></div>
         
-        <!-- Drag Mode Indicator (floating) -->
-        <div 
-            x-show="draggedNote || draggedNoteForLink"
-            class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg"
-            :style="'background-color: var(--accent-primary); color: white; font-weight: 600;'"
-            style="pointer-events: none;"
-        >
-            <span x-show="draggedNoteForLink">🔗 Link Mode - Drop in editor to create link</span>
-            <span x-show="draggedNote && !draggedNoteForLink">📦 Move Mode - Drop on folder to move</span>
-        </div>
         
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">

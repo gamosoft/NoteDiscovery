@@ -1,4 +1,5 @@
 /* Light Theme - Default */
+/* @theme-type: light */
 :root[data-theme="light"] {
   /* Background colors */
   --bg-primary: #ffffff;

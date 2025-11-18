@@ -9,7 +9,8 @@
 - **Undo/Redo** - Ctrl+Z / Ctrl+Y support
 - **Syntax highlighting** for code blocks (50+ languages)
 - **Copy code blocks** - One-click copy button on hover
-- **LaTeX/Math rendering** - Beautiful mathematical equations with MathJax
+- **LaTeX/Math rendering** - Beautiful mathematical equations with MathJax (see [MATHJAX.md](MATHJAX.md))
+- **Mermaid diagrams** - Create flowcharts, sequence diagrams, and more (see [MERMAID.md](MERMAID.md))
 - **HTML Export** - Export notes as standalone HTML files
 
 ### Organization
@@ -105,6 +106,31 @@ x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}
 $$
 
 📄 **See the [MATHJAX](MATHJAX.md) note for more examples and syntax reference.**
+
+## 📊 Mermaid Diagrams
+
+### Visual Diagrams
+- **Flowcharts** - Process flows and decision trees
+- **Sequence diagrams** - System interactions over time
+- **Class diagrams** - UML class relationships
+- **State diagrams** - State machines and transitions
+- **Gantt charts** - Project timelines
+- **Pie charts** - Data visualization
+- **Git graphs** - Branch and commit history
+- **Theme support** - Adapts to your theme
+
+### Example
+````markdown
+```mermaid
+graph TD
+    A[Start] --> B{Is it working?}
+    B -->|Yes| C[Great!]
+    B -->|No| D[Debug]
+    D --> B
+```
+````
+
+📄 **See the [MERMAID](MERMAID.md) note for diagram examples and syntax reference.**
 
 ## ⚡ Keyboard Shortcuts
 

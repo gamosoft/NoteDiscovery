@@ -1,4 +1,5 @@
 /* Dark Theme */
+/* @theme-type: dark */
 :root[data-theme="dark"] {
   /* Background colors */
   --bg-primary: #1f2937;

@@ -72,7 +72,32 @@ If your file is named `my-awesome-theme.css`, use `data-theme="my-awesome-theme"
 }
 ```
 
-#### 3. (Optional) Add a custom emoji icon
+#### 3. Add theme type metadata (Recommended)
+
+Add a comment at the **top of your CSS file** to indicate if your theme is light or dark:
+
+```css
+/* @theme-type: light */
+/* OR */
+/* @theme-type: dark */
+```
+
+**Example:**
+```css
+/* @theme-type: dark */
+/* My Awesome Theme - A beautiful custom theme */
+
+:root[data-theme="my-awesome-theme"] {
+    /* ... your CSS variables ... */
+}
+```
+
+**Why is this needed?**
+Some features (like Mermaid diagrams, Chart.js) need to know if the background is light or dark to adjust their rendering colors accordingly. This metadata is automatically parsed by the application.
+
+**Default behavior:** If you don't add this metadata, your theme will default to `dark` for backward compatibility.
+
+#### 4. (Optional) Add a custom emoji icon
 
 Edit `backend/themes.py` and add your theme to the `theme_icons` dictionary:
 
@@ -85,7 +110,7 @@ theme_icons = {
 
 If you skip this step, your theme will use 🎨 as the default icon.
 
-#### 4. Restart the application
+#### 5. Restart the application
 
 ```bash
 # If using Docker:
