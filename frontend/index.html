@@ -922,14 +922,13 @@
                             @dragenter.prevent="dragOverFolder = '';"
                             @dragleave="dragOverFolder = null;"
                             @drop="onFolderDrop('')"
-                            class="mb-3 px-4 py-3 rounded-lg border-2 border-dashed transition-all"
+                            class="mb-2 px-2 py-1.5 rounded border-2 border-dashed transition-all"
                             :class="dragOverFolder === '' ? 'bg-accent-light' : ''"
-                            :style="dragOverFolder === '' ? 'border-color: var(--accent-primary); transform: scale(1.02);' : 'border-color: var(--border-primary);'"
+                            :style="dragOverFolder === '' ? 'border-color: var(--accent-primary);' : 'border-color: var(--border-primary);'"
                         >
-                            <div class="text-sm text-center font-medium flex items-center justify-center gap-2" 
+                            <div class="text-xs text-center font-medium flex items-center justify-center gap-1" 
                                  :style="dragOverFolder === '' ? 'color: var(--accent-primary);' : 'color: var(--text-secondary);'">
-                                <span>📂</span>
-                                <span>Drop here to move to root folder</span>
+                                <span>📂 Root</span>
                             </div>
                         </div>
                         
