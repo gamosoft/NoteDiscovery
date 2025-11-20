@@ -95,81 +95,64 @@ function noteApp() {
         // Homepage folder navigation
         selectedHomepageFolder: '',
         
-        // Computed properties for homepage (using getters for Alpine reactivity)
-        get homepageNotes() {
-            // Safety check - ensure notes is an array
-            if (!Array.isArray(this.notes)) {
+        // Computed-like helpers for homepage (use methods for safer evaluation)
+        homepageNotes() {
+            if (!this.folderTree || typeof this.folderTree !== 'object') {
                 return [];
             }
             
-            // Filter notes based on selected folder
-            if (!this.selectedHomepageFolder) {
-                // Root level - show notes without folder
-                return this.notes.filter(note => !note.folder);
-            } else {
-                // Show notes in selected folder (exact match)
-                return this.notes.filter(note => note.folder === this.selectedHomepageFolder);
-            }
-        },
-        
-        get homepageFolders() {
-            // Safety check - ensure allFolders is an array
-            if (!Array.isArray(this.allFolders)) {
+            const folderNode = this.getFolderNode(this.selectedHomepageFolder || '');
+            if (!folderNode || !Array.isArray(folderNode.notes)) {
                 return [];
             }
             
-            // Safety check - ensure notes is an array for counting
-            const notesArray = Array.isArray(this.notes) ? this.notes : [];
-            
-            // Get folders for current view
-            if (!this.selectedHomepageFolder) {
-                // Root level - show top-level folders
-                return this.allFolders
-                    .filter(folder => !folder.includes('/')) 
-                    .map(folder => {
-                        // Count notes in this folder and all subfolders
-                        const noteCount = notesArray.filter(note => 
-                            note.folder === folder || (note.folder && note.folder.startsWith(folder + '/'))
-                        ).length;
-                        
-                        return {
-                            name: folder,
-                            path: folder,
-                            noteCount: noteCount
-                        };
-                    });
-            } else {
-                // Get subfolders of current folder
-                const prefix = this.selectedHomepageFolder + '/';
-                const subfolders = this.allFolders
-                    .filter(folder => folder.startsWith(prefix) && folder !== this.selectedHomepageFolder)
-                    .map(folder => {
-                        // Extract subfolder name (next level after current folder)
-                        const relativePath = folder.substring(this.selectedHomepageFolder.length + 1);
-                        const subfolderName = relativePath.split('/')[0];
-                        const subfolderPath = this.selectedHomepageFolder + '/' + subfolderName;
-                        
-                        // Count notes in this subfolder and all nested subfolders
-                        const noteCount = notesArray.filter(note => 
-                            note.folder === subfolderPath || (note.folder && note.folder.startsWith(subfolderPath + '/'))
-                        ).length;
-                        
-                        return {
-                            name: subfolderName,
-                            path: subfolderPath,
-                            noteCount: noteCount
-                        };
-                    })
-                    .filter((folder, index, self) => 
-                        // Remove duplicates (same subfolder name)
-                        index === self.findIndex(f => f.path === folder.path)
-                    );
-                
-                return subfolders;
-            }
+            return folderNode.notes;
+        },
+
+        // Helper: Format file size nicely
+        formatSize(bytes) {
+            if (bytes === 0 || !bytes) return '0 B';
+
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         },
         
-        get homepageBreadcrumb() {
+        homepageFolders() {
+            if (!this.folderTree || typeof this.folderTree !== 'object') {
+                return [];
+            }
+            
+            let childFolders = [];
+            if (!this.selectedHomepageFolder) {
+                childFolders = Object.entries(this.folderTree)
+                    .filter(([key]) => key !== '__root__')
+                    .map(([, folder]) => folder);
+            } else {
+                const parentFolder = this.getFolderNode(this.selectedHomepageFolder);
+                if (!parentFolder || !parentFolder.children) {
+                    return [];
+                }
+                childFolders = Object.values(parentFolder.children);
+            }
+            
+            if (!Array.isArray(childFolders) || childFolders.length === 0) {
+                return [];
+            }
+            
+            return childFolders
+                .map(folder => ({
+                    name: folder.name,
+                    path: folder.path,
+                    noteCount: this.calculateFolderNoteCount(folder)
+                }))
+                .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+        },
+        
+        homepageBreadcrumb() {
             // Always return at least Home breadcrumb
             // Safety check - ensure we always return an array
             try {
@@ -192,6 +175,56 @@ function noteApp() {
                 // Fallback to just Home if anything goes wrong
                 return [{ name: 'Home', path: '' }];
             }
+        },
+        
+        getFolderNode(folderPath = '') {
+            if (!this.folderTree || typeof this.folderTree !== 'object') {
+                return null;
+            }
+            
+            if (!folderPath) {
+                if (this.folderTree['__root__']) {
+                    return this.folderTree['__root__'];
+                }
+                return { name: '', path: '', children: {}, notes: [] };
+            }
+            
+            const parts = folderPath.split('/').filter(Boolean);
+            let currentLevel = this.folderTree;
+            let node = null;
+            
+            for (const part of parts) {
+                if (!currentLevel[part]) {
+                    return null;
+                }
+                node = currentLevel[part];
+                currentLevel = node.children || {};
+            }
+            
+            return node;
+        },
+        
+        calculateFolderNoteCount(folderNode) {
+            if (!folderNode || typeof folderNode !== 'object') {
+                return 0;
+            }
+            
+            const directNotes = Array.isArray(folderNode.notes) ? folderNode.notes.length : 0;
+            if (!folderNode.children || Object.keys(folderNode.children).length === 0) {
+                return directNotes;
+            }
+            
+            return Object.values(folderNode.children).reduce(
+                (total, child) => total + this.calculateFolderNoteCount(child),
+                directNotes
+            );
+        },
+        
+        // Check if app is empty (no notes and no folders)
+        get isAppEmpty() {
+            const notesArray = Array.isArray(this.notes) ? this.notes : [];
+            const foldersArray = Array.isArray(this.allFolders) ? this.allFolders : [];
+            return notesArray.length === 0 && foldersArray.length === 0;
         }, 
         
         // Mermaid state cache
@@ -1676,6 +1709,7 @@ function noteApp() {
                     const note = this.notes.find(n => n.path === this.currentNote);
                     if (note) {
                         note.modified = new Date().toISOString();
+                        note.size = new Blob([this.noteContent]).size;
                     }
                     
                     // Hide "saved" indicator
