@@ -32,6 +32,7 @@ from .utils import (
     move_folder,
     rename_folder,
     delete_folder,
+    save_uploaded_image,
 )
 from .plugins import PluginManager
 from .themes import get_available_themes, get_theme_css
@@ -78,6 +79,10 @@ plugin_manager.run_hook('on_app_startup')
 # Mount static files
 static_path = Path(__file__).parent.parent / "frontend"
 app.mount("/static", StaticFiles(directory=static_path), name="static")
+
+# Mount data directory for serving images
+data_path = Path(config['storage']['notes_dir'])
+app.mount("/data", StaticFiles(directory=data_path), name="data")
 
 
 # ============================================================================
@@ -429,6 +434,61 @@ async def create_new_folder(data: dict):
             "path": folder_path,
             "message": "Folder created successfully"
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@api_router.post("/upload-image")
+async def upload_image(file: UploadFile = File(...), note_path: str = Form(...)):
+    """
+    Upload an image file and save it to the attachments directory.
+    Returns the relative path to the image for markdown linking.
+    """
+    try:
+        # Validate file type
+        allowed_types = {'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'}
+        allowed_extensions = {'.jpg', '.jpeg', '.png', '.gif', '.webp'}
+        
+        # Get file extension
+        file_ext = Path(file.filename).suffix.lower() if file.filename else ''
+        
+        if file.content_type not in allowed_types and file_ext not in allowed_extensions:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file type. Allowed: jpg, jpeg, png, gif, webp. Got: {file.content_type}"
+            )
+        
+        # Read file data
+        file_data = await file.read()
+        
+        # Validate file size (10MB max)
+        max_size = 10 * 1024 * 1024  # 10MB in bytes
+        if len(file_data) > max_size:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File too large. Maximum size: 10MB. Uploaded: {len(file_data) / 1024 / 1024:.2f}MB"
+            )
+        
+        # Save the image
+        image_path = save_uploaded_image(
+            config['storage']['notes_dir'],
+            note_path,
+            file.filename,
+            file_data
+        )
+        
+        if not image_path:
+            raise HTTPException(status_code=500, detail="Failed to save image")
+        
+        return {
+            "success": True,
+            "path": image_path,
+            "filename": Path(image_path).name,
+            "message": "Image uploaded successfully"
+        }
+        
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -77,6 +77,14 @@
             color: var(--text-primary, #111827);
         }
         
+        /* Truncate utility for long text */
+        .truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 100%;
+        }
+        
         .bg-themed {
             background-color: var(--bg-primary);
         }
@@ -929,7 +937,7 @@
                                 @drop="if(draggedNote || draggedFolder) onFolderDrop('')"
                                 style="height: 28px; line-height: 20px; display: flex; align-items: center; justify-content: center;"
                             >
-                                <span x-show="!draggedNote && !draggedFolder">💡 Drag=Move | <kbd style="padding: 1px 4px; border-radius: 3px; background: var(--bg-tertiary); font-size: 10px;">Ctrl</kbd>+Drag=Link</span>
+                                <span x-show="!draggedNote && !draggedFolder && !draggedItem">💡 Drag=Move </span>
                                 <span x-show="draggedNote || draggedFolder">📂 Root folder</span>
                             </div>
                         </div>
@@ -939,24 +947,27 @@
                             <div x-html="renderFolderRecursive(folder, 0, true)"></div>
                         </template>
                         
-                        <!-- Root notes (no folder) - shown after folders -->
+                        <!-- Root notes and images (no folder) - shown after folders -->
                         <template x-for="note in (folderTree.__root__ && folderTree.__root__.notes ? folderTree.__root__.notes : [])" :key="note.path">
                             <div 
                                 draggable="true"
                                 @dragstart="onNoteDragStart(note.path, $event)"
                                 @dragend="onNoteDragEnd()"
-                                @click="loadNote(note.path)"
+                                @click="note.type === 'image' ? viewImage(note.path) : loadNote(note.path)"
                                 class="note-item px-3 py-2 mb-1 text-sm rounded relative border-2 border-transparent"
-                                :style="(currentNote === note.path ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);') + (draggedNote || draggedFolder ? ' cursor: grabbing;' : ' cursor: pointer;')"
-                                @mouseover="if(currentNote !== note.path) $el.style.backgroundColor='var(--bg-hover)'"
-                                @mouseout="if(currentNote !== note.path) $el.style.backgroundColor='transparent'"
+                                :style="((note.type === 'image' ? currentImage === note.path : currentNote === note.path) ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);') + (note.type === 'image' ? ' opacity: 0.85;' : '') + (draggedNote || draggedFolder ? ' cursor: grabbing;' : ' cursor: pointer;')"
+                                @mouseover="if(currentNote !== note.path && currentImage !== note.path) $el.style.backgroundColor='var(--bg-hover)'"
+                                @mouseout="if(currentNote !== note.path && currentImage !== note.path) $el.style.backgroundColor='transparent'"
                             >
-                                <span class="truncate" x-text="note.name"></span>
+                                <span class="truncate" style="display: block; padding-right: 30px;">
+                                    <template x-if="note.type === 'image'">🖼️ </template>
+                                    <span x-text="note.name"></span>
+                                </span>
                                 <button 
-                                    @click.stop="deleteNote(note.path, note.name)"
+                                    @click.stop="note.type === 'image' ? deleteImage(note.path) : deleteNote(note.path, note.name)"
                                     class="note-delete-btn absolute right-2 top-1/2 transform -translate-y-1/2 px-1 py-0.5 text-xs rounded hover:brightness-110 transition-opacity"
                                     style="opacity: 0; color: var(--error);"
-                                    title="Delete note"
+                                    :title="note.type === 'image' ? 'Delete image' : 'Delete note'"
                                 >
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -996,7 +1007,7 @@
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">
             
-            <template x-if="!currentNote">
+            <template x-if="!currentNote && !currentImage">
                 <!-- Welcome Screen -->
                 <div class="flex-1 flex items-center justify-center" style="background-color: var(--bg-primary);">
                     <div class="text-center">
@@ -1018,7 +1029,7 @@
                 </div>
             </template>
             
-            <template x-if="currentNote">
+            <template x-if="currentNote || currentImage">
                 <!-- Editor Area -->
                 <div class="flex-1 flex flex-col overflow-hidden" style="background-color: var(--bg-primary);">
                     <!-- Toolbar -->
@@ -1039,10 +1050,12 @@
                             </button>
                             <input 
                                 type="text" 
-                                x-model="currentNoteName"
-                                @blur="renameNote()"
+                                :value="currentNote ? currentNoteName : (currentImage ? currentImage.split('/').pop() : '')"
+                                @input="if (currentNote) currentNoteName = $event.target.value"
+                                @blur="if (currentNote) renameNote()"
+                                :readonly="!currentNote"
                                 class="text-xl font-semibold border-none focus:outline-none focus:ring-2 rounded px-3 py-1.5"
-                                style="background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary); min-width: 150px; max-width: 300px;"
+                                :style="'background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary); min-width: 150px; max-width: 300px;' + (!currentNote ? ' cursor: default; opacity: 0.9;' : '')"
                             >
                             <!-- Undo Button -->
                             <button 
@@ -1091,8 +1104,8 @@
                             <span x-show="!isSaving && lastSaved" class="text-xs" style="color: var(--success);">✓ Saved</span>
                         </div>
                         
-                        <div class="flex items-center space-x-2">
-                            <!-- View Toggle -->
+                        <div class="flex items-center space-x-2" x-show="currentNote">
+                            <!-- View Toggle (only for notes) -->
                             <div class="flex rounded-lg p-1" style="background-color: var(--bg-tertiary);">
                                 <button 
                                     @click="viewMode = 'edit'"
@@ -1119,7 +1132,6 @@
                             
                             <!-- Export HTML Button -->
                             <button 
-                                x-show="currentNote"
                                 @click="exportToHTML()"
                                 class="px-2 md:px-3 py-1 md:py-1.5 text-xs md:text-sm rounded transition hover:opacity-80"
                                 style="background-color: var(--accent-secondary); color: var(--text-primary);"
@@ -1147,9 +1159,10 @@
                                 @dragover.prevent="onEditorDragOver($event)"
                                 @dragenter="onEditorDragEnter($event)"
                                 @dragleave="onEditorDragLeave($event)"
-                                :class="'flex-1 w-full p-6 resize-none focus:outline-none editor-textarea' + (draggedNoteForLink ? ' link-drop-target' : '')"
-                                :style="'background-color: var(--bg-primary); color: var(--text-primary);' + (draggedNoteForLink ? ' outline: 2px dashed var(--accent-primary); outline-offset: -2px; box-shadow: 0 0 20px var(--accent-light);' : '')"
-                                :placeholder="draggedNoteForLink ? '💡 Drop here to create link at cursor position...' : 'Start writing in markdown...'"
+                                @paste="handlePaste($event)"
+                                :class="'flex-1 w-full p-6 resize-none focus:outline-none editor-textarea' + (draggedItem && dropTarget === 'editor' ? ' link-drop-target' : '')"
+                                :style="'background-color: var(--bg-primary); color: var(--text-primary);' + (draggedItem && dropTarget === 'editor' ? ' outline: 2px dashed var(--accent-primary); outline-offset: -2px; box-shadow: 0 0 20px var(--accent-light);' : '')"
+                                :placeholder="draggedItem && dropTarget === 'editor' ? '💡 Drop here to insert at cursor position...' : 'Start writing in markdown...'"
                             ></textarea>
                         </div>
                         
@@ -1165,7 +1178,7 @@
                         
                         <!-- Preview -->
                         <div 
-                            x-show="viewMode === 'preview' || viewMode === 'split'"
+                            x-show="(viewMode === 'preview' || viewMode === 'split') && !currentImage"
                             class="overflow-y-auto overflow-x-hidden custom-scrollbar"
                             style="background-color: var(--bg-primary); min-height: 0;"
                             :style="viewMode === 'split' ? `width: ${100 - editorWidth}%;` : 'width: 100%;'"
@@ -1176,6 +1189,20 @@
                                 @click="handleInternalLink($event)"
                             ></div>
                         </div>
+                        
+                        <!-- Image Viewer -->
+                        <template x-if="currentImage">
+                            <div 
+                                class="flex-1 flex items-center justify-center overflow-auto"
+                                style="background-color: var(--bg-primary); min-height: 0;"
+                            >
+                                <img 
+                                    :src="`/data/${currentImage}`" 
+                                    :alt="currentImage.split('/').pop()"
+                                    style="max-width: 100%; max-height: 100%; object-fit: contain; padding: 2rem;"
+                                />
+                            </div>
+                        </template>
                     </div>
                     
                     <!-- Stats Status Bar (only shows if plugin enabled) -->

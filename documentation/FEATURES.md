@@ -13,6 +13,11 @@
 - **Mermaid diagrams** - Create flowcharts, sequence diagrams, and more (see [MERMAID.md](MERMAID.md))
 - **HTML Export** - Export notes as standalone HTML files
 
+### Image Support
+- **Drag & drop upload** - Drop images from your file system directly into the editor
+- **Clipboard paste** - Paste images from clipboard with Ctrl+V
+- **Multiple formats** - Supports JPG, PNG, GIF, and WebP (max 10MB)
+
 ### Organization
 - **Folder hierarchy** - Organize notes in nested folders
 - **Drag & drop** - Move notes and folders effortlessly
@@ -24,7 +29,7 @@
 
 ### Internal Links
 - **Wiki-style links** - `[[Note Name]]` syntax
-- **Drag to link** - Hold Ctrl and drag a note into the editor
+- **Drag to link** - Drag notes or images into the editor to insert links
 - **Click to navigate** - Jump between notes seamlessly
 - **External links** - Open in new tabs automatically
 
@@ -143,7 +148,6 @@ graph TD
 | `Ctrl+Y` or `Ctrl+Shift+Z` | `Cmd+Y` or `Cmd+Shift+Z` | Redo |
 | `F3` | `F3` | Next search match |
 | `Shift+F3` | `Shift+F3` | Previous search match |
-| `Ctrl+Drag` | `Cmd+Drag` | Create internal link |
 
 ## 🚀 Performance
 
