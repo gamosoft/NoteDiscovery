@@ -93,6 +93,141 @@ function noteApp() {
         // Dropdown state
         showNewDropdown: false,
         
+        // Homepage folder navigation
+        selectedHomepageFolder: '',
+        
+        // Computed-like helpers for homepage (use methods for safer evaluation)
+        homepageNotes() {
+            if (!this.folderTree || typeof this.folderTree !== 'object') {
+                return [];
+            }
+            
+            const folderNode = this.getFolderNode(this.selectedHomepageFolder || '');
+            if (!folderNode || !Array.isArray(folderNode.notes)) {
+                return [];
+            }
+            
+            return folderNode.notes;
+        },
+
+        // Helper: Format file size nicely
+        formatSize(bytes) {
+            if (bytes === 0 || !bytes) return '0 B';
+
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        },
+        
+        homepageFolders() {
+            if (!this.folderTree || typeof this.folderTree !== 'object') {
+                return [];
+            }
+            
+            let childFolders = [];
+            if (!this.selectedHomepageFolder) {
+                childFolders = Object.entries(this.folderTree)
+                    .filter(([key]) => key !== '__root__')
+                    .map(([, folder]) => folder);
+            } else {
+                const parentFolder = this.getFolderNode(this.selectedHomepageFolder);
+                if (!parentFolder || !parentFolder.children) {
+                    return [];
+                }
+                childFolders = Object.values(parentFolder.children);
+            }
+            
+            if (!Array.isArray(childFolders) || childFolders.length === 0) {
+                return [];
+            }
+            
+            return childFolders
+                .map(folder => ({
+                    name: folder.name,
+                    path: folder.path,
+                    noteCount: this.calculateFolderNoteCount(folder)
+                }))
+                .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+        },
+        
+        homepageBreadcrumb() {
+            // Always return at least Home breadcrumb
+            // Safety check - ensure we always return an array
+            try {
+                const breadcrumb = [{ name: 'Home', path: '' }];
+                
+                if (!this.selectedHomepageFolder) {
+                    return breadcrumb;
+                }
+                
+                const parts = (this.selectedHomepageFolder || '').split('/').filter(part => part.trim() !== '');
+                
+                let currentPath = '';
+                parts.forEach(part => {
+                    currentPath = currentPath ? currentPath + '/' + part : part;
+                    breadcrumb.push({ name: part, path: currentPath });
+                });
+                
+                return breadcrumb;
+            } catch (error) {
+                // Fallback to just Home if anything goes wrong
+                return [{ name: 'Home', path: '' }];
+            }
+        },
+        
+        getFolderNode(folderPath = '') {
+            if (!this.folderTree || typeof this.folderTree !== 'object') {
+                return null;
+            }
+            
+            if (!folderPath) {
+                if (this.folderTree['__root__']) {
+                    return this.folderTree['__root__'];
+                }
+                return { name: '', path: '', children: {}, notes: [] };
+            }
+            
+            const parts = folderPath.split('/').filter(Boolean);
+            let currentLevel = this.folderTree;
+            let node = null;
+            
+            for (const part of parts) {
+                if (!currentLevel[part]) {
+                    return null;
+                }
+                node = currentLevel[part];
+                currentLevel = node.children || {};
+            }
+            
+            return node;
+        },
+        
+        calculateFolderNoteCount(folderNode) {
+            if (!folderNode || typeof folderNode !== 'object') {
+                return 0;
+            }
+            
+            const directNotes = Array.isArray(folderNode.notes) ? folderNode.notes.length : 0;
+            if (!folderNode.children || Object.keys(folderNode.children).length === 0) {
+                return directNotes;
+            }
+            
+            return Object.values(folderNode.children).reduce(
+                (total, child) => total + this.calculateFolderNoteCount(child),
+                directNotes
+            );
+        },
+        
+        // Check if app is empty (no notes and no folders)
+        get isAppEmpty() {
+            const notesArray = Array.isArray(this.notes) ? this.notes : [];
+            const foldersArray = Array.isArray(this.allFolders) ? this.allFolders : [];
+            return notesArray.length === 0 && foldersArray.length === 0;
+        }, 
+        
         // Mermaid state cache
         lastMermaidTheme: null,
         
@@ -120,9 +255,15 @@ function noteApp() {
             // Parse URL and load specific note if provided
             this.loadNoteFromURL();
             
+            // Set initial homepage state if no note is loaded
+            if (!this.currentNote) {
+                window.history.replaceState({ homepageFolder: '' }, '', '/');
+            }
+            
             // Listen for browser back/forward navigation
             window.addEventListener('popstate', (e) => {
                 if (e.state && e.state.notePath) {
+                    // Navigating to a note
                     const searchQuery = e.state.searchQuery || '';
                     this.loadNote(e.state.notePath, false, searchQuery); // false = don't update history
                     
@@ -135,8 +276,24 @@ function noteApp() {
                         this.searchResults = [];
                         this.clearSearchHighlights();
                     }
-                } else if (e.state && e.state.imagePath) {
-                    this.viewImage(e.state.imagePath, false); // false = don't update history
+                } else {
+                    // Navigating back to homepage
+                    this.currentNote = '';
+                    this.noteContent = '';
+                    this.currentNoteName = '';
+                    
+                    // Restore homepage folder state if it was saved
+                    if (e.state && e.state.homepageFolder !== undefined) {
+                        this.selectedHomepageFolder = e.state.homepageFolder || '';
+                    } else {
+                        // No folder state in history, go to root
+                        this.selectedHomepageFolder = '';
+                    }
+                    
+                    // Clear search
+                    this.searchQuery = '';
+                    this.searchResults = [];
+                    this.clearSearchHighlights();
                 }
             });
             
@@ -1154,7 +1311,7 @@ function noteApp() {
                 if (!response.ok) {
                     if (response.status === 404) {
                         // Note not found - silently redirect to home
-                        window.history.replaceState({}, '', '/');
+                        window.history.replaceState({ homepageFolder: this.selectedHomepageFolder || '' }, '', '/');
                         this.currentNote = '';
                         this.noteContent = '';
                         this.currentImage = '';
@@ -1187,7 +1344,11 @@ function noteApp() {
                         url += `?search=${encodeURIComponent(searchQuery)}`;
                     }
                     window.history.pushState(
-                        { notePath: notePath, searchQuery: searchQuery },
+                        { 
+                            notePath: notePath, 
+                            searchQuery: searchQuery,
+                            homepageFolder: this.selectedHomepageFolder || '' // Save current folder state
+                        },
                         '',
                         url
                     );
@@ -1796,6 +1957,7 @@ function noteApp() {
                     const note = this.notes.find(n => n.path === this.currentNote);
                     if (note) {
                         note.modified = new Date().toISOString();
+                        note.size = new Blob([this.noteContent]).size;
                     }
                     
                     // Hide "saved" indicator
@@ -2784,6 +2946,16 @@ function noteApp() {
                 console.error('HTML export failed:', error);
                 alert(`Failed to export HTML: ${error.message}`);
             }
+        },
+        
+        // Homepage folder navigation methods
+        goToHomepageFolder(folderPath) {
+            // Navigate to folder (empty string = root)
+            this.selectedHomepageFolder = folderPath || '';
+            
+            // Update browser history
+            const state = { homepageFolder: folderPath || '' };
+            window.history.pushState(state, '', '/');
         }
     }
 }

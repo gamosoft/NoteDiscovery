@@ -728,10 +728,15 @@
         >
             <!-- Header -->
             <div class="p-4 border-b" style="border-color: var(--border-primary);">
-                <div class="flex items-center gap-2 mb-3">
+                <button 
+                    class="flex items-center gap-2 mb-3 hover:opacity-80 transition"
+                    @click="goToHomepageFolder(''); currentNote = ''; currentImage = ''; currentNoteName = ''; noteContent = ''; mobileSidebarOpen = false"
+                    aria-label="Go to homepage"
+                    style="background: none; border: none; outline: none; cursor: pointer;"
+                >
                     <img src="/static/logo.svg" alt="NoteDiscovery Logo" class="w-8 h-8">
                     <h1 class="text-xl font-bold" style="color: var(--text-primary);" x-text="appName"></h1>
-                </div>
+                </button>
                 
                 <!-- Theme Selector -->
                 <div class="mb-3">
@@ -1003,29 +1008,170 @@
             @mouseout="if(!isResizing) $el.style.backgroundColor='transparent'"
         ></div>
         
-        
         <!-- Main Content Area -->
         <div class="flex-1 flex flex-col overflow-hidden">
             
             <template x-if="!currentNote && !currentImage">
-                <!-- Welcome Screen -->
-                <div class="flex-1 flex items-center justify-center" style="background-color: var(--bg-primary);">
-                    <div class="text-center">
-                        <svg class="mx-auto h-16 w-16 mb-4" style="color: var(--text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);" x-text="appName"></h2>
-                        <p class="mb-6" style="color: var(--text-secondary);" x-text="appTagline"></p>
-                        <button 
-                            @click="createNote()"
-                            class="px-6 py-3 text-sm font-medium text-white rounded-lg"
-                            style="background-color: var(--accent-primary);"
-                            onmouseover="this.style.backgroundColor='var(--accent-hover)'"
-                            onmouseout="this.style.backgroundColor='var(--accent-primary)'"
-                        >
-                            Create Your First Note
-                        </button>
-                    </div>
+                <!-- Notes Homepage -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar" style="background-color: var(--bg-primary);">
+                    <!-- Welcome Hero - Show when app is empty -->
+                    <template x-if="isAppEmpty">
+                        <div class="flex flex-col items-center justify-center h-full py-16 text-center">
+                            <svg class="mx-auto h-16 w-16 mb-4" style="color: var(--text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <h1 class="text-4xl font-bold mb-4" style="color: var(--text-primary);" x-text="appName"></h1>
+                            <p class="text-xl mb-8" style="color: var(--text-secondary);" x-text="appTagline"></p>
+                            <button 
+                                @click="createNote()"
+                                class="px-8 py-4 text-base font-medium text-white rounded-lg transition-colors"
+                                style="background-color: var(--accent-primary);"
+                                onmouseover="this.style.backgroundColor='var(--accent-hover)'"
+                                onmouseout="this.style.backgroundColor='var(--accent-primary)'"
+                            >
+                                Create Your First Note
+                            </button>
+                        </div>
+                    </template>
+                    
+                    <!-- Grid View - Show when app has content -->
+                    <template x-if="!isAppEmpty">
+                        <div class="max-w-7xl mx-auto p-6 md:p-8">
+                            <!-- Header -->
+                            <div class="mb-6">
+                                <h1 class="text-3xl font-bold mb-2" style="color: var(--text-primary);" x-text="appName"></h1>
+                                <p class="text-lg" style="color: var(--text-secondary);" x-text="appTagline"></p>
+                            </div>
+                            
+                            <!-- Breadcrumb Navigation -->
+                            <div class="mb-4 flex items-center gap-2 text-sm" style="color: var(--text-secondary);">
+                                <template x-if="Array.isArray(homepageBreadcrumb())">
+                                    <template x-for="(crumb, index) in homepageBreadcrumb()" :key="index">
+                                        <div class="flex items-center gap-2">
+                                            <span 
+                                                x-show="index > 0"
+                                                class="text-xs"
+                                                style="color: var(--text-tertiary);"
+                                            >/</span>
+                                            <span 
+                                                @click="goToHomepageFolder(crumb.path)"
+                                                class="cursor-pointer hover:underline"
+                                                :style="crumb.path === selectedHomepageFolder ? 'color: var(--accent-primary); font-weight: 600;' : 'color: var(--text-secondary);'"
+                                                x-text="crumb.name"
+                                            ></span>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                            
+                            <!-- Stats Bar - Only show when there are notes or folders -->
+                            <template x-if="homepageNotes().length > 0 || homepageFolders().length > 0">
+                                <div class="mb-6 p-4 rounded-lg" style="background-color: var(--bg-secondary); border: 1px solid var(--border-primary);">
+                                    <div class="flex flex-wrap items-center gap-4 text-sm" style="color: var(--text-secondary);">
+                                        <span class="font-semibold" style="color: var(--text-primary);">
+                                            <span x-text="homepageNotes().length"></span> 
+                                            <span x-text="homepageNotes().length === 1 ? 'note' : 'notes'"></span>
+                                        </span>
+                                        <span x-show="homepageFolders().length > 0">
+                                            <span x-text="homepageFolders().length"></span> 
+                                            <span x-text="homepageFolders().length === 1 ? 'folder' : 'folders'"></span>
+                                        </span>
+                                        <button 
+                                            @click="createNote()"
+                                            class="ml-auto px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
+                                            style="background-color: var(--accent-primary);"
+                                            onmouseover="this.style.backgroundColor='var(--accent-hover)'"
+                                            onmouseout="this.style.backgroundColor='var(--accent-primary)'"
+                                        >
+                                            + New Note
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                            
+                            <!-- Empty State (for folder view) -->
+                            <template x-if="homepageNotes().length === 0 && homepageFolders().length === 0">
+                                <div class="flex flex-col items-center justify-center py-16 text-center">
+                                    <svg class="mx-auto h-24 w-24 mb-4" style="color: var(--text-tertiary); opacity: 0.5;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">No notes yet</h2>
+                                    <p class="mb-6" style="color: var(--text-secondary);">Create your first note to get started</p>
+                                    <button 
+                                        @click="createNote()"
+                                        class="px-6 py-3 text-sm font-medium text-white rounded-lg transition-colors"
+                                        style="background-color: var(--accent-primary);"
+                                        onmouseover="this.style.backgroundColor='var(--accent-hover)'"
+                                        onmouseout="this.style.backgroundColor='var(--accent-primary)'"
+                                    >
+                                        Create Your First Note
+                                    </button>
+                                </div>
+                            </template>
+                            
+                            <!-- Folders and Notes Grid -->
+                            <template x-if="homepageNotes().length > 0 || homepageFolders().length > 0">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                                    <!-- Folders First -->
+                                    <template x-for="folder in homepageFolders()" :key="folder.path">
+                                        <div 
+                                            @click="goToHomepageFolder(folder.path)"
+                                            class="p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg"
+                                            style="background-color: var(--bg-secondary); border-color: var(--accent-primary); min-height: 140px; display: flex; flex-direction: column; border-width: 2px;"
+                                            onmouseover="this.style.borderColor='var(--accent-hover)'; this.style.transform='translateY(-2px)'"
+                                            onmouseout="this.style.borderColor='var(--accent-primary)'; this.style.transform='translateY(0)'"
+                                        >
+                                            <!-- Folder Icon -->
+                                            <div class="mb-2 flex items-center gap-2">
+                                                <svg class="w-6 h-6" style="color: var(--accent-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+                                                </svg>
+                                                <h3 class="font-semibold text-base" style="color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;" x-text="folder.name"></h3>
+                                            </div>
+                                            
+                                            <!-- Folder Metadata -->
+                                            <div class="flex items-center justify-between text-xs mt-auto pt-2" style="color: var(--text-tertiary);">
+                                                <span x-text="folder.noteCount + ' ' + (folder.noteCount === 1 ? 'note' : 'notes')"></span>
+                                                <svg class="w-4 h-4" style="color: var(--accent-primary);" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    
+                                    <!-- Notes -->
+                                    <template x-for="note in homepageNotes().slice(0, 50)" :key="note.path">
+                                        <div 
+                                            @click="note.path.match(/\.(png|jpg|jpeg|gif|webp)$/i) ? (currentImage = note.path, currentNote = '') : loadNote(note.path)"
+                                            class="p-4 rounded-lg border-2 cursor-pointer transition-all hover:shadow-lg"
+                                            style="background-color: var(--bg-secondary); border-color: var(--border-primary); min-height: 140px; display: flex; flex-direction: column;"
+                                            onmouseover="this.style.borderColor='var(--accent-primary)'; this.style.transform='translateY(-2px)'"
+                                            onmouseout="this.style.borderColor='var(--border-primary)'; this.style.transform='translateY(0)'"
+                                        >
+                                            <!-- Note Title -->
+                                            <h3 class="font-semibold text-base mb-2" style="color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;" x-text="note.name"></h3>
+                                            
+                                            <!-- Metadata -->
+                                            <div class="flex items-center justify-between text-xs mt-auto pt-2" style="color: var(--text-tertiary);">
+                                                <span x-text="new Date(note.modified).toLocaleDateString()"></span>
+                                                <span x-text="formatSize(note.size)"></span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
+                            
+                            <!-- Show More Indicator -->
+                            <div x-show="homepageNotes().length > 50" class="mt-6 text-center">
+                                <p class="text-sm" style="color: var(--text-secondary);">
+                                    Showing 50 of <span x-text="homepageNotes().length"></span> notes. 
+                                    <span class="cursor-pointer underline" style="color: var(--accent-primary);" @click="goToHomepageFolder('')">
+                                        View all in sidebar
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </template>
                 </div>
             </template>
             
@@ -1089,12 +1235,12 @@
                             
                             <!-- Delete Button -->
                             <button 
-                                @click="deleteCurrentNote()"
+                                @click="currentImage ? deleteImage(currentImage) : deleteCurrentNote()"
                                 class="p-2 rounded-lg"
                                 style="color: var(--error);"
                                 onmouseover="this.style.backgroundColor='var(--bg-hover)'"
                                 onmouseout="this.style.backgroundColor='transparent'"
-                                title="Delete note"
+                                :title="currentImage ? 'Delete image' : 'Delete note'"
                             >
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
