@@ -85,7 +85,10 @@ function noteApp() {
         
         // Mobile sidebar state
         mobileSidebarOpen: false,
-        
+
+        // Desktop sidebar state
+        sidebarHidden: false,
+
         // Split view resize state
         editorWidth: 50, // percentage
         isResizingSplit: false,
@@ -116,6 +119,7 @@ function noteApp() {
             this.loadSidebarWidth();
             this.loadEditorWidth();
             this.loadViewMode();
+            this.loadSidebarHiddenState();
             
             // Parse URL and load specific note if provided
             this.loadNoteFromURL();
@@ -2544,6 +2548,25 @@ function noteApp() {
         // Save editor width to localStorage
         saveEditorWidth() {
             localStorage.setItem('editorWidth', this.editorWidth.toString());
+        },
+
+        // Load sidebar hidden state from localStorage
+        loadSidebarHiddenState() {
+            const saved = localStorage.getItem('sidebarHidden');
+            if (saved) {
+                this.sidebarHidden = saved === 'true';
+            }
+        },
+
+        // Toggle sidebar visibility
+        toggleSidebar() {
+            this.sidebarHidden = !this.sidebarHidden;
+            localStorage.setItem('sidebarHidden', this.sidebarHidden.toString());
+
+            // When showing sidebar, ensure it has the proper width
+            if (!this.sidebarHidden && this.sidebarWidth < 200) {
+                this.sidebarWidth = CONFIG.DEFAULT_SIDEBAR_WIDTH;
+            }
         },
         
         // Scroll to top of editor and preview

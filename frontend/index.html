@@ -700,6 +700,19 @@
             }
         }
         
+        /* Sidebar visibility */
+        .sidebar-hidden {
+            width: 0px !important;
+            min-width: 0px !important;
+            max-width: 0px !important;
+            overflow: hidden;
+            border-right: none !important;
+        }
+
+        .sidebar-resize-handle-hidden {
+            display: none !important;
+        }
+
         /* Hide mobile menu button on desktop */
         @media (min-width: 769px) {
             .mobile-menu-button {
@@ -721,10 +734,10 @@
     <div class="flex h-screen overflow-hidden">
         
         <!-- Sidebar -->
-        <div 
-            class="flex flex-col mobile-sidebar" 
-            :class="{'mobile-sidebar-open': mobileSidebarOpen}"
-            :style="'width: ' + sidebarWidth + 'px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); min-width: 200px; max-width: 600px;'"
+        <div
+            class="flex flex-col mobile-sidebar"
+            :class="{'mobile-sidebar-open': mobileSidebarOpen, 'sidebar-hidden': sidebarHidden}"
+            :style="'width: ' + (sidebarHidden ? 0 : sidebarWidth) + 'px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); min-width: ' + (sidebarHidden ? 0 : '200px') + '; max-width: ' + (sidebarHidden ? 0 : '600px') + ';'"
         >
             <!-- Header -->
             <div class="p-4 border-b" style="border-color: var(--border-primary);">
@@ -995,9 +1008,10 @@
         </div>
         
         <!-- Resize Handle -->
-        <div 
+        <div
             @mousedown="startResize($event)"
             class="resize-handle"
+            :class="{'sidebar-resize-handle-hidden': sidebarHidden}"
             style="width: 4px; cursor: col-resize; background-color: transparent; transition: background-color 0.2s;"
             @mouseover="$el.style.backgroundColor='var(--accent-primary)'"
             @mouseout="if(!isResizing) $el.style.backgroundColor='transparent'"
@@ -1035,8 +1049,36 @@
                     <!-- Toolbar -->
                     <div class="px-4 py-3 flex items-center justify-between mobile-toolbar" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-primary);">
                         <div class="flex items-center space-x-2">
+                            <!-- Desktop Sidebar Toggle Button (left arrow when sidebar is shown) -->
+                            <button
+                                @click="toggleSidebar()"
+                                class="desktop-sidebar-toggle p-2 rounded-lg"
+                                style="color: var(--text-primary); display: block;"
+                                onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                                onmouseout="this.style.backgroundColor='transparent'"
+                                title="Hide sidebar"
+                                x-show="!sidebarHidden"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <!-- Show sidebar button when hidden (right arrow) -->
+                            <button
+                                @click="toggleSidebar()"
+                                class="show-sidebar-button p-2 rounded-lg"
+                                style="color: var(--text-primary); display: block;"
+                                onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                                onmouseout="this.style.backgroundColor='transparent'"
+                                title="Show sidebar"
+                                x-show="sidebarHidden"
+                            >
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
                             <!-- Mobile Menu Button -->
-                            <button 
+                            <button
                                 @click="mobileSidebarOpen = !mobileSidebarOpen"
                                 class="mobile-menu-button p-2 rounded-lg"
                                 style="color: var(--text-primary); display: none;"
@@ -1048,8 +1090,8 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                                 </svg>
                             </button>
-                            <input 
-                                type="text" 
+                            <input
+                                type="text"
                                 :value="currentNote ? currentNoteName : (currentImage ? currentImage.split('/').pop() : '')"
                                 @input="if (currentNote) currentNoteName = $event.target.value"
                                 @blur="if (currentNote) renameNote()"
