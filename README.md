@@ -2,6 +2,8 @@
 
 > Your Self-Hosted Knowledge Base
 
+🌐 **[Visit the official website](https://www.notediscovery.com)**
+
 ## What is NoteDiscovery?
 
 NoteDiscovery is a **lightweight, self-hosted note-taking application** that puts you in complete control of your knowledge base. Write, organize, and discover your notes with a beautiful, modern interface—all running on your own server.
