@@ -210,6 +210,7 @@ Want to learn more?
 - 🎨 **[THEMES.md](documentation/THEMES.md)** - Theme customization and creating custom themes
 - ✨ **[FEATURES.md](documentation/FEATURES.md)** - Complete feature list and keyboard shortcuts
 - 🏷️ **[TAGS.md](documentation/TAGS.md)** - Organize notes with tags and combined filtering
+- 📋 **[TEMPLATES.md](documentation/TEMPLATES.md)** - Create notes from reusable templates with dynamic placeholders
 - 🧮 **[MATHJAX.md](documentation/MATHJAX.md)** - LaTeX/Math notation examples and syntax reference
 - 📊 **[MERMAID.md](documentation/MERMAID.md)** - Diagram creation with Mermaid (flowcharts, sequence diagrams, and more)
 - 🔌 **[PLUGINS.md](documentation/PLUGINS.md)** - Plugin system and available plugins

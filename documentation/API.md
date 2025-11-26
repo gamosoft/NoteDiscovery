@@ -295,6 +295,120 @@ Self-documenting endpoint listing all available API routes.
 
 ---
 
+## 🏷️ Tags
+
+### List All Tags
+`GET /api/tags`
+
+Returns all tags found in notes with their usage counts.
+
+**Response:**
+```json
+{
+  "tags": {
+    "python": 5,
+    "tutorial": 3,
+    "backend": 2
+  }
+}
+```
+
+### Get Notes by Tag
+`GET /api/tags/{tag_name}`
+
+Returns all notes that have a specific tag.
+
+**Response:**
+```json
+{
+  "tag": "python",
+  "notes": [
+    {
+      "path": "tutorials/python-basics.md",
+      "name": "python-basics",
+      "folder": "tutorials",
+      "tags": ["python", "tutorial"]
+    }
+  ]
+}
+```
+
+---
+
+## 📄 Templates
+
+### List Templates
+`GET /api/templates`
+
+Returns all available note templates from the `_templates` folder.
+
+**Response:**
+```json
+{
+  "templates": [
+    {
+      "name": "meeting-notes",
+      "path": "_templates/meeting-notes.md",
+      "modified": "2025-11-26T10:30:00"
+    },
+    {
+      "name": "daily-journal",
+      "path": "_templates/daily-journal.md",
+      "modified": "2025-11-26T10:25:00"
+    }
+  ]
+}
+```
+
+### Get Template Content
+`GET /api/templates/{template_name}`
+
+Returns the content of a specific template.
+
+**Parameters:**
+- `template_name` - Template name (without .md extension)
+
+**Response:**
+```json
+{
+  "name": "meeting-notes",
+  "content": "# Meeting Notes\n\nDate: {{date}}\n..."
+}
+```
+
+### Create Note from Template
+`POST /api/templates/create-note`
+
+Creates a new note from a template with placeholder replacement.
+
+**Request Body:**
+```json
+{
+  "templateName": "meeting-notes",
+  "notePath": "meetings/weekly-sync.md"
+}
+```
+
+**Placeholders:**
+- `{{date}}` - Current date (YYYY-MM-DD)
+- `{{time}}` - Current time (HH:MM:SS)
+- `{{datetime}}` - Current datetime
+- `{{timestamp}}` - Unix timestamp
+- `{{title}}` - Note name without extension
+- `{{folder}}` - Parent folder name
+
+**Response:**
+```json
+{
+  "success": true,
+  "path": "meetings/weekly-sync.md",
+  "message": "Note created from template successfully",
+  "content": "# Meeting Notes\n\nDate: 2025-11-26\n..."
+}
+```
+
+---
+
 ## 📝 Response Format
 
 All endpoints return JSON responses:

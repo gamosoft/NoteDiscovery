@@ -647,3 +647,118 @@ def get_notes_by_tag(notes_dir: str, tag: str) -> List[Dict]:
     
     return matching_notes
 
+
+# ============================================================================
+# Template Functions
+# ============================================================================
+
+def get_templates(notes_dir: str) -> List[Dict]:
+    """
+    Get all templates from the _templates folder.
+    
+    Args:
+        notes_dir: Base notes directory
+        
+    Returns:
+        List of template metadata (name, path, modified)
+    """
+    templates = []
+    templates_path = Path(notes_dir) / "_templates"
+    
+    if not templates_path.exists():
+        return templates
+    
+    # Security check: ensure _templates folder is within notes directory
+    if not validate_path_security(notes_dir, templates_path):
+        print(f"Security: Templates directory is outside notes directory: {templates_path}")
+        return templates
+    
+    try:
+        for template_file in templates_path.glob("*.md"):
+            try:
+                # Security check: ensure each template is within notes directory
+                if not validate_path_security(notes_dir, template_file):
+                    print(f"Security: Skipping template outside notes directory: {template_file}")
+                    continue
+                
+                stat = template_file.stat()
+                templates.append({
+                    "name": template_file.stem,
+                    "path": str(template_file.relative_to(notes_dir).as_posix()),
+                    "modified": datetime.fromtimestamp(stat.st_mtime).isoformat()
+                })
+            except Exception as e:
+                print(f"Error reading template {template_file}: {e}")
+                continue
+    except Exception as e:
+        print(f"Error accessing templates directory: {e}")
+    
+    return sorted(templates, key=lambda x: x['name'])
+
+
+def get_template_content(notes_dir: str, template_name: str) -> Optional[str]:
+    """
+    Get the content of a specific template.
+    
+    Args:
+        notes_dir: Base notes directory
+        template_name: Name of the template (without .md extension)
+        
+    Returns:
+        Template content or None if not found
+    """
+    template_path = Path(notes_dir) / "_templates" / f"{template_name}.md"
+    
+    if not template_path.exists():
+        return None
+    
+    # Security check: ensure template is within notes directory
+    if not validate_path_security(notes_dir, template_path):
+        print(f"Security: Template path is outside notes directory: {template_path}")
+        return None
+    
+    try:
+        with open(template_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except Exception as e:
+        print(f"Error reading template {template_name}: {e}")
+        return None
+
+
+def apply_template_placeholders(content: str, note_path: str) -> str:
+    """
+    Replace template placeholders with actual values.
+    
+    Supported placeholders:
+        {{date}}      - Current date (YYYY-MM-DD)
+        {{time}}      - Current time (HH:MM:SS)
+        {{datetime}}  - Current datetime (YYYY-MM-DD HH:MM:SS)
+        {{timestamp}} - Unix timestamp
+        {{title}}     - Note name without extension
+        {{folder}}    - Parent folder name
+    
+    Args:
+        content: Template content with placeholders
+        note_path: Path of the note being created
+        
+    Returns:
+        Content with placeholders replaced
+    """
+    now = datetime.now()
+    note = Path(note_path)
+    
+    replacements = {
+        '{{date}}': now.strftime('%Y-%m-%d'),
+        '{{time}}': now.strftime('%H:%M:%S'),
+        '{{datetime}}': now.strftime('%Y-%m-%d %H:%M:%S'),
+        '{{timestamp}}': str(int(now.timestamp())),
+        '{{title}}': note.stem,
+        '{{folder}}': note.parent.name if str(note.parent) != '.' else 'Root',
+    }
+    
+    result = content
+    for placeholder, value in replacements.items():
+        result = result.replace(placeholder, value)
+    
+    return result
+

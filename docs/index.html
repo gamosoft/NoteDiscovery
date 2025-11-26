@@ -7,8 +7,8 @@
     <!-- Primary Meta Tags -->
     <title>NoteDiscovery - Your Self-Hosted Knowledge Base</title>
     <meta name="title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
-    <meta name="description" content="A lightweight, privacy-focused Markdown note-taking application with LaTeX math, Mermaid diagrams, and code highlighting. Self-hosted, free, and open source.">
-    <meta name="keywords" content="note taking, markdown editor, self-hosted, knowledge base, open source, privacy, notes app, docker, second brain, obsidian alternative, notion, evernote, onenote, latex, mermaid, diagrams, math equations">
+    <meta name="description" content="A lightweight, privacy-focused Markdown note-taking application with LaTeX math, Mermaid diagrams, tags, templates, and code highlighting. Self-hosted, free, and open source.">
+    <meta name="keywords" content="note taking, markdown editor, self-hosted, knowledge base, open source, privacy, notes app, docker, second brain, obsidian alternative, notion, evernote, onenote, latex, mermaid, diagrams, math equations, templates, tags, yaml frontmatter">
     <meta name="author" content="Gamosoft">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.notediscovery.com">
@@ -17,7 +17,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.notediscovery.com">
     <meta property="og:title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
-    <meta property="og:description" content="A lightweight, privacy-focused Markdown note-taking application with LaTeX math, Mermaid diagrams, and code highlighting. Self-hosted, free, and open source.">
+    <meta property="og:description" content="A lightweight, privacy-focused Markdown note-taking application with LaTeX math, Mermaid diagrams, tags, templates, and code highlighting. Self-hosted, free, and open source.">
     <meta property="og:image" content="https://www.notediscovery.com/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
     <meta name="twitter:site" content="@gamosoft">
     <meta name="twitter:creator" content="@gamosoft">
     <meta name="twitter:title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
-    <meta name="twitter:description" content="A lightweight, privacy-focused note-taking application with LaTeX math, Mermaid diagrams, and code highlighting. Self-hosted, free, and open source.">
+    <meta name="twitter:description" content="A lightweight, privacy-focused note-taking application with LaTeX math, Mermaid diagrams, tags, templates, and code highlighting. Self-hosted, free, and open source.">
     <meta name="twitter:image" content="https://www.notediscovery.com/og-image.png">
     <meta name="twitter:image:alt" content="NoteDiscovery - Self-hosted note-taking application interface">
     
@@ -509,7 +509,7 @@
         <div class="hero">
             <div class="hero-content">
                 <h2>Take Control of Your Notes</h2>
-                <p>A lightweight, privacy-focused note-taking application with powerful features: LaTeX math equations, Mermaid diagrams, code highlighting, and more. Write, organize, and discover your notes with a beautiful, modern interface—all running on your own server.</p>
+                <p>A lightweight, privacy-focused note-taking application with powerful features: LaTeX math equations, Mermaid diagrams, smart tags, custom templates, code highlighting, and more. Write, organize, and discover your notes with a beautiful, modern interface—all running on your own server.</p>
                 <a href="https://github.com/gamosoft/NoteDiscovery" class="cta-button">Get Started on GitHub →</a>
             </div>
         </div>
@@ -566,6 +566,18 @@
                 <div class="feature-icon">💻</div>
                 <h3>Code Highlighting</h3>
                 <p>Syntax highlighting for popular coding languages. Developer-friendly notes.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">🏷️</div>
+                <h3>Smart Tags</h3>
+                <p>Organize with YAML frontmatter tags. Filter and discover notes instantly.</p>
+            </div>
+
+            <div class="feature">
+                <div class="feature-icon">📋</div>
+                <h3>Note Templates</h3>
+                <p>Create from custom templates with dynamic placeholders. Meeting notes, journals, and more.</p>
             </div>
 
             <div class="feature">
@@ -642,7 +654,15 @@
                     <span class="emoji">🔗</span>
                     <div class="text">
                         <strong>Internal Links</strong>
-                        Connect notes with markdown links
+                        Connect notes with backlinks
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <span class="emoji">🖼️</span>
+                    <div class="text">
+                        <strong>Image Support</strong>
+                        Drag & drop images directly
                     </div>
                 </div>
 

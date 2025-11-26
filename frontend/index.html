@@ -615,6 +615,12 @@
         }
         
         /* Mobile Responsive Styles */
+        /* Z-index hierarchy (for reference):
+           - Mobile sidebar: 1000
+           - Mobile overlay: 999
+           - Template modal: 1100 (must be above sidebar)
+           - Dropdown menu: 50 (below everything)
+        */
         @media (max-width: 768px) {
             /* Hide sidebar by default on mobile */
             .mobile-sidebar {
@@ -897,9 +903,9 @@
             </div>
             
             <!-- New Item Dropdown -->
-            <div class="p-3 border-b relative" style="border-color: var(--border-primary);">
+            <div class="p-3 border-b" style="border-color: var(--border-primary);">
                 <button 
-                    @click="toggleNewDropdown()"
+                    @click="dropdownTargetFolder = ''; toggleNewDropdown($event)"
                     class="w-full px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 flex items-center justify-center gap-2"
                     style="background-color: var(--accent-primary);"
                     onmouseover="this.style.backgroundColor='var(--accent-hover)'"
@@ -910,43 +916,6 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                
-                <!-- Dropdown Menu -->
-                <div 
-                    x-show="showNewDropdown"
-                    @click.outside="closeDropdown()"
-                    x-transition:enter="transition ease-out duration-100"
-                    x-transition:enter-start="transform opacity-0 scale-95"
-                    x-transition:enter-end="transform opacity-100 scale-100"
-                    x-transition:leave="transition ease-in duration-75"
-                    x-transition:leave-start="transform opacity-100 scale-100"
-                    x-transition:leave-end="transform opacity-0 scale-95"
-                    class="absolute left-3 right-3 mt-2 rounded-lg shadow-lg z-50"
-                    style="background-color: var(--bg-secondary); border: 1px solid var(--border-primary);"
-                >
-                    <div class="py-1">
-                <button 
-                            @click="createNote()"
-                            class="w-full px-4 py-2.5 text-sm text-left flex items-center gap-3 transition-colors"
-                            style="color: var(--text-primary);"
-                            onmouseover="this.style.backgroundColor='var(--bg-hover)'"
-                            onmouseout="this.style.backgroundColor='transparent'"
-                        >
-                            <span class="text-lg">📝</span>
-                            <span>New Note</span>
-                        </button>
-                        <button 
-                            @click="createFolder()"
-                            class="w-full px-4 py-2.5 text-sm text-left flex items-center gap-3 transition-colors"
-                            style="color: var(--text-primary);"
-                            onmouseover="this.style.backgroundColor='var(--bg-hover)'"
-                            onmouseout="this.style.backgroundColor='transparent'"
-                        >
-                            <span class="text-lg">📁</span>
-                            <span>New Folder</span>
-                </button>
-                    </div>
-                </div>
             </div>
             
             <!-- Notes List -->
@@ -1141,6 +1110,22 @@
             <template x-if="!currentNote && !currentImage">
                 <!-- Notes Homepage -->
                 <div class="flex-1 overflow-y-auto custom-scrollbar" style="background-color: var(--bg-primary);">
+                    <!-- Mobile Menu Button (Homepage) -->
+                    <div class="mobile-menu-button px-4 py-3" style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-primary); display: none;">
+                        <button 
+                            @click="mobileSidebarOpen = !mobileSidebarOpen"
+                            class="p-2 rounded-lg"
+                            style="color: var(--text-primary);"
+                            onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                            onmouseout="this.style.backgroundColor='transparent'"
+                            title="Toggle sidebar"
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
                     <!-- Welcome Hero - Show when app is empty -->
                     <template x-if="isAppEmpty">
                         <div class="flex flex-col items-center justify-center h-full py-16 text-center">
@@ -1615,6 +1600,140 @@
                 </div>
             </template>
             
+        </div>
+    </div>
+    
+    <!-- Contextual New Item Dropdown -->
+    <div 
+        x-show="showNewDropdown"
+        @click.outside="closeDropdown()"
+        x-transition:enter="transition ease-out duration-100"
+        x-transition:enter-start="transform opacity-0 scale-95"
+        x-transition:enter-end="transform opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-75"
+        x-transition:leave-start="transform opacity-100 scale-100"
+        x-transition:leave-end="transform opacity-0 scale-95"
+        class="rounded-lg shadow-lg"
+        :style="`position: fixed; top: ${dropdownPosition.top}px; left: ${dropdownPosition.left}px; z-index: 1000; background-color: var(--bg-secondary); border: 1px solid var(--border-primary); min-width: 200px;`"
+        x-cloak
+    >
+        <div class="py-1">
+            <button 
+                @click="createNote()"
+                class="w-full px-4 py-2.5 text-sm text-left flex items-center gap-3 transition-colors"
+                style="color: var(--text-primary);"
+                onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                onmouseout="this.style.backgroundColor='transparent'"
+            >
+                <span class="text-lg">📝</span>
+                <span>New Note</span>
+            </button>
+            <button 
+                @click="createFolder()"
+                class="w-full px-4 py-2.5 text-sm text-left flex items-center gap-3 transition-colors"
+                style="color: var(--text-primary);"
+                onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                onmouseout="this.style.backgroundColor='transparent'"
+            >
+                <span class="text-lg">📁</span>
+                <span>New Folder</span>
+            </button>
+            <button 
+                @click.stop="showTemplateModal = true; showNewDropdown = false; mobileSidebarOpen = false"
+                class="w-full px-4 py-2.5 text-sm text-left flex items-center gap-3 transition-colors"
+                style="color: var(--text-primary);"
+                onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                onmouseout="this.style.backgroundColor='transparent'"
+            >
+                <span class="text-lg">📄</span>
+                <span>New from Template</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Template Selection Modal -->
+    <div x-show="showTemplateModal" 
+         @click.self="showTemplateModal = false; selectedTemplate = ''; newTemplateNoteName = ''"
+         @keydown.escape.window="showTemplateModal && (showTemplateModal = false, selectedTemplate = '', newTemplateNoteName = '')"
+         class="fixed inset-0 flex items-center justify-center"
+         style="background-color: rgba(0, 0, 0, 0.5); z-index: 1100;"
+         x-cloak>
+        <div class="rounded-lg shadow-xl p-6 max-w-md w-full mx-4"
+             style="background-color: var(--bg-secondary); color: var(--text-primary);"
+             @click.stop>
+            
+            <h2 class="text-xl font-bold mb-4" style="color: var(--text-primary);">Create from Template</h2>
+            
+            <!-- Template Selection -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                    Select Template
+                </label>
+                <select 
+                    x-model="selectedTemplate"
+                    class="w-full px-3 py-2 rounded border"
+                    style="background-color: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border-primary);"
+                >
+                    <option value="">-- Choose a template --</option>
+                    <template x-for="template in availableTemplates" :key="template.name">
+                        <option :value="template.name" x-text="template.name"></option>
+                    </template>
+                </select>
+            </div>
+            
+            <!-- Note Name Input -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2" style="color: var(--text-secondary);">
+                    Note Name
+                </label>
+                <input 
+                    x-model="newTemplateNoteName"
+                    type="text"
+                    placeholder="Enter note name"
+                    class="w-full px-3 py-2 rounded border"
+                    style="background-color: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border-primary);"
+                    @keydown.enter="createNoteFromTemplate()"
+                />
+            </div>
+            
+            <!-- Info about placeholders -->
+            <div class="mb-4 text-xs p-3 rounded" style="background-color: var(--bg-tertiary); color: var(--text-secondary);">
+                <strong>Available placeholders:</strong><br>
+                <code style="font-family: monospace;">{{date}}</code>, 
+                <code style="font-family: monospace;">{{time}}</code>, 
+                <code style="font-family: monospace;">{{datetime}}</code>, 
+                <code style="font-family: monospace;">{{title}}</code>, 
+                <code style="font-family: monospace;">{{folder}}</code>
+            </div>
+            
+            <!-- Empty state when no templates available -->
+            <div x-show="availableTemplates.length === 0" class="mb-4 text-sm p-3 rounded" style="background-color: var(--bg-tertiary); color: var(--text-secondary);">
+                No templates found. Create templates in the <code style="font-family: monospace;">_templates</code> folder.
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex gap-2">
+                <button 
+                    @click="createNoteFromTemplate()"
+                    :disabled="!selectedTemplate || !newTemplateNoteName.trim() || availableTemplates.length === 0"
+                    class="flex-1 px-4 py-2 rounded font-medium text-white transition-colors"
+                    style="background-color: var(--accent-primary);"
+                    :style="(!selectedTemplate || !newTemplateNoteName.trim() || availableTemplates.length === 0) ? 'opacity: 0.5; cursor: not-allowed;' : ''"
+                    onmouseover="if(!this.disabled) this.style.backgroundColor='var(--accent-hover)'"
+                    onmouseout="if(!this.disabled) this.style.backgroundColor='var(--accent-primary)'"
+                >
+                    Create Note
+                </button>
+                <button 
+                    @click="showTemplateModal = false; selectedTemplate = ''; newTemplateNoteName = ''"
+                    class="flex-1 px-4 py-2 rounded font-medium transition-colors"
+                    style="background-color: var(--bg-tertiary); color: var(--text-primary);"
+                    onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                    onmouseout="this.style.backgroundColor='var(--bg-tertiary)'"
+                >
+                    Cancel
+                </button>
+            </div>
         </div>
     </div>
     

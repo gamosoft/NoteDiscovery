@@ -38,6 +38,9 @@ from .utils import (
     validate_path_security,
     get_all_tags,
     get_notes_by_tag,
+    get_templates,
+    get_template_content,
+    apply_template_placeholders,
 )
 from .plugins import PluginManager
 from .themes import get_available_themes, get_theme_css
@@ -775,6 +778,101 @@ async def get_notes_by_tag_endpoint(tag_name: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get notes by tag"))
+
+
+# --- Template Endpoints ---
+
+@api_router.get("/templates")
+@limiter.limit("120/minute")
+async def list_templates(request: Request):
+    """
+    List all available templates from _templates folder.
+    
+    Returns:
+        List of template metadata
+    """
+    try:
+        templates = get_templates(config['storage']['notes_dir'])
+        return {"templates": templates}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to list templates"))
+
+
+@api_router.get("/templates/{template_name}")
+@limiter.limit("120/minute")
+async def get_template(request: Request, template_name: str):
+    """
+    Get content of a specific template.
+    
+    Args:
+        template_name: Name of the template (without .md extension)
+        
+    Returns:
+        Template name and content
+    """
+    try:
+        content = get_template_content(config['storage']['notes_dir'], template_name)
+        
+        if content is None:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        return {
+            "name": template_name,
+            "content": content
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get template"))
+
+
+@api_router.post("/templates/create-note")
+@limiter.limit("60/minute")
+async def create_note_from_template(request: Request, data: dict):
+    """
+    Create a new note from a template with placeholder replacement.
+    
+    Args:
+        data: Dictionary containing templateName and notePath
+        
+    Returns:
+        Success status, path, and created content
+    """
+    try:
+        template_name = data.get('templateName', '')
+        note_path = data.get('notePath', '')
+        
+        if not template_name or not note_path:
+            raise HTTPException(status_code=400, detail="Template name and note path required")
+        
+        # Get template content
+        template_content = get_template_content(config['storage']['notes_dir'], template_name)
+        
+        if template_content is None:
+            raise HTTPException(status_code=404, detail="Template not found")
+        
+        # Apply placeholder replacements
+        final_content = apply_template_placeholders(template_content, note_path)
+        
+        # Save the note
+        success = save_note(config['storage']['notes_dir'], note_path, final_content)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to create note from template")
+        
+        # Run plugin hooks
+        plugin_manager.run_hook('on_note_create', note_path=note_path, initial_content=final_content)
+        
+        return {
+            "success": True,
+            "path": note_path,
+            "message": "Note created from template successfully",
+            "content": final_content
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to create note from template"))
 
 
 # --- Notes Endpoints ---

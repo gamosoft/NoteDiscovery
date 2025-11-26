@@ -7,6 +7,7 @@
 - **Three view modes**: Edit, Split, Preview
 - **Auto-save** - Never lose your work
 - **Undo/Redo** - Ctrl+Z / Ctrl+Y support
+- **Note templates** - Create notes from templates with dynamic placeholders
 - **Syntax highlighting** for code blocks (50+ languages)
 - **Copy code blocks** - One-click copy button on hover
 - **LaTeX/Math rendering** - Beautiful mathematical equations with MathJax (see [MATHJAX.md](MATHJAX.md))
@@ -161,6 +162,51 @@ graph TD
 ````
 
 📄 **See the [MERMAID](MERMAID.md) note for diagram examples and syntax reference.**
+
+## 📄 Note Templates
+
+Create notes from reusable templates with dynamic placeholder replacement.
+
+### Creating Templates
+1. Create markdown files in `data/_templates/` folder
+2. Use placeholders for dynamic content
+3. Templates appear in the "New from Template" menu
+
+### Available Placeholders
+- `{{date}}` - Current date (YYYY-MM-DD)
+- `{{time}}` - Current time (HH:MM:SS)
+- `{{datetime}}` - Current date and time
+- `{{timestamp}}` - Unix timestamp
+- `{{title}}` - Note name (without extension)
+- `{{folder}}` - Parent folder name
+
+### Example Template
+```markdown
+---
+tags: [meeting]
+date: {{date}}
+---
+
+# {{title}}
+
+**Created:** {{datetime}}
+
+## Notes
+
+```
+
+### Using Templates
+1. Click the "New" dropdown button
+2. Select "New from Template"
+3. Choose a template and enter a note name
+4. The new note will be created with placeholders replaced
+
+### Built-in Templates
+- **meeting-notes** - Template for meeting notes
+- **daily-journal** - Daily journal with morning goals and evening reflection
+- **project-plan** - Project planning template with objectives and timeline
+
+📚 **See [TEMPLATES.md](TEMPLATES.md)** for detailed documentation and example templates you can copy to your instance.
 
 ## ⚡ Keyboard Shortcuts
 
