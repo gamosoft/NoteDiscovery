@@ -16,6 +16,7 @@ from typing import List, Optional
 import aiofiles
 from datetime import datetime
 import bcrypt
+import re
 
 from .utils import (
     get_all_notes,
@@ -351,7 +352,7 @@ async def api_documentation():
                 "method": "GET",
                 "path": "/api/graph",
                 "description": "Get graph data for note visualization",
-                "response": "{ nodes: [{ id, label }], edges: [] }"
+                "response": "{ nodes: [{ id, label }], edges: [ { source, target }] }"
             },
             {
                 "method": "GET",
@@ -801,7 +802,8 @@ async def get_graph():
         notes = get_all_notes(config['storage']['notes_dir'])
         nodes = []
         edges = []
-        
+        note_ids = {note["path"] for note in notes}
+
         # Build graph structure - only nodes for now
         for note in notes:
             if note.get('type') == 'note':  # Only include actual notes
@@ -809,10 +811,24 @@ async def get_graph():
                     "id": note['path'],
                     "label": note['name']
                 })
-        
-        # Note: Link detection between notes could be implemented here using markdown link parsing
-        # For now, returning empty edges
-        
+
+                content = get_note_content(
+                    config['storage']['notes_dir'],
+                    note['path']
+                )
+
+                # regex matches [*](*.md) case-insensitive
+                pattern = re.compile(r'\[[^]]+\]\(([^)]+\.md)\)', re.IGNORECASE)
+                for match in pattern.finditer(content):
+                    target = match.group(1)
+                    # Only add if it is an existing note
+                    # will have to adjust if support for relative links is added
+                    if target in note_ids:
+                        edges.append({
+                            "source": note['path'],
+                            "target": target
+                        })
+
         return {"nodes": nodes, "edges": edges}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
