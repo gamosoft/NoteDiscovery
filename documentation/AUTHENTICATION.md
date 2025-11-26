@@ -102,10 +102,10 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ### Step 3: Update `config.yaml`
 
-Edit your `config.yaml` and update the security section:
+Edit your `config.yaml` and update the authentication section:
 
 ```yaml
-security:
+authentication:
   # Enable authentication
   enabled: true
   
@@ -172,7 +172,7 @@ This is a **simple authentication system** designed for **self-hosted, single-us
 To disable authentication and allow open access:
 
 ```yaml
-security:
+authentication:
   enabled: false
 ```
 

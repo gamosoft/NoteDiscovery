@@ -2,7 +2,7 @@
 
 ## Built-in Themes
 
-NoteDiscovery comes with **8 beautiful themes** out of the box:
+NoteDiscovery comes with **10 beautiful themes** out of the box:
 
 - 🌞 **Light** - Clean, professional, easy on the eyes
 - 🌙 **Dark** - Modern dark mode for night owls
@@ -12,6 +12,8 @@ NoteDiscovery comes with **8 beautiful themes** out of the box:
 - 💚 **Vue High Contrast** - Dark theme with distinctive greenish tint and Vue.js aesthetics
 - 🌊 **Cobalt2** - Deep ocean blue with vibrant yellow highlights, inspired by Wes Bos
 - 🔷 **VS Blue** - Classic Visual Studio 2015 light blue professional theme
+- 🟫 **Gruvbox Dark** - A retro groove color scheme for Vim lovers
+- 🍵 **Matcha Light** - A vibrant, green-tinted light theme inspired by Doki Theme
 
 Switch themes anytime from the sidebar dropdown. Your preference is saved automatically!
 

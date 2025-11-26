@@ -1,0 +1,36 @@
+/* Matcha Light Theme */
+/* Inspired by Doki Theme (C.C. Code Geass) */
+/* @theme-type: light */
+
+:root[data-theme="matcha-light"] {
+    /* Background colors - Soft Lime/Matcha */
+    --bg-primary: #f4fcd4;   /* Main Editor BG */
+    --bg-secondary: #e4f0bd; /* Sidebar / Header */
+    --bg-tertiary: #d6e8a4;  /* Inputs / Code Blocks */
+    --bg-hover: #cbe090;     /* Hover */
+    --bg-active: #b0cc66;    /* Active/Selection */
+    
+    /* Text colors - Dark Forest Green */
+    --text-primary: #3a4d22;   /* Main Text */
+    --text-secondary: #546e34; /* Comments */
+    --text-tertiary: #7a9456;  /* Faint text */
+    
+    /* Border colors */
+    --border-primary: #b8d17e;
+    --border-secondary: #a2bf60;
+    
+    /* Accent colors - Vibrant Green */
+    --accent-primary: #5da60a; /* Strong Green */
+    --accent-hover: #468205;
+    --accent-light: rgba(93, 166, 10, 0.15);
+    
+    /* Status colors */
+    --success: #5da60a;
+    --error: #d9534f;
+    --warning: #f0ad4e;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(58, 77, 34, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(58, 77, 34, 0.15);
+    --shadow-lg: 0 10px 15px -3px rgba(58, 77, 34, 0.15);
+}

@@ -88,7 +88,10 @@ Use the pre-built image directly from GHCR - no building required!
 >    # The documentation/ folder has app docs you can optionally mount
 >    ```
 
-> **🔐 Security Note**: Authentication is **disabled by default** with password `admin`. For testing/local use, this is fine. If exposing to a network, **change the password immediately** - see [AUTHENTICATION.md](documentation/AUTHENTICATION.md) for instructions on how to enable it.
+> **🔐 Security Note**: Authentication is **disabled by default** with password `admin`. 
+> - ✅ **Local/Testing**: Default credentials are fine
+> - ⚠️ **Public Network**: Change password immediately - see [AUTHENTICATION.md](documentation/AUTHENTICATION.md)
+> - 🎭 **Demo Deployment**: Uses default "admin" password
 
 **Option 1: Docker Compose (Recommended)**
 
@@ -207,11 +210,13 @@ Want to learn more?
 - 🎨 **[THEMES.md](documentation/THEMES.md)** - Theme customization and creating custom themes
 - ✨ **[FEATURES.md](documentation/FEATURES.md)** - Complete feature list and keyboard shortcuts
 - 🏷️ **[TAGS.md](documentation/TAGS.md)** - Organize notes with tags and combined filtering
+- 📋 **[TEMPLATES.md](documentation/TEMPLATES.md)** - Create notes from reusable templates with dynamic placeholders
 - 🧮 **[MATHJAX.md](documentation/MATHJAX.md)** - LaTeX/Math notation examples and syntax reference
 - 📊 **[MERMAID.md](documentation/MERMAID.md)** - Diagram creation with Mermaid (flowcharts, sequence diagrams, and more)
 - 🔌 **[PLUGINS.md](documentation/PLUGINS.md)** - Plugin system and available plugins
 - 🌐 **[API.md](documentation/API.md)** - REST API documentation and examples
 - 🔐 **[AUTHENTICATION.md](documentation/AUTHENTICATION.md)** - Enable password protection for your instance
+- 🔧 **[ENVIRONMENT_VARIABLES.md](documentation/ENVIRONMENT_VARIABLES.md)** - Configure settings via environment variables
 
 💡 **Pro Tip:** If you clone this repository, you can mount the `documentation/` folder to view these docs inside the app:
 

@@ -33,13 +33,16 @@ COPY generate_password.py .
 # Create data directory
 RUN mkdir -p data
 
-# Expose port
+# Expose port (default, can be overridden)
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=60s --timeout=3s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"
+# Set default port (can be overridden via environment variable)
+ENV PORT=8000
 
-# Run the application
-CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Health check (uses PORT env var)
+HEALTHCHECK --interval=60s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.getenv(\"PORT\", \"8000\")}/health')"
+
+# Run the application (shell form to allow environment variable expansion)
+CMD uvicorn backend.main:app --host 0.0.0.0 --port $PORT
 

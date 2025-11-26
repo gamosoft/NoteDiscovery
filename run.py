@@ -5,6 +5,7 @@ Run this to start the application without Docker
 """
 
 import sys
+import os
 import subprocess
 from pathlib import Path
 
@@ -23,16 +24,20 @@ def main():
     Path("data").mkdir(parents=True, exist_ok=True)
     Path("plugins").mkdir(parents=True, exist_ok=True)
     
+    # Get port from environment variable or use default
+    port = os.getenv("PORT", "8000")
+    
     print("✓ Dependencies installed")
     print("✓ Directories created")
     print("\n" + "="*50)
     print("🎉 NoteDiscovery is running!")
     print("="*50)
-    print("\n📝 Open your browser to: http://localhost:8000")
+    print(f"\n📝 Open your browser to: http://localhost:{port}")
     print("\n💡 Tips:")
     print("   - Press Ctrl+C to stop the server")
     print("   - Your notes are in ./data/")
     print("   - Plugins go in ./plugins/")
+    print(f"   - Change port with: PORT={port} python run.py")
     print("\n" + "="*50 + "\n")
     
     # Run the application
@@ -41,7 +46,7 @@ def main():
         "backend.main:app",
         "--reload",
         "--host", "0.0.0.0",
-        "--port", "8000"
+        "--port", port
     ])
 
 if __name__ == "__main__":

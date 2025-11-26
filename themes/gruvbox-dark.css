@@ -1,0 +1,36 @@
+/* Gruvbox Dark Theme */
+/* Based on the popular retro groove color scheme for Vim */
+/* @theme-type: dark */
+
+:root[data-theme="gruvbox-dark"] {
+    /* Background colors */
+    --bg-primary: #282828;   /* bg0 (Normal) */
+    --bg-secondary: #1d2021; /* bg0_h (Hard - Sidebar) */
+    --bg-tertiary: #3c3836;  /* bg1 (Inputs/Code) */
+    --bg-hover: #504945;     /* bg2 (Hover states) */
+    --bg-active: #665c54;    /* bg3 (Active/Selection) */
+    
+    /* Text colors */
+    --text-primary: #ebdbb2;   /* fg1 */
+    --text-secondary: #a89984; /* fg4 */
+    --text-tertiary: #928374;  /* gray */
+    
+    /* Border colors */
+    --border-primary: #3c3836;   /* bg1 (Subtle borders) */
+    --border-secondary: #504945; /* bg2 (Stronger borders) */
+    
+    /* Accent colors - Gruvbox Orange */
+    --accent-primary: #fe8019;
+    --accent-hover: #d65d0e;
+    --accent-light: rgba(254, 128, 25, 0.15);
+    
+    /* Status colors */
+    --success: #b8bb26; /* Green */
+    --error: #fb4934;   /* Red */
+    --warning: #fabd2f; /* Yellow */
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.6);
+}

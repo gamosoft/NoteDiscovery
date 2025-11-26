@@ -99,6 +99,14 @@ function noteApp() {
         
         // Dropdown state
         showNewDropdown: false,
+        dropdownTargetFolder: '', // Folder context for "New" dropdown (empty = root)
+        dropdownPosition: { top: 0, left: 0 }, // Position for contextual dropdown
+        
+        // Template state
+        showTemplateModal: false,
+        availableTemplates: [],
+        selectedTemplate: '',
+        newTemplateNoteName: '',
         
         // Homepage state
         selectedHomepageFolder: '',
@@ -258,6 +266,7 @@ function noteApp() {
             await this.loadThemes();
             await this.initTheme();
             await this.loadNotes();
+            await this.loadTemplates();
             await this.checkStatsPlugin();
             this.loadSidebarWidth();
             this.loadEditorWidth();
@@ -591,6 +600,72 @@ function noteApp() {
             this.applyFilters();
         },
         
+        // ========================================================================
+        // Template Methods
+        // ========================================================================
+        
+        // Load available templates from _templates folder
+        async loadTemplates() {
+            try {
+                const response = await fetch('/api/templates');
+                const data = await response.json();
+                this.availableTemplates = data.templates || [];
+            } catch (error) {
+                ErrorHandler.handle('load templates', error, false); // Don't show alert, templates are optional
+            }
+        },
+        
+        // Create a new note from a template
+        async createNoteFromTemplate() {
+            if (!this.selectedTemplate || !this.newTemplateNoteName.trim()) {
+                return;
+            }
+            
+            try {
+                // Determine the note path based on dropdown context
+                let notePath = this.newTemplateNoteName.trim();
+                if (!notePath.endsWith('.md')) {
+                    notePath += '.md';
+                }
+                
+                // If we have a target folder context, create in that folder
+                if (this.dropdownTargetFolder || this.selectedHomepageFolder) {
+                    const targetFolder = this.dropdownTargetFolder || this.selectedHomepageFolder;
+                    notePath = `${targetFolder}/${notePath}`;
+                }
+                
+                // Create note from template
+                const response = await fetch('/api/templates/create-note', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        templateName: this.selectedTemplate,
+                        notePath: notePath
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(error.detail || 'Failed to create note from template');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                // Close modal and reset state
+                this.showTemplateModal = false;
+                this.selectedTemplate = '';
+                this.newTemplateNoteName = '';
+                
+                // Reload notes and open the new note
+                await this.loadNotes();
+                await this.loadNote(data.path);
+                
+            } catch (error) {
+                ErrorHandler.handle('create note from template', error);
+            }
+        },
+        
         // Clear all tag filters
         clearTagFilters() {
             this.selectedTags = [];
@@ -908,17 +983,11 @@ function noteApp() {
                         </div>
                         <div class="hover-buttons flex gap-1 transition-opacity absolute right-2 top-1/2 transform -translate-y-1/2" style="opacity: 0; pointer-events: none; background: linear-gradient(to right, transparent, var(--bg-hover) 20%, var(--bg-hover)); padding-left: 20px;" @click.stop>
                             <button 
-                                @click="createNote('${folder.path.replace(/'/g, "\\'")}')"
+                                @click="dropdownTargetFolder = '${folder.path.replace(/'/g, "\\'")}'; toggleNewDropdown($event)"
                                 class="px-1.5 py-0.5 text-xs rounded hover:brightness-110"
                                 style="background-color: var(--bg-tertiary); color: var(--text-secondary);"
-                                title="New note here"
-                            >📄</button>
-                            <button 
-                                @click="createFolder('${folder.path.replace(/'/g, "\\'")}')"
-                                class="px-1.5 py-0.5 text-xs rounded hover:brightness-110"
-                                style="background-color: var(--bg-tertiary); color: var(--text-secondary);"
-                                title="New subfolder"
-                            >📁</button>
+                                title="Add item here"
+                            >+</button>
                             <button 
                                 @click="renameFolder('${folder.path.replace(/'/g, "\\'")}', '${folder.name.replace(/'/g, "\\'")}')"
                                 class="px-1.5 py-0.5 text-xs rounded hover:brightness-110"
@@ -1897,23 +1966,45 @@ function noteApp() {
         // DROPDOWN MENU SYSTEM
         // =====================================================
         
-        toggleNewDropdown() {
-            this.showNewDropdown = !this.showNewDropdown;
+        toggleNewDropdown(event) {
+            this.showNewDropdown = true; // Always open (or keep open)
+            
+            if (event && event.target) {
+                const rect = event.target.getBoundingClientRect();
+                // Position dropdown next to the clicked element
+                let top = rect.bottom + 4; // 4px spacing
+                let left = rect.left;
+                
+                // Keep dropdown on screen
+                const dropdownWidth = 200;
+                const dropdownHeight = 150;
+                if (left + dropdownWidth > window.innerWidth) {
+                    left = rect.right - dropdownWidth;
+                }
+                if (top + dropdownHeight > window.innerHeight) {
+                    top = rect.top - dropdownHeight - 4;
+                }
+                
+                this.dropdownPosition = { top, left };
+            }
         },
         
         closeDropdown() {
             this.showNewDropdown = false;
+            this.dropdownTargetFolder = ''; // Reset folder context
         },
         
         // =====================================================
         // UNIFIED CREATION FUNCTIONS (reusable from anywhere)
         // =====================================================
         
-        async createNote(folderPath = '') {
+        async createNote(folderPath = null) {
+            // Use provided folder path, or dropdown target folder context
+            const targetFolder = folderPath !== null ? folderPath : this.dropdownTargetFolder;
             this.closeDropdown();
             
-            const promptText = folderPath 
-                ? `Create note in "${folderPath}".\nEnter note name:`
+            const promptText = targetFolder 
+                ? `Create note in "${targetFolder}".\nEnter note name:`
                 : 'Enter note name (you can use folder/name):';
             
             const noteName = prompt(promptText);
@@ -1926,8 +2017,8 @@ function noteApp() {
             }
             
             let notePath;
-            if (folderPath) {
-                notePath = `${folderPath}/${sanitizedName}.md`;
+            if (targetFolder) {
+                notePath = `${targetFolder}/${sanitizedName}.md`;
             } else {
                 notePath = sanitizedName.endsWith('.md') ? sanitizedName : `${sanitizedName}.md`;
             }
@@ -1947,8 +2038,8 @@ function noteApp() {
                 });
                 
                 if (response.ok) {
-                    if (folderPath) {
-                        this.expandedFolders.add(folderPath);
+                    if (targetFolder) {
+                        this.expandedFolders.add(targetFolder);
                     }
                     await this.loadNotes();
                     await this.loadNote(notePath);
@@ -1960,11 +2051,13 @@ function noteApp() {
             }
         },
         
-        async createFolder(parentPath = '') {
+        async createFolder(parentPath = null) {
+            // Use provided parent path, or dropdown target folder context
+            const targetFolder = parentPath !== null ? parentPath : this.dropdownTargetFolder;
             this.closeDropdown();
             
-            const promptText = parentPath 
-                ? `Create subfolder in "${parentPath}".\nEnter folder name:`
+            const promptText = targetFolder 
+                ? `Create subfolder in "${targetFolder}".\nEnter folder name:`
                 : 'Create new folder.\nEnter folder path (e.g., "Projects" or "Work/2025"):';
             
             const folderName = prompt(promptText);
@@ -1976,7 +2069,7 @@ function noteApp() {
                 return;
             }
             
-            const folderPath = parentPath ? `${parentPath}/${sanitizedName}` : sanitizedName;
+            const folderPath = targetFolder ? `${targetFolder}/${sanitizedName}` : sanitizedName;
             
             // Check if folder already exists
             const existingFolder = this.allFolders.find(folder => folder === folderPath);
@@ -1993,8 +2086,8 @@ function noteApp() {
                 });
                 
                 if (response.ok) {
-                    if (parentPath) {
-                        this.expandedFolders.add(parentPath);
+                    if (targetFolder) {
+                        this.expandedFolders.add(targetFolder);
                     }
                     this.expandedFolders.add(folderPath);
                     await this.loadNotes();

@@ -39,7 +39,7 @@ def generate_password_hash():
     print("\nExample config.yaml:")
     print("="*60)
     print("""
-security:
+authentication:
   enabled: true
   secret_key: "your_secret_key_here"
   password_hash: "{}"
