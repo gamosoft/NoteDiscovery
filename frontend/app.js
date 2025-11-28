@@ -1059,6 +1059,36 @@ function noteApp() {
                             ? `deleteImage('${note.path.replace(/'/g, "\\'")}')`
                             : `deleteNote('${note.path.replace(/'/g, "\\'")}', '${note.name.replace(/'/g, "\\'")}')`; 
                         
+                        // Only show copy link button for notes (not images)
+                        const copyLinkButton = isImage ? '' : `
+                                <button 
+                                    x-data="{ copied: false }"
+                                    @click.stop="copyInternalLink('${note.path.replace(/'/g, "\\'")}', '${note.name.replace(/'/g, "\\'")}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="note-copy-link-btn absolute right-8 top-1/2 transform -translate-y-1/2 px-1 py-0.5 text-xs rounded hover:brightness-110 transition-opacity"
+                                    style="opacity: 0;"
+                                    title="Copy internal link"
+                                >
+                                    <svg 
+                                        x-show="!copied"
+                                        class="w-4 h-4 text-gray-400" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                    <svg 
+                                        x-show="copied"
+                                        class="w-4 h-4 text-green-500" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </button>
+                        `;
+                        
                         html += `
                             <div 
                                 draggable="true"
@@ -1071,7 +1101,10 @@ function noteApp() {
                                 @mouseover="if('${note.path}' !== currentNote && '${note.path}' !== currentImage) $el.style.backgroundColor='var(--bg-hover)'"
                                 @mouseout="if('${note.path}' !== currentNote && '${note.path}' !== currentImage) $el.style.backgroundColor='transparent'"
                             >
-                                <span class="truncate" style="display: block; padding-right: 30px;">${icon}${icon ? ' ' : ''}${note.name}</span>
+                                <span class="truncate" style="display: block; padding-right: ${isImage ? '30px' : '60px'};">
+                                    ${icon}${icon ? ' ' : ''}${note.name}
+                                </span>
+                                ${copyLinkButton}
                                 <button 
                                     @click.stop="${deleteHandler}"
                                     class="note-delete-btn absolute right-2 top-1/2 transform -translate-y-1/2 px-1 py-0.5 text-xs rounded hover:brightness-110 transition-opacity"
@@ -2459,6 +2492,63 @@ function noteApp() {
             } catch (error) {
                 ErrorHandler.handle('rename note', error);
             }
+        },
+        
+        // Copy internal link to clipboard
+        copyInternalLink(notePath = null, noteName = null) {
+            // Use provided parameters or fall back to current note
+            const path = notePath || this.currentNote;
+            const name = noteName || this.currentNoteName;
+            
+            if (!path || !name) {
+                console.error('No note selected');
+                return;
+            }
+            
+            try {
+                // Get the note path and encode path segments
+                const pathSegments = path.split('/');
+                const encodedPath = pathSegments.map(segment => encodeURIComponent(segment)).join('/');
+                
+                // Construct Markdown link format: [Note Name](Path/To/Note.md)
+                const markdownLink = `[${name}](${encodedPath})`;
+                
+                // Copy to clipboard
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(markdownLink).then(() => {
+                        // Success is handled by UI state change
+                    }).catch((error) => {
+                        console.error('Failed to copy to clipboard:', error);
+                        // Fallback for older browsers
+                        this.fallbackCopyToClipboard(markdownLink);
+                    });
+                } else {
+                    // Fallback for older browsers
+                    this.fallbackCopyToClipboard(markdownLink);
+                }
+            } catch (error) {
+                console.error('Failed to copy internal link:', error);
+            }
+        },
+        
+        // Fallback copy method for older browsers
+        fallbackCopyToClipboard(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+            } catch (error) {
+                console.error('Fallback copy failed:', error);
+            }
+            
+            document.body.removeChild(textArea);
         },
         
         // Delete current note

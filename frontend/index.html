@@ -410,6 +410,16 @@
             opacity: 1 !important;
         }
         
+        /* Note copy link button on hover */
+        .note-item:hover .note-copy-link-btn {
+            opacity: 1 !important;
+        }
+        
+        /* Search results copy link button on hover */
+        .relative:hover .note-copy-link-btn {
+            opacity: 1 !important;
+        }
+        
         /* Folder hierarchy lines (Obsidian-style) */
         .folder-contents {
             position: relative;
@@ -929,13 +939,40 @@
                         <template x-for="note in searchResults" :key="note.path">
                             <div 
                                 @click="loadNote(note.path, true, searchQuery)"
-                                class="px-3 py-2 mb-1 text-sm rounded cursor-pointer"
+                                class="px-3 py-2 mb-1 text-sm rounded cursor-pointer relative"
                                 :style="currentNote === note.path ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);'"
                                 onmouseover="if(this.style.backgroundColor !== 'var(--accent-light)') this.style.backgroundColor='var(--bg-hover)'"
                                 onmouseout="if(this.style.backgroundColor !== 'var(--accent-light)') this.style.backgroundColor='transparent'"
                             >
-                                <div class="font-medium truncate" x-text="note.name"></div>
+                                <div class="font-medium truncate" :style="'padding-right: 60px;'" x-text="note.name"></div>
                                 <div class="text-xs truncate" style="color: var(--text-tertiary);" x-text="note.folder || 'Root'"></div>
+                                <!-- Copy Link Button -->
+                                <button
+                                    x-data="{ copied: false }"
+                                    @click.stop="copyInternalLink(note.path, note.name); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="note-copy-link-btn absolute right-8 top-1/2 transform -translate-y-1/2 px-1 py-0.5 text-xs rounded hover:brightness-110 transition-opacity"
+                                    style="opacity: 0;"
+                                    title="Copy internal link"
+                                >
+                                    <svg 
+                                        x-show="!copied"
+                                        class="w-4 h-4 text-gray-400" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                    <svg 
+                                        x-show="copied"
+                                        class="w-4 h-4 text-green-500" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </button>
                             </div>
                         </template>
                     </div>
@@ -1047,10 +1084,38 @@
                                 @mouseover="if(currentNote !== note.path && currentImage !== note.path) $el.style.backgroundColor='var(--bg-hover)'"
                                 @mouseout="if(currentNote !== note.path && currentImage !== note.path) $el.style.backgroundColor='transparent'"
                             >
-                                <span class="truncate" style="display: block; padding-right: 30px;">
+                                <span class="truncate" :style="'display: block; padding-right: ' + (note.type === 'image' ? '30px' : '60px') + ';'">
                                     <template x-if="note.type === 'image'">🖼️ </template>
                                     <span x-text="note.name"></span>
                                 </span>
+                                <!-- Copy Link Button (only for notes, not images) -->
+                                <button
+                                    x-show="note.type !== 'image'"
+                                    x-data="{ copied: false }"
+                                    @click.stop="copyInternalLink(note.path, note.name); copied = true; setTimeout(() => copied = false, 2000)"
+                                    class="note-copy-link-btn absolute right-8 top-1/2 transform -translate-y-1/2 px-1 py-0.5 text-xs rounded hover:brightness-110 transition-opacity"
+                                    style="opacity: 0;"
+                                    title="Copy internal link"
+                                >
+                                    <svg 
+                                        x-show="!copied"
+                                        class="w-4 h-4 text-gray-400" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                    </svg>
+                                    <svg 
+                                        x-show="copied"
+                                        class="w-4 h-4 text-green-500" 
+                                        fill="none" 
+                                        stroke="currentColor" 
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                </button>
                                 <button 
                                     @click.stop="note.type === 'image' ? deleteImage(note.path) : deleteNote(note.path, note.name)"
                                     class="note-delete-btn absolute right-2 top-1/2 transform -translate-y-1/2 px-1 py-0.5 text-xs rounded hover:brightness-110 transition-opacity"
@@ -1347,6 +1412,37 @@
                                 class="text-xl font-semibold border-none focus:outline-none focus:ring-2 rounded px-3 py-1.5"
                                 :style="'background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary); min-width: 150px; max-width: 300px;' + (!currentNote ? ' cursor: default; opacity: 0.9;' : '')"
                             >
+                            <!-- Copy Internal Link Button -->
+                            <button
+                                x-show="currentNote"
+                                x-data="{ copied: false }"
+                                @click="copyInternalLink(); copied = true; setTimeout(() => copied = false, 2000)"
+                                class="p-2 rounded-lg transition-colors"
+                                onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                                onmouseout="this.style.backgroundColor='transparent'"
+                                title="Copy internal link"
+                            >
+                                <!-- Link Icon (default state) -->
+                                <svg 
+                                    x-show="!copied"
+                                    class="w-5 h-5 text-gray-400" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                                <!-- Checkmark Icon (copied state) -->
+                                <svg 
+                                    x-show="copied"
+                                    class="w-5 h-5 text-green-500" 
+                                    fill="none" 
+                                    stroke="currentColor" 
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </button>
                             <!-- Undo Button -->
                             <button 
                                 @click="undo()"
