@@ -33,6 +33,7 @@
 - **Drag to link** - Drag notes or images into the editor to insert links
 - **Click to navigate** - Jump between notes seamlessly
 - **External links** - Open in new tabs automatically
+- **Copy Internal Link** - Click the 🔗 button (next to title or in sidebar) to copy a formatted markdown link instantly
 
 ### Direct URLs
 - **Deep linking** - Open specific notes via URL (e.g., `/folder/note`)
