@@ -40,6 +40,19 @@ class Plugin:
         
         # Paragraph count (blocks separated by blank lines)
         paragraphs = len([p for p in content.split('\n\n') if p.strip()])
+
+        # Sentence count: punctuation [.!?]+ followed by space or end-of-string
+        sentences = len(re.findall(r'[.!?]+(?:\s|$)', content))
+
+        # List items: lines starting with -, *, + or a number (e.g. 1., 10.), excluding tasks [-]
+        list_items = len(
+            re.findall(r'^\s*(?:[-*+]|\d+\.)\s+(?!\[)', content, re.MULTILINE)
+        )
+
+        # Tables: count separator rows containing both '|' and '---'
+        tables = len(
+            re.findall(r'^(?=.*\|)(?=.*---).*$', content, re.MULTILINE)
+        )
         
         # Markdown link count
         links = len(re.findall(r'\[([^\]]+)\]\(([^\)]+)\)', content))
@@ -71,11 +84,14 @@ class Plugin:
         
         return {
             'words': words,
+            'sentences': sentences,
             'characters': chars,
             'total_characters': total_chars,
             'reading_time_minutes': reading_time,
             'lines': lines,
             'paragraphs': paragraphs,
+            'list_items': list_items,
+            'tables': tables,
             'links': links,
             'internal_links': internal_links,
             'external_links': links - internal_links,
@@ -129,7 +145,14 @@ class Plugin:
         
         # Log key statistics
         print(f"📊 {note_path}:")
-        print(f"   {stats['words']:,} words | {stats['reading_time_minutes']}m read | {stats['lines']:,} lines")
+        print(
+            f"   {stats['words']:,} words | "
+            f"{stats['sentences']:,} sentences | "
+            f"{stats['reading_time_minutes']}m read | "
+            f"{stats['lines']:,} lines | "
+            f"{stats['list_items']:,} lists | "
+            f"{stats['tables']:,} tables"
+        )
         
         if stats['links'] > 0:
             print(f"   {stats['links']} links ({stats['internal_links']} internal)")

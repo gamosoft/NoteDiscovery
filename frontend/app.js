@@ -2962,6 +2962,15 @@ function noteApp() {
             // Paragraph count
             const paragraphs = content.split('\n\n').filter(p => p.trim()).length;
             
+            // Sentences: punctuation [.!?]+ followed by space or end-of-string
+            const sentences = (content.match(/[.!?]+(?:\s|$)/g) || []).length;
+            
+            // List items: lines starting with -, *, + or a number (e.g. 1., 10.), excluding tasks [-]
+            const listItems = (content.match(/^\s*(?:[-*+]|\d+\.)\s+(?!\[)/gm) || []).length;
+            
+            // Tables: separator rows containing both '|' and '---'
+            const tables = (content.match(/^(?=.*\|)(?=.*---).*$/gm) || []).length;
+            
             // Link count
             const linkMatches = content.match(/\[([^\]]+)\]\(([^\)]+)\)/g) || [];
             const links = linkMatches.length;
@@ -2990,11 +2999,14 @@ function noteApp() {
             
             this.noteStats = {
                 words,
+                sentences,
                 characters: chars,
                 total_characters: totalChars,
                 reading_time_minutes: readingTime,
                 lines,
                 paragraphs,
+                list_items: listItems,
+                tables,
                 links,
                 internal_links: internalLinks,
                 external_links: links - internalLinks,

@@ -1567,6 +1567,24 @@
                                     <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.lines.toLocaleString() : '0'"></div>
                                 </div>
                                 
+                                <!-- Sentences -->
+                                <div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);">Sentences</div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.sentences.toLocaleString() : '0'"></div>
+                                </div>
+
+                                <!-- Lists -->
+                                <div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);">Lists</div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.list_items.toLocaleString() : '0'"></div>
+                                </div>
+
+                                <!-- Tables -->
+                                <div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);">Tables</div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.tables.toLocaleString() : '0'"></div>
+                                </div>
+                                
                                 <!-- Links -->
                                 <template x-if="noteStats && noteStats.links > 0">
                                     <div>
