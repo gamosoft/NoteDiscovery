@@ -733,7 +733,7 @@
             :style="'width: ' + sidebarWidth + 'px; background-color: var(--bg-secondary); border-right: 1px solid var(--border-primary); min-width: 200px; max-width: 600px;'"
         >
             <!-- Header -->
-            <div class="p-4 border-b" style="border-color: var(--border-primary);">
+            <div class="flex-shrink-0 p-4 border-b" style="border-color: var(--border-primary);">
                 <button 
                     class="flex items-center gap-2 mb-3 hover:opacity-80 transition"
                     @click="goHome()"
@@ -743,22 +743,6 @@
                     <img src="/static/logo.svg" alt="NoteDiscovery Logo" class="w-8 h-8">
                     <h1 class="text-xl font-bold" style="color: var(--text-primary);" x-text="appName"></h1>
                 </button>
-                
-                <!-- Theme Selector -->
-                <div class="mb-3">
-                    <label class="text-xs mb-1 block" style="color: var(--text-tertiary);">Theme</label>
-                    <select 
-                        x-model="currentTheme"
-                        @change="setTheme(currentTheme)"
-                        class="w-full px-3 py-2 text-sm rounded border focus:outline-none focus:ring-2 focus:ring-opacity-50"
-                        style="background-color: var(--bg-primary); color: var(--text-primary); border-color: var(--border-primary); cursor: pointer;"
-                    >
-                        <template x-for="theme in availableThemes" :key="theme.id">
-                            <option :value="theme.id" x-text="theme.name"></option>
-                        </template>
-                    </select>
-                </div>
-                <p class="text-xs mb-3" style="color: var(--text-secondary);" x-text="appTagline"></p>
                 <!-- Logout Button (only show if auth is enabled) -->
                 <div x-data="{ authEnabled: false }" x-init="fetch('/api/config').then(r => r.json()).then(d => authEnabled = d.authentication?.enabled || false)">
                     <a x-show="authEnabled" 
@@ -774,7 +758,7 @@
             </div>
             
             <!-- Search -->
-            <div class="p-3 border-b" style="border-color: var(--border-primary);">
+            <div class="flex-shrink-0 p-3 border-b" style="border-color: var(--border-primary);">
                 <div class="relative">
                     <input 
                         type="text" 
@@ -835,7 +819,7 @@
             </div>
             
             <!-- Tags Panel -->
-            <div class="border-b" style="border-color: var(--border-primary);">
+            <div class="flex-shrink-0 border-b" style="border-color: var(--border-primary);">
                 <!-- Tags Header -->
                 <div 
                     @click="tagsExpanded = !tagsExpanded"
@@ -903,7 +887,7 @@
             </div>
             
             <!-- New Item Dropdown -->
-            <div class="p-3 border-b" style="border-color: var(--border-primary);">
+            <div class="flex-shrink-0 p-3 border-b" style="border-color: var(--border-primary);">
                 <button 
                     @click="dropdownTargetFolder = ''; toggleNewDropdown($event)"
                     class="w-full px-4 py-2 text-sm font-medium text-white rounded-lg focus:outline-none focus:ring-2 flex items-center justify-center gap-2"
@@ -1075,7 +1059,21 @@
             </div>
             
             <!-- Footer -->
-            <div class="p-3 border-t" style="border-color: var(--border-primary);">
+            <div class="flex-shrink-0 p-3 border-t" style="border-color: var(--border-primary);">
+                <!-- Theme Selector (compact) -->
+                <select 
+                    x-model="currentTheme"
+                    @change="setTheme(currentTheme)"
+                    class="w-full px-2 py-1.5 text-xs rounded mb-2 focus:outline-none focus:ring-2 focus:ring-opacity-50"
+                    style="background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary); cursor: pointer;"
+                    title="Select theme"
+                >
+                    <template x-for="theme in availableThemes" :key="theme.id">
+                        <option :value="theme.id" x-text="theme.name"></option>
+                    </template>
+                </select>
+                
+                <!-- Stats -->
                 <div class="text-xs text-center" style="color: var(--text-tertiary);">
                     <span x-text="notes.length"></span> notes
                     <span class="mx-1">·</span>

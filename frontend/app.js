@@ -2968,8 +2968,8 @@ function noteApp() {
             // List items: lines starting with -, *, + or a number (e.g. 1., 10.), excluding tasks [-]
             const listItems = (content.match(/^\s*(?:[-*+]|\d+\.)\s+(?!\[)/gm) || []).length;
             
-            // Tables: separator rows containing both '|' and '---'
-            const tables = (content.match(/^(?=.*\|)(?=.*---).*$/gm) || []).length;
+            // Tables: markdown table separator rows (| --- | --- |)
+            const tables = (content.match(/^\s*\|(?:\s*:?-+:?\s*\|){1,}\s*$/gm) || []).length;
             
             // Link count
             const linkMatches = content.match(/\[([^\]]+)\]\(([^\)]+)\)/g) || [];

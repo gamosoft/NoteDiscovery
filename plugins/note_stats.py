@@ -49,9 +49,9 @@ class Plugin:
             re.findall(r'^\s*(?:[-*+]|\d+\.)\s+(?!\[)', content, re.MULTILINE)
         )
 
-        # Tables: count separator rows containing both '|' and '---'
+        # Tables: count markdown table separator rows (| --- | --- |)
         tables = len(
-            re.findall(r'^(?=.*\|)(?=.*---).*$', content, re.MULTILINE)
+            re.findall(r'^\s*\|(?:\s*:?-+:?\s*\|){1,}\s*$', content, re.MULTILINE)
         )
         
         # Markdown link count
