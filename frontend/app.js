@@ -1495,17 +1495,35 @@ function noteApp() {
             // Skip if it's just an anchor link
             if (!notePath) return;
             
-            // Find the note by path
-            const note = this.notes.find(n => n.path === notePath);
+            // Find the note by path (try exact match first, then with .md extension)
+            const note = this.notes.find(n => 
+                n.path === notePath || 
+                n.path === notePath + '.md'
+            );
             if (note) {
-                this.loadNote(notePath);
+                this.loadNote(note.path);
             } else {
-                // Try to find by name (in case link uses just the note name)
-                const noteByName = this.notes.find(n => n.name === notePath || n.name === notePath + '.md');
+                // Try to find by name (in case link uses just the note name without path)
+                const noteByName = this.notes.find(n => 
+                    n.name === notePath || 
+                    n.name === notePath + '.md' ||
+                    // Also match by filename at end of path (case-insensitive)
+                    n.name.toLowerCase() === notePath.toLowerCase() ||
+                    n.name.toLowerCase() === (notePath + '.md').toLowerCase()
+                );
                 if (noteByName) {
                     this.loadNote(noteByName.path);
                 } else {
-                    alert(`Note not found: ${notePath}`);
+                    // Last resort: case-insensitive path matching
+                    const noteByPathCI = this.notes.find(n => 
+                        n.path.toLowerCase() === notePath.toLowerCase() ||
+                        n.path.toLowerCase() === (notePath + '.md').toLowerCase()
+                    );
+                    if (noteByPathCI) {
+                        this.loadNote(noteByPathCI.path);
+                    } else {
+                        alert(`Note not found: ${notePath}`);
+                    }
                 }
             }
         },
@@ -2638,6 +2656,50 @@ function noteApp() {
                 }
             }
             
+            // Convert Obsidian-style wikilinks: [[note]] or [[note|display text]]
+            // Must be done before marked.parse() to avoid conflicts with markdown syntax
+            const notes = this.notes; // Reference for closure
+            contentToRender = contentToRender.replace(
+                /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+                (match, target, displayText) => {
+                    const linkTarget = target.trim();
+                    const linkText = displayText ? displayText.trim() : linkTarget;
+                    const linkTargetLower = linkTarget.toLowerCase();
+                    
+                    // Check if note exists (by path or by name, case-insensitive)
+                    const noteExists = notes.some(n => {
+                        const pathLower = n.path.toLowerCase();
+                        const nameLower = n.name.toLowerCase();
+                        return (
+                            // Exact path match
+                            n.path === linkTarget || 
+                            n.path === linkTarget + '.md' ||
+                            // Case-insensitive path match
+                            pathLower === linkTargetLower ||
+                            pathLower === linkTargetLower + '.md' ||
+                            // Name match (with or without .md)
+                            n.name === linkTarget ||
+                            n.name === linkTarget + '.md' ||
+                            nameLower === linkTargetLower ||
+                            nameLower === linkTargetLower + '.md' ||
+                            // Match by filename at end of path
+                            n.path.endsWith('/' + linkTarget) ||
+                            n.path.endsWith('/' + linkTarget + '.md') ||
+                            pathLower.endsWith('/' + linkTargetLower) ||
+                            pathLower.endsWith('/' + linkTargetLower + '.md')
+                        );
+                    });
+                    
+                    // Escape special chars: href needs quote escaping, text needs HTML escaping
+                    const safeHref = linkTarget.replace(/"/g, '%22');
+                    const safeText = linkText.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    
+                    // Return link with data attribute for styling broken links
+                    const brokenClass = noteExists ? '' : ' class="wikilink-broken"';
+                    return `<a href="${safeHref}"${brokenClass} data-wikilink="true">${safeText}</a>`;
+                }
+            );
+            
             // Configure marked with syntax highlighting
             marked.setOptions({
                 breaks: true,
@@ -2971,10 +3033,17 @@ function noteApp() {
             // Tables: markdown table separator rows (| --- | --- |)
             const tables = (content.match(/^\s*\|(?:\s*:?-+:?\s*\|){1,}\s*$/gm) || []).length;
             
-            // Link count
-            const linkMatches = content.match(/\[([^\]]+)\]\(([^\)]+)\)/g) || [];
-            const links = linkMatches.length;
-            const internalLinks = linkMatches.filter(l => l.includes('.md')).length;
+            // Link count (standard markdown links)
+            const markdownLinkMatches = content.match(/\[([^\]]+)\]\(([^\)]+)\)/g) || [];
+            const markdownLinks = markdownLinkMatches.length;
+            const markdownInternalLinks = markdownLinkMatches.filter(l => l.includes('.md')).length;
+            
+            // Wikilink count ([[note]] or [[note|display text]] format)
+            const wikilinks = (content.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g) || []).length;
+            
+            // Total links (markdown + wikilinks)
+            const links = markdownLinks + wikilinks;
+            const internalLinks = markdownInternalLinks + wikilinks; // All wikilinks are internal
             
             // Code blocks
             const codeBlocks = (content.match(/```[\s\S]*?```/g) || []).length;
@@ -3010,6 +3079,7 @@ function noteApp() {
                 links,
                 internal_links: internalLinks,
                 external_links: links - internalLinks,
+                wikilinks,
                 code_blocks: codeBlocks,
                 inline_code: inlineCode,
                 headings: {

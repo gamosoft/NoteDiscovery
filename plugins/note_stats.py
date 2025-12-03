@@ -54,11 +54,18 @@ class Plugin:
             re.findall(r'^\s*\|(?:\s*:?-+:?\s*\|){1,}\s*$', content, re.MULTILINE)
         )
         
-        # Markdown link count
-        links = len(re.findall(r'\[([^\]]+)\]\(([^\)]+)\)', content))
+        # Markdown link count (standard [text](url) format)
+        markdown_links = len(re.findall(r'\[([^\]]+)\]\(([^\)]+)\)', content))
         
-        # Internal link count (links to .md files)
-        internal_links = len(re.findall(r'\[([^\]]+)\]\(([^\)]+\.md)\)', content))
+        # Internal link count (standard markdown links to .md files)
+        markdown_internal_links = len(re.findall(r'\[([^\]]+)\]\(([^\)]+\.md)\)', content))
+        
+        # Wikilink count ([[note]] or [[note|display text]] format - Obsidian style)
+        wikilinks = len(re.findall(r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]', content))
+        
+        # Total links and internal links
+        links = markdown_links + wikilinks
+        internal_links = markdown_internal_links + wikilinks  # All wikilinks are internal
         
         # Code block count
         code_blocks = len(re.findall(r'```[\s\S]*?```', content))
@@ -95,6 +102,7 @@ class Plugin:
             'links': links,
             'internal_links': internal_links,
             'external_links': links - internal_links,
+            'wikilinks': wikilinks,
             'code_blocks': code_blocks,
             'inline_code': inline_code,
             'headings': {

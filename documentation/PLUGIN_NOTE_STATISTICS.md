@@ -54,9 +54,10 @@ curl -X POST http://localhost:8000/api/plugins/note_stats/toggle \
 - Displayed in minutes
 
 ### 🔗 Links & References
-- **Total Links** - All `[text](url)` links
-- **Internal Links** - Links to other notes (`.md` files)
+- **Total Links** - All links (markdown + wikilinks)
+- **Internal Links** - Links to other notes (`.md` files and wikilinks)
 - **External Links** - HTTP/HTTPS URLs
+- **Wikilinks** - `[[note]]` and `[[note|display]]` count
 - **Images** - `![alt](image.png)` count
 
 ### 💻 Code Blocks
@@ -191,7 +192,8 @@ Find orphaned notes or track reference density.
 
 **Words:** Split on whitespace, excluding code blocks  
 **Reading Time:** `words / 200 minutes`  
-**Links:** Regex match `[text](url)` markdown links  
+**Links:** Regex match `[text](url)` markdown links + `[[wikilinks]]`  
+**Wikilinks:** Regex match `[[target]]` and `[[target|display]]` (Obsidian-style)  
 **Tasks:** Match `- [ ]` and `- [x]`  
 **Code Blocks:** Match ` ```language ` ` fences  
 **Headings:** Match `#`, `##`, `###` at line start  

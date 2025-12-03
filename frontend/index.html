@@ -266,15 +266,33 @@
             text-decoration-color: var(--accent-primary);
         }
         
-        /* Internal links (not starting with http/https) get a special style */
-        .markdown-preview a:not([href^="http"]):not([href^="https"]):not([href^="//"]):not([href^="mailto:"]) {
-            color: var(--accent-primary);
+        /* Wikilinks - Obsidian style internal links */
+        .markdown-preview a[data-wikilink] {
+            color: var(--link-internal, var(--accent-primary));
+            text-decoration: none;
             font-weight: 500;
+            background-color: var(--link-internal-bg, transparent);
+            padding: 0 2px;
+            border-radius: 2px;
+            transition: background-color 0.15s, color 0.15s;
         }
-        .markdown-preview a:not([href^="http"]):not([href^="https"]):not([href^="//"]):not([href^="mailto:"]):before {
-            content: "→ ";
-            font-size: 0.9em;
+        .markdown-preview a[data-wikilink]:hover {
+            background-color: var(--link-internal-hover-bg, var(--bg-tertiary));
+            text-decoration: underline;
+        }
+        
+        /* Broken wikilinks - note doesn't exist (Obsidian shows these dimmed) */
+        .markdown-preview a[data-wikilink].wikilink-broken {
+            color: var(--link-broken, var(--text-tertiary));
             opacity: 0.7;
+        }
+        .markdown-preview a[data-wikilink].wikilink-broken:hover {
+            opacity: 1;
+        }
+        
+        /* Standard internal links (non-wikilink, e.g. [text](path)) */
+        .markdown-preview a:not([href^="http"]):not([href^="https"]):not([href^="//"]):not([href^="mailto:"]):not([data-wikilink]) {
+            color: var(--accent-primary);
         }
         
         /* Tables */

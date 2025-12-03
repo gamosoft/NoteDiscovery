@@ -271,7 +271,25 @@ GET /api/plugins/note_stats/calculate?content={markdown_content}
 ```http
 GET /api/graph
 ```
-Returns the relationship graph between notes (internal links).
+Returns the relationship graph between notes with link detection.
+
+**Response:**
+```json
+{
+  "nodes": [
+    { "id": "folder/note.md", "label": "note" },
+    { "id": "another.md", "label": "another" }
+  ],
+  "edges": [
+    { "source": "folder/note.md", "target": "another.md", "type": "wikilink" }
+  ]
+}
+```
+
+**Link Detection:**
+- **Wikilinks** - `[[note]]` or `[[note|display text]]` syntax (Obsidian-style)
+- **Markdown links** - `[text](note.md)` standard internal links
+- **Edge types** - `"wikilink"` or `"markdown"` to distinguish link source
 
 ## ⚙️ System
 

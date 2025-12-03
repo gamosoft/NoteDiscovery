@@ -1006,24 +1006,103 @@ async def search(q: str):
 
 @api_router.get("/graph")
 async def get_graph():
-    """Get graph data for note visualization (currently only returns nodes, link detection not implemented)"""
+    """Get graph data for note visualization with wikilink detection"""
     try:
+        import re
         notes = get_all_notes(config['storage']['notes_dir'])
         nodes = []
         edges = []
         
-        # Build graph structure - only nodes for now
+        # Build set of valid note names/paths for matching
+        note_paths = set()
+        note_paths_lower = {}  # Map lowercase path -> actual path for case-insensitive matching
+        note_names = {}  # Map name -> path for quick lookup
+        
         for note in notes:
-            if note.get('type') == 'note':  # Only include actual notes
+            if note.get('type') == 'note':
+                note_paths.add(note['path'])
+                note_paths.add(note['path'].replace('.md', ''))
+                # Store lowercase path -> actual path mapping for case-insensitive matching
+                note_paths_lower[note['path'].lower()] = note['path']
+                note_paths_lower[note['path'].replace('.md', '').lower()] = note['path']
+                # Store name -> path mapping (without extension)
+                name = note['name'].replace('.md', '')
+                note_names[name.lower()] = note['path']
+                note_names[note['name'].lower()] = note['path']
+        
+        # Build graph structure with link detection
+        for note in notes:
+            if note.get('type') == 'note':
                 nodes.append({
                     "id": note['path'],
-                    "label": note['name']
+                    "label": note['name'].replace('.md', '')
                 })
+                
+                # Read note content to find links
+                content = get_note_content(config['storage']['notes_dir'], note['path'])
+                if content:
+                    # Find wikilinks: [[target]] or [[target|display]]
+                    wikilinks = re.findall(r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]', content)
+                    
+                    # Find standard markdown internal links: [text](path.md)
+                    markdown_links = re.findall(r'\[([^\]]+)\]\(([^\)]+\.md)\)', content)
+                    
+                    # Process wikilinks
+                    for target in wikilinks:
+                        target = target.strip()
+                        target_lower = target.lower()
+                        
+                        # Try to match target to an existing note
+                        target_path = None
+                        
+                        # 1. Exact path match
+                        if target in note_paths:
+                            target_path = target if target.endswith('.md') else target + '.md'
+                        # 2. Path with .md extension
+                        elif target + '.md' in note_paths:
+                            target_path = target + '.md'
+                        # 3. Case-insensitive path match (e.g., [[Folder/Note]] -> folder/note.md)
+                        elif target_lower in note_paths_lower:
+                            target_path = note_paths_lower[target_lower]
+                        elif target_lower + '.md' in note_paths_lower:
+                            target_path = note_paths_lower[target_lower + '.md']
+                        # 4. Just note name (case-insensitive)
+                        elif target_lower in note_names:
+                            target_path = note_names[target_lower]
+                        
+                        if target_path and target_path != note['path']:
+                            edges.append({
+                                "source": note['path'],
+                                "target": target_path,
+                                "type": "wikilink"
+                            })
+                    
+                    # Process markdown links
+                    for _, link_path in markdown_links:
+                        # Try exact match first, then case-insensitive
+                        target_path = None
+                        if link_path in note_paths:
+                            target_path = link_path
+                        elif link_path.lower() in note_paths_lower:
+                            target_path = note_paths_lower[link_path.lower()]
+                        
+                        if target_path and target_path != note['path']:
+                            edges.append({
+                                "source": note['path'],
+                                "target": target_path,
+                                "type": "markdown"
+                            })
         
-        # Note: Link detection between notes could be implemented here using markdown link parsing
-        # For now, returning empty edges
+        # Remove duplicate edges
+        seen = set()
+        unique_edges = []
+        for edge in edges:
+            key = (edge['source'], edge['target'])
+            if key not in seen:
+                seen.add(key)
+                unique_edges.append(edge)
         
-        return {"nodes": nodes, "edges": edges}
+        return {"nodes": nodes, "edges": unique_edges}
     except Exception as e:
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to generate graph data"))
 
