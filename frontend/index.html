@@ -933,9 +933,10 @@
                                 :style="currentNote === note.path ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);'"
                                 onmouseover="if(this.style.backgroundColor !== 'var(--accent-light)') this.style.backgroundColor='var(--bg-hover)'"
                                 onmouseout="if(this.style.backgroundColor !== 'var(--accent-light)') this.style.backgroundColor='transparent'"
+                                :title="note.path"
                             >
                                 <div class="font-medium truncate" x-text="note.name"></div>
-                                <div class="text-xs truncate" style="color: var(--text-tertiary);" x-text="note.folder || 'Root'"></div>
+                                <div class="text-xs truncate" style="color: var(--text-tertiary);" x-text="(note.matches && note.matches.length > 0) ? note.matches[0].context : (note.folder || 'Root')"></div>
                             </div>
                         </template>
                     </div>
