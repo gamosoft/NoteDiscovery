@@ -28,6 +28,12 @@
 
 ## 🔗 Linking & Discovery
 
+### Graph View
+- **Interactive graph** - Visualize all your notes and their connections
+- **Navigate with mouse** - Drag to pan, scroll to zoom, double-click nodes to open notes
+- **Multiple link types** - See wikilinks and markdown links distinguished by color
+- **Theme-aware** - Graph colors adapt to your current theme
+
 ### Internal Links
 - **Wikilinks** - `[[Note Name]]` Obsidian-style syntax for quick linking
 - **Wikilinks with display text** - `[[Note Name|Click here]]` to customize link text

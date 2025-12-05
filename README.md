@@ -43,6 +43,7 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 - 📂 **Simple Storage** - Plain markdown files in folders
 - 🧮 **Math Support** - LaTeX/MathJax for beautiful equations
 - 📄 **HTML Export** - Share notes as standalone HTML files
+- 🕸️ **Graph View** - Interactive visualization of connected notes
 
 ## 🚀 Quick Start
 
