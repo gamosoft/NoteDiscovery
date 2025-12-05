@@ -289,6 +289,19 @@
         .markdown-preview a[data-wikilink].wikilink-broken:hover {
             opacity: 1;
         }
+
+        /* Search highlight base style (used in note preview and search results) */
+        .search-highlight {
+            padding: 2px 4px;
+            border-radius: 3px;
+            background-color: rgba(255, 193, 7, 0.4);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .search-highlight.active-match {
+            background-color: var(--accent-primary);
+            color: white;
+        }
         
         /* Note Properties Panel */
         .note-properties {
@@ -956,7 +969,7 @@
                                 :title="note.path"
                             >
                                 <div class="font-medium truncate" x-text="note.name"></div>
-                                <div class="text-xs truncate" style="color: var(--text-tertiary);" x-text="(note.matches && note.matches.length > 0) ? note.matches[0].context : (note.folder || 'Root')"></div>
+                                <div class="text-xs truncate" style="color: var(--text-tertiary);" x-html="(note.matches && note.matches.length > 0) ? note.matches[0].context : (note.folder || 'Root')"></div>
                             </div>
                         </template>
                     </div>

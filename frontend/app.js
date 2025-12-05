@@ -1895,18 +1895,10 @@ function noteApp() {
                         mark.className = 'search-highlight';
                         mark.setAttribute('data-match-index', matchIndex);
                         mark.textContent = text.substring(index, index + searchTerm.length);
-                        mark.style.padding = '2px 4px';
-                        mark.style.borderRadius = '3px';
-                        mark.style.transition = 'all 0.2s';
                         
-                        // Style first match as active, others as inactive
+                        // First match is active (styled via CSS)
                         if (matchIndex === 0) {
-                            mark.style.backgroundColor = 'var(--accent-primary)';
-                            mark.style.color = 'white';
                             mark.classList.add('active-match');
-                        } else {
-                            mark.style.backgroundColor = 'rgba(255, 193, 7, 0.4)';
-                            mark.style.color = 'var(--text-primary)';
                         }
                         
                         fragment.appendChild(mark);
@@ -1961,17 +1953,9 @@ function noteApp() {
             const allMatches = preview.querySelectorAll('mark.search-highlight');
             if (index < 0 || index >= allMatches.length) return;
             
-            // Update styling - make current match prominent
+            // Update styling - make current match prominent (via CSS class)
             allMatches.forEach((mark, i) => {
-                if (i === index) {
-                    mark.style.backgroundColor = 'var(--accent-primary)';
-                    mark.style.color = 'white';
-                    mark.classList.add('active-match');
-                } else {
-                    mark.style.backgroundColor = 'rgba(255, 193, 7, 0.4)';
-                    mark.style.color = 'var(--text-primary)';
-                    mark.classList.remove('active-match');
-                }
+                mark.classList.toggle('active-match', i === index);
             });
             
             // Scroll to the match

@@ -273,8 +273,9 @@ def search_notes(notes_dir: str, query: str) -> List[Dict]:
     """
     Full-text search through note contents only.
     Does NOT search in file names, folder names, or paths - only note content.
-    Uses character-based context extraction for better snippet quality.
+    Uses character-based context extraction with highlighted matches.
     """
+    from html import escape
     results = []
     notes_path = Path(notes_dir)
     
@@ -292,16 +293,19 @@ def search_notes(notes_dir: str, query: str) -> List[Dict]:
                 for match in matches[:3]:  # Limit to 3 matches per file
                     start_index = match.start()
                     end_index = match.end()
+                    matched_text = match.group()  # Preserve original case
                     
-                    # Create slice window: ±30 characters around match
-                    context_start = max(0, start_index - 30)
-                    context_end = min(len(content), end_index + 30)
+                    # Create slice window: ±15 characters around match
+                    context_start = max(0, start_index - 15)
+                    context_end = min(len(content), end_index + 15)
                     
-                    # Extract snippet
-                    snippet = content[context_start:context_end]
+                    # Extract and clean parts (newlines → spaces)
+                    before = escape(content[context_start:start_index].replace('\n', ' '))
+                    after = escape(content[end_index:context_end].replace('\n', ' '))
+                    matched_clean = escape(matched_text.replace('\n', ' '))
                     
-                    # Replace all newlines with spaces to ensure UI doesn't break
-                    snippet = snippet.replace('\n', ' ')
+                    # Build snippet with <mark> highlight (styled via CSS)
+                    snippet = f'{before}<mark class="search-highlight">{matched_clean}</mark>{after}'
                     
                     # Add ellipsis if truncated at start
                     if context_start > 0:
