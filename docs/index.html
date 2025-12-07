@@ -193,23 +193,51 @@
             margin: 0 auto;
         }
 
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
         .cta-button {
             display: inline-block;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1rem 3rem;
+            padding: 1rem 2.5rem;
             border-radius: 50px;
             text-decoration: none;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            margin-top: 1rem;
         }
 
         .cta-button:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .cta-button.demo {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .cta-button.demo:hover {
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+
+        .cta-button.demo::before {
+            content: "▶ ";
+        }
+
+        .demo-notice {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #6b7280;
+            font-style: italic;
+            opacity: 0.9;
         }
 
         .features {
@@ -290,6 +318,56 @@
             margin-bottom: 0.25rem;
         }
 
+        /* Scroll Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .animate-on-scroll {
+            opacity: 0;
+        }
+
+        .animate-on-scroll.animated {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .animate-on-scroll.animated-scale {
+            animation: fadeInScale 0.6s ease-out forwards;
+        }
+
+        /* Stagger animation delays for feature cards */
+        .feature.animated:nth-child(1) { animation-delay: 0s; }
+        .feature.animated:nth-child(2) { animation-delay: 0.1s; }
+        .feature.animated:nth-child(3) { animation-delay: 0.2s; }
+        .feature.animated:nth-child(4) { animation-delay: 0.05s; }
+        .feature.animated:nth-child(5) { animation-delay: 0.15s; }
+        .feature.animated:nth-child(6) { animation-delay: 0.25s; }
+        .feature.animated:nth-child(7) { animation-delay: 0.1s; }
+        .feature.animated:nth-child(8) { animation-delay: 0.2s; }
+        .feature.animated:nth-child(9) { animation-delay: 0.3s; }
+        .feature.animated:nth-child(10) { animation-delay: 0.15s; }
+        .feature.animated:nth-child(11) { animation-delay: 0.25s; }
+        .feature.animated:nth-child(12) { animation-delay: 0.35s; }
+        .feature.animated:nth-child(13) { animation-delay: 0.2s; }
+
         .screenshot-section {
             margin: 4rem 0 3rem 0;
             text-align: center;
@@ -319,17 +397,34 @@
             padding: 0 1rem;
         }
 
+        /* Screenshot Carousel */
+        .carousel {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            width: 100%;
+        }
+
+        .carousel-slide {
+            width: 100%;
+            min-width: 100%;
+            flex: 0 0 100%;
+        }
+
         .screenshot-frame {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 0.5rem;
             box-shadow: 0 20px 60px var(--shadow);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            transition: box-shadow 0.3s ease, background 0.3s ease;
             overflow: hidden;
         }
 
         .screenshot-frame:hover {
-            transform: translateY(-5px);
             box-shadow: 0 25px 80px var(--shadow);
         }
 
@@ -341,6 +436,14 @@
             background: var(--card-secondary);
             border-radius: 8px 8px 0 0;
             margin-bottom: 0.5rem;
+        }
+
+        .screenshot-title {
+            flex: 1;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
 
         .screenshot-dots {
@@ -363,6 +466,60 @@
             height: auto;
             display: block;
             border-radius: 0 0 8px 8px;
+        }
+
+        /* Carousel Navigation */
+        .carousel-nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .carousel-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: white;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .carousel-indicators {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .carousel-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-indicator.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .carousel-indicator:hover {
+            background: rgba(255, 255, 255, 0.6);
         }
 
         footer {
@@ -475,6 +632,27 @@
                 width: 10px;
                 height: 10px;
             }
+
+            .screenshot-title {
+                font-size: 0.75rem;
+            }
+
+            .carousel-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-button {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+            }
         }
 
     </style>
@@ -506,112 +684,174 @@
             <p class="tagline">Your Self-Hosted Knowledge Base</p>
         </header>
 
-        <div class="hero">
+        <div class="hero animate-on-scroll">
             <div class="hero-content">
                 <h2>Take Control of Your Notes</h2>
                 <p>A lightweight, privacy-focused note-taking application with powerful features: LaTeX math equations, Mermaid diagrams, smart tags, custom templates, code highlighting, and more. Write, organize, and discover your notes with a beautiful, modern interface—all running on your own server.</p>
-                <a href="https://github.com/gamosoft/NoteDiscovery" class="cta-button" target="_blank" rel="noopener">Get Started on GitHub →</a>
+                <div class="cta-buttons">
+                    <a href="https://gamosoft-notediscovery.hf.space" class="cta-button demo" target="_blank" rel="noopener">Try Live Demo</a>
+                    <a href="https://github.com/gamosoft/NoteDiscovery" class="cta-button" target="_blank" rel="noopener">Get Started on GitHub →</a>
+                </div>
+                <p class="demo-notice">✨ Demo resets daily · For demonstration purposes only</p>
             </div>
         </div>
 
-        <div class="screenshot-section">
+        <div class="screenshot-section animate-on-scroll">
             <h2>See It in Action</h2>
             <p>A clean, intuitive interface designed for productivity and focus</p>
             <div class="screenshot-container">
-                <div class="screenshot-frame">
-                    <div class="screenshot-window-bar">
-                        <div class="screenshot-dots">
-                            <div class="screenshot-dot"></div>
-                            <div class="screenshot-dot"></div>
-                            <div class="screenshot-dot"></div>
+                <div class="carousel">
+                    <div class="carousel-track" id="carouselTrack">
+                        <!-- Slide 1: Main Interface (Light) -->
+                        <div class="carousel-slide">
+                            <div class="screenshot-frame">
+                                <div class="screenshot-window-bar">
+                                    <div class="screenshot-dots">
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                    </div>
+                                    <span class="screenshot-title">Editor View • Main Interface</span>
+                                </div>
+                                <img src="carousel-1.jpg" alt="NoteDiscovery Editor - Light Theme" loading="lazy">
+                            </div>
+                        </div>
+                        <div class="carousel-slide">
+                            <div class="screenshot-frame">
+                                <div class="screenshot-window-bar">
+                                    <div class="screenshot-dots">
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                    </div>
+                                    <span class="screenshot-title">Editor View • Search Notes</span>
+                                </div>
+                                <img src="carousel-2.jpg" alt="NoteDiscovery Editor - Dark Theme" loading="lazy">
+                            </div>
+                        </div>
+                        <div class="carousel-slide">
+                            <div class="screenshot-frame">
+                                <div class="screenshot-window-bar">
+                                    <div class="screenshot-dots">
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                    </div>
+                                    <span class="screenshot-title">Graph View • Note Connections</span>
+                                </div>
+                                <img src="carousel-3.jpg" alt="NoteDiscovery Graph View" loading="lazy">
+                            </div>
+                        </div>
+                        <div class="carousel-slide">
+                            <div class="screenshot-frame">
+                                <div class="screenshot-window-bar">
+                                    <div class="screenshot-dots">
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                        <div class="screenshot-dot"></div>
+                                    </div>
+                                    <span class="screenshot-title">Frontmatter Metadata • Note Tag Search</span>
+                                </div>
+                                <img src="carousel-4.jpg" alt="NoteDiscovery Mobile View" loading="lazy">
+                            </div>
                         </div>
                     </div>
-                    <img src="screenshot.jpg" alt="NoteDiscovery Interface Screenshot" loading="lazy">
+                </div>
+                <!-- Carousel Navigation -->
+                <div class="carousel-nav">
+                    <button class="carousel-btn" onclick="moveCarousel(-1)" aria-label="Previous screenshot">‹</button>
+                    <div class="carousel-indicators">
+                        <button class="carousel-indicator active" onclick="goToSlide(0)" aria-label="Slide 1"></button>
+                        <button class="carousel-indicator" onclick="goToSlide(1)" aria-label="Slide 2"></button>
+                        <button class="carousel-indicator" onclick="goToSlide(2)" aria-label="Slide 3"></button>
+                        <button class="carousel-indicator" onclick="goToSlide(3)" aria-label="Slide 4"></button>
+                    </div>
+                    <button class="carousel-btn" onclick="moveCarousel(1)" aria-label="Next screenshot">›</button>
                 </div>
             </div>
         </div>
 
         <div class="features">
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🔒</div>
                 <h3>100% Private</h3>
                 <p>Your notes never leave your server. Complete data ownership and privacy.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">💰</div>
                 <h3>Completely Free</h3>
                 <p>No subscriptions, no hidden fees. Free and open source forever.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🚀</div>
                 <h3>Lightning Fast</h3>
                 <p>Instant search and navigation. Works offline, always responsive.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🧮</div>
                 <h3>LaTeX Math</h3>
                 <p>Beautiful equation rendering with MathJax. Perfect for scientific notes.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">📊</div>
                 <h3>Diagrams</h3>
                 <p>Create flowcharts, mind maps, and diagrams with Mermaid syntax.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">💻</div>
                 <h3>Code Highlighting</h3>
                 <p>Syntax highlighting for popular coding languages. Developer-friendly notes.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🏷️</div>
                 <h3>Smart Tags</h3>
                 <p>Organize with YAML frontmatter tags. Collapsible properties panel shows metadata at a glance.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">📋</div>
                 <h3>Note Templates</h3>
                 <p>Create from custom templates with dynamic placeholders. Meeting notes, journals, and more.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🔗</div>
                 <h3>Wikilinks</h3>
                 <p>Link notes with [[double brackets]] Obsidian-style. Broken links shown dimmed.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🕸️</div>
                 <h3>Graph View</h3>
                 <p>Interactive visualization of connected notes. Drag to explore relationships.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">📂</div>
                 <h3>Simple Storage</h3>
                 <p>Plain markdown files in folders. No vendor lock-in, easy backups.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🎨</div>
                 <h3>Beautiful Themes</h3>
                 <p>8 built-in themes with dark/light modes and full customization.</p>
             </div>
 
-            <div class="feature">
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🔌</div>
                 <h3>Extensible</h3>
                 <p>Plugin system lets you add custom features and integrations.</p>
             </div>
         </div>
 
-        <div class="benefits">
+        <div class="benefits animate-on-scroll">
             <h2>Why Choose NoteDiscovery?</h2>
             <div class="benefit-list">
                 <div class="benefit-item">
@@ -720,11 +960,15 @@
             </div>
         </div>
 
-        <div class="hero">
+        <div class="hero animate-on-scroll">
             <div class="hero-content">
                 <h2>Ready to Get Started?</h2>
                 <p>Join the self-hosting community and take back control of your notes today.</p>
-                <a href="https://github.com/gamosoft/NoteDiscovery" class="cta-button" target="_blank" rel="noopener">View on GitHub →</a>
+                <div class="cta-buttons">
+                    <a href="https://gamosoft-notediscovery.hf.space" class="cta-button demo" target="_blank" rel="noopener">Try Live Demo</a>
+                    <a href="https://github.com/gamosoft/NoteDiscovery" class="cta-button" target="_blank" rel="noopener">View on GitHub →</a>
+                </div>
+                <p class="demo-notice">✨ Demo resets daily · For demonstration purposes only</p>
             </div>
         </div>
 
@@ -760,6 +1004,112 @@
             // Update icon
             const icon = document.getElementById('theme-icon');
             icon.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+        })();
+
+        // Scroll Animations with Intersection Observer
+        (function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animated');
+                        // Optionally stop observing after animation
+                        // observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all animate-on-scroll elements
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelectorAll('.animate-on-scroll').forEach(el => {
+                    observer.observe(el);
+                });
+            });
+        })();
+
+        // Screenshot Carousel
+        let currentSlide = 0;
+        const totalSlides = 4;
+        let autoPlayInterval;
+
+        function updateCarousel() {
+            const track = document.getElementById('carouselTrack');
+            if (track) {
+                track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }
+            
+            // Update indicators
+            document.querySelectorAll('.carousel-indicator').forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentSlide);
+            });
+        }
+
+        function moveCarousel(direction) {
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            updateCarousel();
+            resetAutoPlay();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+            resetAutoPlay();
+        }
+
+        function resetAutoPlay() {
+            clearInterval(autoPlayInterval);
+            autoPlayInterval = setInterval(() => moveCarousel(1), 5000);
+        }
+
+        // Start auto-play on load
+        document.addEventListener('DOMContentLoaded', () => {
+            autoPlayInterval = setInterval(() => moveCarousel(1), 5000);
+        });
+
+        // Pause auto-play on hover
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousel = document.querySelector('.carousel');
+            if (carousel) {
+                carousel.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
+                carousel.addEventListener('mouseleave', resetAutoPlay);
+            }
+        });
+
+        // Touch/Swipe support for mobile
+        (function() {
+            let touchStartX = 0;
+            let touchEndX = 0;
+            
+            document.addEventListener('DOMContentLoaded', () => {
+                const carousel = document.querySelector('.carousel');
+                if (!carousel) return;
+
+                carousel.addEventListener('touchstart', e => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+
+                carousel.addEventListener('touchend', e => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                }, { passive: true });
+
+                function handleSwipe() {
+                    const swipeThreshold = 50;
+                    const diff = touchStartX - touchEndX;
+                    
+                    if (Math.abs(diff) > swipeThreshold) {
+                        if (diff > 0) {
+                            moveCarousel(1); // Swipe left = next
+                        } else {
+                            moveCarousel(-1); // Swipe right = prev
+                        }
+                    }
+                }
+            });
         })();
     </script>
 

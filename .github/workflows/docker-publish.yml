@@ -131,3 +131,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  # Restart HF Space after successful build
+  restart-hf-space:
+    needs: build-and-push
+    if: success()
+    uses: ./.github/workflows/hf-space-restart.yml
+    secrets: inherit

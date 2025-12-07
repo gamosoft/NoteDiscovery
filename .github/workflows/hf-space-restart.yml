@@ -1,0 +1,46 @@
+name: Restart Hugging Face Space
+
+on:
+  # Can be called from other workflows
+  workflow_call:
+  # Can be triggered manually
+  workflow_dispatch:
+  # Scheduled reset (daily at midnight UTC)
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
+
+jobs:
+  restart-space:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restart Hugging Face Space
+        run: |
+          echo "Triggering HF Space restart to pull latest image..."
+          
+          if [ -z "${{ vars.HF_SPACE_ID }}" ]; then
+            echo "::warning::HF_SPACE_ID variable not set. Skipping HF restart."
+            exit 0
+          fi
+          
+          if [ -z "${{ secrets.HF_TOKEN }}" ]; then
+            echo "::warning::HF_TOKEN secret not set. Skipping HF restart."
+            exit 0
+          fi
+          
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://huggingface.co/api/spaces/${{ vars.HF_SPACE_ID }}/restart" \
+            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}" \
+            -H "Content-Type: application/json")
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+          
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ HF Space restart triggered successfully!"
+            echo "Space: ${{ vars.HF_SPACE_ID }}"
+          else
+            echo "::warning::HF Space restart failed (HTTP $HTTP_CODE)"
+            echo "Response: $BODY"
+            echo "Space may not exist or token may be invalid."
+          fi
+
