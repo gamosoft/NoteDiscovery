@@ -5,6 +5,9 @@ on:
   workflow_call:
   # Can be triggered manually
   workflow_dispatch:
+  # Scheduled reset (daily at midnight UTC)
+  schedule:
+    - cron: '0 0 * * *'  # Daily at midnight UTC
 
 jobs:
   restart-space:
