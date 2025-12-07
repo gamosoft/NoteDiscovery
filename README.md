@@ -4,7 +4,7 @@
 
 🌐 **[Visit the official website](https://www.notediscovery.com)**
 
-🚀 **[Try the Live Demo](https://gamosoft-notediscovery.hf.space)** — *Contents reset daily, for demonstration purposes only*
+🚀 **[Try the Live Demo](https://huggingface.co/spaces/gamosoft/notediscovery-demo)** — *Contents reset daily, for demonstration purposes only*
 
 ## What is NoteDiscovery?
 
