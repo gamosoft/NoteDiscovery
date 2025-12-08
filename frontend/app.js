@@ -991,8 +991,7 @@ function noteApp() {
                         style="color: var(--text-primary); cursor: pointer;"
                         :class="{
                             'border-2 border-dashed bg-accent-light': (draggedNote || draggedFolder) && dragOverFolder === '${folder.path.replace(/'/g, "\\'")}',
-                            'border-2 border-dashed': (draggedNote || draggedFolder) && dragOverFolder !== '${folder.path.replace(/'/g, "\\'")}',
-                            'border-2 border-transparent': !draggedNote && !draggedFolder
+                            'border-2 border-dashed': (draggedNote || draggedFolder) && dragOverFolder !== '${folder.path.replace(/'/g, "\\'")}'
                         }"
                         :style="{
                             'border-color': (draggedNote || draggedFolder) && dragOverFolder === '${folder.path.replace(/'/g, "\\'")}'  ? 'var(--accent-primary)' : 'var(--border-secondary)',
@@ -1005,7 +1004,7 @@ function noteApp() {
                         <div class="flex items-center gap-1">
                             <button 
                                 class="flex-shrink-0 w-4 h-4 flex items-center justify-center"
-                                style="color: var(--text-tertiary); cursor: pointer; transition: transform 0.2s; pointer-events: none; ${isExpanded ? 'transform: rotate(90deg);' : ''}"
+                                style="color: var(--text-tertiary); cursor: pointer; transition: transform 0.2s; pointer-events: none; margin-left: -5px; ${isExpanded ? 'transform: rotate(90deg);' : ''}"
                             >
                                 <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor">
                                     <path d="M6 4l4 4-4 4V4z"/>
@@ -1085,7 +1084,7 @@ function noteApp() {
                                 @dragstart="onNoteDragStart('${note.path.replace(/'/g, "\\'")}', $event)"
                                 @dragend="onNoteDragEnd()"
                                 @click="${clickHandler}"
-                                class="note-item px-2 py-1 text-sm relative border-2 border-transparent"
+                                class="note-item px-2 py-1 text-sm relative"
                                 style="${isCurrent ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);'} ${isImage ? 'opacity: 0.85;' : ''} cursor: pointer;"
                                 @mouseover="if('${note.path}' !== currentNote && '${note.path}' !== currentImage) $el.style.backgroundColor='var(--bg-hover)'"
                                 @mouseout="if('${note.path}' !== currentNote && '${note.path}' !== currentImage) $el.style.backgroundColor='transparent'"

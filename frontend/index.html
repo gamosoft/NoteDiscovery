@@ -511,7 +511,7 @@
         .folder-contents::before {
             content: '';
             position: absolute;
-            left: 0;
+            left: 2px;
             top: 0;
             bottom: 0;
             width: 1px;
@@ -1142,7 +1142,7 @@
                                 @dragstart="onNoteDragStart(note.path, $event)"
                                 @dragend="onNoteDragEnd()"
                                 @click="openItem(note.path, note.type)"
-                                class="note-item px-2 py-1 text-sm relative border-2 border-transparent"
+                                class="note-item px-2 py-1 text-sm relative"
                                 :style="((note.type === 'image' ? currentImage === note.path : currentNote === note.path) ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);') + (note.type === 'image' ? ' opacity: 0.85;' : '') + (draggedNote || draggedFolder ? ' cursor: grabbing;' : ' cursor: pointer;')"
                                 @mouseover="if(currentNote !== note.path && currentImage !== note.path) $el.style.backgroundColor='var(--bg-hover)'"
                                 @mouseout="if(currentNote !== note.path && currentImage !== note.path) $el.style.backgroundColor='transparent'"
