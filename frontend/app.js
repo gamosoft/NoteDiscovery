@@ -277,6 +277,16 @@ function noteApp() {
         
         // Initialize app
         async init() {
+            // Store global reference for native event handlers in x-html content
+            window.$root = this;
+            
+            // ESC key to cancel drag operations
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && (this.draggedNote || this.draggedFolder || this.draggedItem)) {
+                    this.cancelDrag();
+                }
+            });
+            
             await this.loadConfig();
             await this.loadThemes();
             await this.initTheme();
@@ -976,30 +986,24 @@ function noteApp() {
             const isExpanded = this.expandedFolders.has(folder.path);
             
             // Render this folder's header
+            // Note: Using native event handlers (ondragstart, onclick, etc.) instead of Alpine directives
+            // because x-html doesn't process Alpine directives in dynamically generated content
+            const escapedPath = folder.path.replace(/'/g, "\\'").replace(/\\/g, "\\\\");
             html += `
                 <div>
                     <div 
                         draggable="true"
-                        x-data="{}"
-                        @dragstart="onFolderDragStart('${folder.path.replace(/'/g, "\\'")}', $event)"
-                        @dragend="onFolderDragEnd()"
-                        @dragover.prevent="dragOverFolder = '${folder.path.replace(/'/g, "\\'")}'"
-                        @dragenter.prevent="dragOverFolder = '${folder.path.replace(/'/g, "\\'")}'"
-                        @dragleave="dragOverFolder = null"
-                        @drop.stop="onFolderDrop('${folder.path.replace(/'/g, "\\'")}' )"
+                        ondragstart="window.$root.onFolderDragStart('${escapedPath}', event)"
+                        ondragend="window.$root.onFolderDragEnd()"
+                        ondragover="event.preventDefault(); window.$root.dragOverFolder = '${escapedPath}'; this.classList.add('drag-over')"
+                        ondragenter="event.preventDefault(); window.$root.dragOverFolder = '${escapedPath}'; this.classList.add('drag-over')"
+                        ondragleave="window.$root.dragOverFolder = null; this.classList.remove('drag-over')"
+                        ondrop="event.stopPropagation(); this.classList.remove('drag-over'); window.$root.onFolderDrop('${escapedPath}')"
+                        onclick="window.$root.toggleFolder('${escapedPath}')"
+                        onmouseover="if(!window.$root.draggedNote && !window.$root.draggedFolder) this.style.backgroundColor='var(--bg-hover)'"
+                        onmouseout="if(!window.$root.draggedNote && !window.$root.draggedFolder) this.style.backgroundColor='transparent'"
                         class="folder-item px-2 py-1 text-sm relative"
                         style="color: var(--text-primary); cursor: pointer;"
-                        :class="{
-                            'border-2 border-dashed bg-accent-light': (draggedNote || draggedFolder) && dragOverFolder === '${folder.path.replace(/'/g, "\\'")}',
-                            'border-2 border-dashed': (draggedNote || draggedFolder) && dragOverFolder !== '${folder.path.replace(/'/g, "\\'")}'
-                        }"
-                        :style="{
-                            'border-color': (draggedNote || draggedFolder) && dragOverFolder === '${folder.path.replace(/'/g, "\\'")}'  ? 'var(--accent-primary)' : 'var(--border-secondary)',
-                            'background-color': dragOverFolder === '${folder.path.replace(/'/g, "\\'")}'  ? 'var(--accent-light)' : ''
-                        }"
-                        @mouseover="if(!draggedNote && !draggedFolder) $el.style.backgroundColor='var(--bg-hover)'"
-                        @mouseout="if(!draggedNote && !draggedFolder && dragOverFolder !== '${folder.path.replace(/'/g, "\\'")}'  ) $el.style.backgroundColor='transparent'"
-                        @click="toggleFolder('${folder.path.replace(/'/g, "\\'")}')"
                     >
                         <div class="flex items-center gap-1">
                             <button 
@@ -1015,21 +1019,21 @@ function noteApp() {
                                 ${folder.notes.length === 0 && (!folder.children || Object.keys(folder.children).length === 0) ? '<span class="text-xs" style="color: var(--text-tertiary); font-weight: 400;">(empty)</span>' : ''}
                             </span>
                         </div>
-                        <div class="hover-buttons flex gap-1 transition-opacity absolute right-2 top-1/2 transform -translate-y-1/2" style="opacity: 0; pointer-events: none; background: linear-gradient(to right, transparent, var(--bg-hover) 20%, var(--bg-hover)); padding-left: 20px;" @click.stop>
+                        <div class="hover-buttons flex gap-1 transition-opacity absolute right-2 top-1/2 transform -translate-y-1/2" style="opacity: 0; pointer-events: none; background: linear-gradient(to right, transparent, var(--bg-hover) 20%, var(--bg-hover)); padding-left: 20px;" onclick="event.stopPropagation()">
                             <button 
-                                @click="dropdownTargetFolder = '${folder.path.replace(/'/g, "\\'")}'; toggleNewDropdown($event)"
+                                onclick="event.stopPropagation(); window.$root.dropdownTargetFolder = '${escapedPath}'; window.$root.toggleNewDropdown(event)"
                                 class="px-1.5 py-0.5 text-xs rounded hover:brightness-110"
                                 style="background-color: var(--bg-tertiary); color: var(--text-secondary);"
                                 title="Add item here"
                             >+</button>
                             <button 
-                                @click="renameFolder('${folder.path.replace(/'/g, "\\'")}', '${folder.name.replace(/'/g, "\\'")}')"
+                                onclick="event.stopPropagation(); window.$root.renameFolder('${escapedPath}', '${folder.name.replace(/'/g, "\\'").replace(/\\/g, "\\\\")}')"
                                 class="px-1.5 py-0.5 text-xs rounded hover:brightness-110"
                                 style="background-color: var(--bg-tertiary); color: var(--text-secondary);"
                                 title="Rename folder"
                             >✏️</button>
                             <button 
-                                @click="deleteFolder('${folder.path.replace(/'/g, "\\'")}', '${folder.name.replace(/'/g, "\\'")}')"
+                                onclick="event.stopPropagation(); window.$root.deleteFolder('${escapedPath}', '${folder.name.replace(/'/g, "\\'").replace(/\\/g, "\\\\")}')"
                                 class="px-1 py-0.5 text-xs rounded hover:brightness-110"
                                 style="color: var(--error);"
                                 title="Delete folder"
@@ -1069,29 +1073,32 @@ function noteApp() {
                         // Different icon for images
                         const icon = isImage ? '🖼️' : '';
                         
+                        // Escape paths for use in native event handlers
+                        const escapedNotePath = note.path.replace(/'/g, "\\'").replace(/\\/g, "\\\\");
+                        const escapedNoteName = note.name.replace(/'/g, "\\'").replace(/\\/g, "\\\\");
+                        
                         // Click handler
-                        const clickHandler = `openItem('${note.path.replace(/'/g, "\\'")}', '${note.type}')`; 
+                        const clickHandler = `window.$root.openItem('${escapedNotePath}', '${note.type}')`; 
                         
                         // Delete handler
                         const deleteHandler = isImage
-                            ? `deleteImage('${note.path.replace(/'/g, "\\'")}')`
-                            : `deleteNote('${note.path.replace(/'/g, "\\'")}', '${note.name.replace(/'/g, "\\'")}')`; 
+                            ? `event.stopPropagation(); window.$root.deleteImage('${escapedNotePath}')`
+                            : `event.stopPropagation(); window.$root.deleteNote('${escapedNotePath}', '${escapedNoteName}')`; 
                         
                         html += `
                             <div 
                                 draggable="true"
-                                x-data="{}"
-                                @dragstart="onNoteDragStart('${note.path.replace(/'/g, "\\'")}', $event)"
-                                @dragend="onNoteDragEnd()"
-                                @click="${clickHandler}"
+                                ondragstart="window.$root.onNoteDragStart('${escapedNotePath}', event)"
+                                ondragend="window.$root.onNoteDragEnd()"
+                                onclick="${clickHandler}"
                                 class="note-item px-2 py-1 text-sm relative"
                                 style="${isCurrent ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);'} ${isImage ? 'opacity: 0.85;' : ''} cursor: pointer;"
-                                @mouseover="if('${note.path}' !== currentNote && '${note.path}' !== currentImage) $el.style.backgroundColor='var(--bg-hover)'"
-                                @mouseout="if('${note.path}' !== currentNote && '${note.path}' !== currentImage) $el.style.backgroundColor='transparent'"
+                                onmouseover="if('${escapedNotePath}' !== window.$root.currentNote && '${escapedNotePath}' !== window.$root.currentImage) this.style.backgroundColor='var(--bg-hover)'"
+                                onmouseout="if('${escapedNotePath}' !== window.$root.currentNote && '${escapedNotePath}' !== window.$root.currentImage) this.style.backgroundColor='transparent'"
                             >
                                 <span class="truncate" style="display: block; padding-right: 30px;">${icon}${icon ? ' ' : ''}${note.name}</span>
                                 <button 
-                                    @click.stop="${deleteHandler}"
+                                    onclick="${deleteHandler}"
                                     class="note-delete-btn absolute right-2 top-1/2 transform -translate-y-1/2 px-1 py-0.5 text-xs rounded hover:brightness-110 transition-opacity"
                                     style="opacity: 0; color: var(--error);"
                                     title="${isImage ? 'Delete image' : 'Delete note'}"
@@ -1233,9 +1240,9 @@ function noteApp() {
             this.dropTarget = null;
             this.dragOverFolder = null;
             // Reset opacity of all note items
-            document.querySelectorAll('.note-item').forEach(el => {
-                el.style.opacity = '1';
-            });
+            document.querySelectorAll('.note-item').forEach(el => el.style.opacity = '1');
+            // Reset drag-over class (more efficient than querying all folder items)
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         },
         
         // Handle dragover on editor to show cursor position
@@ -1570,10 +1577,22 @@ function noteApp() {
             this.draggedFolder = null;
             this.dropTarget = null;
             this.dragOverFolder = null;
-            // Reset opacity of all folder items
-            document.querySelectorAll('.folder-item').forEach(el => {
-                el.style.opacity = '1';
-            });
+            // Reset styles - only query elements with drag-over class (more efficient)
+            document.querySelectorAll('.folder-item').forEach(el => el.style.opacity = '1');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        },
+        
+        cancelDrag() {
+            // Cancel any active drag operation (triggered by ESC key)
+            this.draggedNote = null;
+            this.draggedFolder = null;
+            this.draggedItem = null;
+            this.dropTarget = null;
+            this.dragOverFolder = null;
+            // Reset styles - only query elements with drag-over class (more efficient)
+            document.querySelectorAll('.folder-item').forEach(el => el.style.opacity = '1');
+            document.querySelectorAll('.note-item').forEach(el => el.style.opacity = '1');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
         },
         
         async onFolderDrop(targetFolderPath) {
