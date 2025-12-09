@@ -438,6 +438,52 @@
             color: var(--text-primary) !important;
         }
         
+        /* Syntax Highlighting Overlay */
+        .editor-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+        .editor-wrapper .editor-textarea {
+            position: relative;
+            z-index: 1;
+        }
+        .editor-wrapper.syntax-highlight .editor-textarea {
+            color: transparent !important;
+            caret-color: var(--text-primary);
+            background: transparent !important;
+        }
+        .syntax-overlay {
+            position: absolute;
+            inset: 0;
+            padding: 1.5rem;
+            pointer-events: none;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow: hidden;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: inherit;
+            line-height: inherit;
+            tab-size: 2;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            z-index: 0;
+        }
+        /* Syntax highlight colors using theme variables */
+        .syntax-overlay .md-heading { color: var(--accent-primary); font-weight: 600; }
+        .syntax-overlay .md-bold { color: var(--text-primary); font-weight: 700; }
+        .syntax-overlay .md-italic { color: var(--text-secondary); font-style: italic; }
+        .syntax-overlay .md-code { color: var(--accent-secondary, var(--accent-primary)); background: var(--bg-tertiary); padding: 1px 3px; border-radius: 3px; }
+        .syntax-overlay .md-link { color: var(--link-color, var(--accent-primary)); }
+        .syntax-overlay .md-link-url { color: var(--text-tertiary); }
+        .syntax-overlay .md-list { color: var(--accent-primary); }
+        .syntax-overlay .md-blockquote { color: var(--text-tertiary); font-style: italic; }
+        .syntax-overlay .md-hr { color: var(--border-primary); }
+        .syntax-overlay .md-wikilink { color: var(--link-internal, var(--accent-primary)); }
+        .syntax-overlay .md-frontmatter { color: var(--text-tertiary); }
+        .syntax-overlay .md-codeblock { color: var(--text-secondary); background: var(--bg-tertiary); }
+        
         /* Link drop zone cursor */
         .editor-textarea.link-drop-target {
             cursor: copy !important;
@@ -984,7 +1030,7 @@
                 >
                 
                 <!-- Files -->
-                <button 
+                    <button
                     class="icon-rail-btn" 
                     :class="{'active': activePanel === 'files'}"
                     @click="activePanel = 'files'"
@@ -993,11 +1039,11 @@
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-                    </svg>
-                </button>
+                        </svg>
+                    </button>
                 
                 <!-- Search -->
-                <button 
+                        <button
                     class="icon-rail-btn relative" 
                     :class="{'active': activePanel === 'search'}"
                     @click="activePanel = 'search'"
@@ -1006,7 +1052,7 @@
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
+                            </svg>
                     <!-- Search results badge -->
                     <span 
                         x-show="searchQuery.trim() && searchResults.length > 0"
@@ -1015,10 +1061,10 @@
                         style="background-color: var(--accent-primary); color: white;"
                         x-text="searchResults.length > 9 ? '9+' : searchResults.length"
                     ></span>
-                </button>
+                        </button>
                 
                 <!-- Tags -->
-                <button 
+                        <button
                     class="icon-rail-btn relative" 
                     :class="{'active': activePanel === 'tags'}"
                     @click="activePanel = 'tags'"
@@ -1027,7 +1073,7 @@
                 >
                     <svg fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-                    </svg>
+                            </svg>
                     <!-- Filtered notes badge (shows result count when tags selected) -->
                     <span 
                         x-show="selectedTags.length > 0"
@@ -1036,12 +1082,12 @@
                         style="background-color: var(--accent-primary); color: white;"
                         x-text="searchResults.length > 9 ? '9+' : searchResults.length"
                     ></span>
-                </button>
+                        </button>
                 
                 <div class="icon-rail-spacer"></div>
                 
                 <!-- Graph -->
-                <button 
+                        <button 
                     class="icon-rail-btn"
                     :class="{'active': showGraph}"
                     @click="showGraph = true; initGraph()"
@@ -1050,11 +1096,11 @@
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
-                    </svg>
-                </button>
-                
+                            </svg>
+                        </button>
+                    
                 <!-- Settings -->
-                <button 
+                            <button 
                     class="icon-rail-btn" 
                     :class="{'active': activePanel === 'settings'}"
                     @click="activePanel = 'settings'"
@@ -1065,9 +1111,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                </button>
-            </div>
-            
+                            </button>
+                    </div>
+                    
             <!-- Sidebar Panel -->
             <div class="sidebar-panel" style="border-right: 1px solid var(--border-primary);">
                 
@@ -1076,20 +1122,20 @@
                     <!-- Header with + New -->
                     <div class="flex-shrink-0 px-2 py-2 border-b flex items-center justify-between" style="border-color: var(--border-primary);">
                         <span class="text-xs font-semibold uppercase tracking-wide" style="color: var(--text-tertiary);">Files</span>
-                        <button 
-                            @click="dropdownTargetFolder = ''; toggleNewDropdown($event)"
+                <button 
+                    @click="dropdownTargetFolder = ''; toggleNewDropdown($event)"
                             class="px-2 py-1 text-xs font-medium text-white rounded focus:outline-none flex items-center gap-1"
-                            style="background-color: var(--accent-primary);"
-                            onmouseover="this.style.backgroundColor='var(--accent-hover)'"
-                            onmouseout="this.style.backgroundColor='var(--accent-primary)'"
-                        >
+                    style="background-color: var(--accent-primary);"
+                    onmouseover="this.style.backgroundColor='var(--accent-hover)'"
+                    onmouseout="this.style.backgroundColor='var(--accent-primary)'"
+                >
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
+                    </svg>
                             New
-                        </button>
-                    </div>
-                    
+                </button>
+            </div>
+            
                     <!-- Folder Tree -->
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
                         <div class="text-xs px-2 py-1 mb-2" style="color: var(--text-tertiary);">
@@ -1248,9 +1294,9 @@
                                     >
                                         <div class="font-medium truncate" x-text="note.name"></div>
                                         <div class="text-xs truncate" style="color: var(--text-tertiary);" x-html="(note.matches && note.matches.length > 0) ? note.matches[0].context : (note.folder || 'Root')"></div>
-                                    </div>
-                                </template>
-                            </div>
+                    </div>
+                </template>
+            </div>
                         </template>
                         <template x-if="searchQuery.trim() && searchResults.length === 0">
                             <div class="p-6 text-center">
@@ -1381,6 +1427,24 @@
                                     </select>
                                 </div>
                                 
+                                <!-- Syntax Highlighting Toggle -->
+                                <div class="mb-4">
+                                    <label class="flex items-center justify-between cursor-pointer">
+                                        <span class="text-xs font-medium" style="color: var(--text-secondary);">Editor Syntax Highlight</span>
+                                        <div 
+                                            @click="toggleSyntaxHighlight()"
+                                            class="relative w-10 h-5 rounded-full transition-colors cursor-pointer"
+                                            :style="syntaxHighlightEnabled ? 'background-color: var(--accent-primary)' : 'background-color: var(--bg-tertiary)'"
+                                        >
+                                            <div 
+                                                class="absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform"
+                                                :style="'background-color: var(--bg-primary);' + (syntaxHighlightEnabled ? ' transform: translateX(20px);' : '')"
+                                            ></div>
+                                        </div>
+                                    </label>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);">Colorize markdown syntax in editor</p>
+                                </div>
+                                
                                 <!-- Logout (if auth enabled) - uses authEnabled from main app state -->
                                 <div x-show="authEnabled" class="mb-4">
                                     <label class="block text-xs font-medium mb-2" style="color: var(--text-secondary);">Account</label>
@@ -1399,21 +1463,21 @@
                             <!-- Footer Info (inside scroll area) -->
                             <div class="p-3 mt-4 border-t text-center" style="border-color: var(--border-primary);">
                                 <div class="text-xs" style="color: var(--text-tertiary);">
-                                    <span x-text="notes.length"></span> notes
-                                    <span class="mx-1">·</span>
-                                    <span x-text="'v' + appVersion"></span>
+                    <span x-text="notes.length"></span> notes
+                    <span class="mx-1">·</span>
+                    <span x-text="'v' + appVersion"></span>
                                 </div>
-                                <a 
-                                    href="https://www.notediscovery.com" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
+                    <a 
+                        href="https://www.notediscovery.com" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
                                     class="text-xs hover:underline"
-                                    style="color: var(--accent-primary);"
-                                >
+                        style="color: var(--accent-primary);"
+                    >
                                     notediscovery.com
-                                </a>
-                            </div>
-                        </div>
+                    </a>                    
+                </div>
+            </div>
                     </div>
                 </template>
                 <!-- END SETTINGS PANEL -->
@@ -1806,19 +1870,31 @@
                             style="min-height: 0;"
                             :style="viewMode === 'split' ? `width: ${editorWidth}%;` : 'width: 100%;'"
                         >
-                            <textarea 
-                                id="note-editor"
-                                x-model="noteContent"
-                                @input="autoSave()"
-                                @drop="onEditorDrop($event)"
-                                @dragover.prevent="onEditorDragOver($event)"
-                                @dragenter="onEditorDragEnter($event)"
-                                @dragleave="onEditorDragLeave($event)"
-                                @paste="handlePaste($event)"
-                                :class="'flex-1 w-full p-6 resize-none focus:outline-none editor-textarea' + (draggedItem && dropTarget === 'editor' ? ' link-drop-target' : '')"
-                                :style="'background-color: var(--bg-primary); color: var(--text-primary);' + (draggedItem && dropTarget === 'editor' ? ' outline: 2px dashed var(--accent-primary); outline-offset: -2px; box-shadow: 0 0 20px var(--accent-light);' : '')"
-                                :placeholder="draggedItem && dropTarget === 'editor' ? '💡 Drop here to insert at cursor position...' : 'Start writing in markdown...'"
-                            ></textarea>
+                            <div 
+                                class="editor-wrapper"
+                                :class="{'syntax-highlight': syntaxHighlightEnabled}"
+                            >
+                                <div 
+                                    id="syntax-overlay"
+                                    class="syntax-overlay"
+                                    x-show="syntaxHighlightEnabled"
+                                    x-html="syntaxHighlightEnabled ? highlightMarkdown(noteContent) : ''"
+                                ></div>
+                                <textarea 
+                                    id="note-editor"
+                                    x-model="noteContent"
+                                    @input="autoSave(); updateSyntaxHighlight()"
+                                    @scroll="syncOverlayScroll()"
+                                    @drop="onEditorDrop($event)"
+                                    @dragover.prevent="onEditorDragOver($event)"
+                                    @dragenter="onEditorDragEnter($event)"
+                                    @dragleave="onEditorDragLeave($event)"
+                                    @paste="handlePaste($event)"
+                                    :class="'flex-1 w-full p-6 resize-none focus:outline-none editor-textarea' + (draggedItem && dropTarget === 'editor' ? ' link-drop-target' : '')"
+                                    :style="'background-color: var(--bg-primary); color: var(--text-primary);' + (draggedItem && dropTarget === 'editor' ? ' outline: 2px dashed var(--accent-primary); outline-offset: -2px; box-shadow: 0 0 20px var(--accent-light);' : '')"
+                                    :placeholder="draggedItem && dropTarget === 'editor' ? '💡 Drop here to insert at cursor position...' : 'Start writing in markdown...'"
+                                ></textarea>
+                            </div>
                         </div>
                         
                         <!-- Split view resize handle -->
