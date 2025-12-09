@@ -1782,7 +1782,7 @@ function noteApp() {
         // Load note from URL path
         loadNoteFromURL() {
             // Get path from URL (e.g., /folder/note or /note)
-            const path = window.location.pathname;
+            const path = window.location.pathname.removesuffix(".md");
             
             // Skip if root path or static assets
             if (path === '/' || path.startsWith('/static/') || path.startsWith('/api/')) {
