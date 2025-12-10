@@ -568,11 +568,28 @@ function noteApp() {
             // Escape HTML first
             let html = this.escapeHtml(text);
             
-            // Frontmatter (must be at start)
-            html = html.replace(/^(---\n[\s\S]*?\n---)/m, '<span class="md-frontmatter">$1</span>');
+            // Store code blocks and inline code with placeholders to protect from other patterns
+            const codePlaceholders = [];
             
-            // Code blocks (before other patterns to avoid conflicts)
-            html = html.replace(/(```[\s\S]*?```)/g, '<span class="md-codeblock">$1</span>');
+            // Frontmatter (must be at start) - protect it
+            html = html.replace(/^(---\n[\s\S]*?\n---)/m, (match) => {
+                codePlaceholders.push('<span class="md-frontmatter">' + match + '</span>');
+                return `\x00CODE${codePlaceholders.length - 1}\x00`;
+            });
+            
+            // Code blocks - protect them
+            html = html.replace(/(```[\s\S]*?```)/g, (match) => {
+                codePlaceholders.push('<span class="md-codeblock">' + match + '</span>');
+                return `\x00CODE${codePlaceholders.length - 1}\x00`;
+            });
+            
+            // Inline code - protect it
+            html = html.replace(/`([^`\n]+)`/g, (match) => {
+                codePlaceholders.push('<span class="md-code">' + match + '</span>');
+                return `\x00CODE${codePlaceholders.length - 1}\x00`;
+            });
+            
+            // Now apply other patterns (they won't match inside protected code)
             
             // Headings
             html = html.replace(/^(#{1,6})\s(.*)$/gm, '<span class="md-heading">$1 $2</span>');
@@ -584,9 +601,6 @@ function noteApp() {
             // Italic
             html = html.replace(/(?<![*\\])\*([^*\n]+)\*(?!\*)/g, '<span class="md-italic">*$1*</span>');
             html = html.replace(/(?<![_\\])_([^_\n]+)_(?!_)/g, '<span class="md-italic">_$1_</span>');
-            
-            // Inline code
-            html = html.replace(/`([^`\n]+)`/g, '<span class="md-code">`$1`</span>');
             
             // Wikilinks [[...]]
             html = html.replace(/\[\[([^\]]+)\]\]/g, '<span class="md-wikilink">[[$1]]</span>');
@@ -603,6 +617,9 @@ function noteApp() {
             
             // Horizontal rules
             html = html.replace(/^([-*_]{3,})$/gm, '<span class="md-hr">$1</span>');
+            
+            // Restore protected code blocks
+            html = html.replace(/\x00CODE(\d+)\x00/g, (match, index) => codePlaceholders[parseInt(index)]);
             
             return html;
         },
