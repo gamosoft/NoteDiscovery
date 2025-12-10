@@ -1422,7 +1422,7 @@
                                         style="background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary); cursor: pointer;"
                                     >
                                         <template x-for="theme in availableThemes" :key="theme.id">
-                                            <option :value="theme.id" x-text="theme.name"></option>
+                                            <option :value="theme.id" :selected="theme.id === currentTheme" x-text="theme.name"></option>
                                         </template>
                                     </select>
                                 </div>
