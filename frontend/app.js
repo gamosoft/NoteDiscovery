@@ -281,6 +281,10 @@ function noteApp() {
         
         // Initialize app
         async init() {
+            // Prevent double initialization (Alpine.js may call x-init twice in some cases)
+            if (window.__noteapp_initialized) return;
+            window.__noteapp_initialized = true;
+            
             // Store global reference for native event handlers in x-html content
             window.$root = this;
             
