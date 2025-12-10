@@ -1910,7 +1910,14 @@ function noteApp() {
         // Load note from URL path
         loadNoteFromURL() {
             // Get path from URL (e.g., /folder/note or /note)
-            const path = window.location.pathname;
+            let path = window.location.pathname;
+            
+            // Strip .md extension if present (for MKdocs/Zensical integration)
+            if (path.toLowerCase().endsWith('.md')) {
+                path = path.slice(0, -3);
+                // Update URL bar to show clean path without .md
+                window.history.replaceState(null, '', path);
+            }
             
             // Skip if root path or static assets
             if (path === '/' || path.startsWith('/static/') || path.startsWith('/api/')) {
