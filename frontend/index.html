@@ -1829,6 +1829,8 @@
                                     @click="viewMode = 'edit'"
                                     class="px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'edit' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
+                                    @mouseenter="if (viewMode !== 'edit') $el.style.backgroundColor = 'var(--bg-secondary)'"
+                                    @mouseleave="if (viewMode !== 'edit') $el.style.backgroundColor = 'transparent'"
                                 >
                                     Edit
                                 </button>
@@ -1836,6 +1838,8 @@
                                     @click="viewMode = 'split'"
                                     class="mobile-hide-split px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'split' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
+                                    @mouseenter="if (viewMode !== 'split') $el.style.backgroundColor = 'var(--bg-secondary)'"
+                                    @mouseleave="if (viewMode !== 'split') $el.style.backgroundColor = 'transparent'"
                                 >
                                     Split
                                 </button>
@@ -1843,6 +1847,8 @@
                                     @click="viewMode = 'preview'"
                                     class="px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'preview' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
+                                    @mouseenter="if (viewMode !== 'preview') $el.style.backgroundColor = 'var(--bg-secondary)'"
+                                    @mouseleave="if (viewMode !== 'preview') $el.style.backgroundColor = 'transparent'"
                                 >
                                     Preview
                                 </button>
