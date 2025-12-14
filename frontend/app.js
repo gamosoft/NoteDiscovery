@@ -2057,8 +2057,8 @@ function noteApp() {
                 this.currentImage = ''; // Clear image viewer when loading a note
                 this.lastSaved = false;
                 
-                // Initialize undo/redo history for this note
-                this.undoHistory = [data.content];
+                // Initialize undo/redo history for this note (with cursor at start)
+                this.undoHistory = [{ content: data.content, cursorPos: 0 }];
                 this.redoHistory = [];
                 
                 // Update browser URL and history
@@ -2634,15 +2634,18 @@ function noteApp() {
             }, CONFIG.AUTOSAVE_DELAY);
         },
         
-        // Push current content to undo history
+        // Push current content to undo history (with cursor position)
         pushToHistory() {
+            const editor = document.getElementById('note-editor');
+            const cursorPos = editor ? editor.selectionStart : 0;
+            
             // Only push if content actually changed
             if (this.undoHistory.length > 0 && 
-                this.undoHistory[this.undoHistory.length - 1] === this.noteContent) {
+                this.undoHistory[this.undoHistory.length - 1].content === this.noteContent) {
                 return;
             }
             
-            this.undoHistory.push(this.noteContent);
+            this.undoHistory.push({ content: this.noteContent, cursorPos });
             
             // Limit history size
             if (this.undoHistory.length > this.maxHistorySize) {
@@ -2657,26 +2660,35 @@ function noteApp() {
         undo() {
             if (!this.currentNote || this.undoHistory.length <= 1) return;
             
+            const editor = document.getElementById('note-editor');
+            
             // Pop current state to redo history
-            const currentContent = this.undoHistory.pop();
-            this.redoHistory.push(currentContent);
+            const currentState = this.undoHistory.pop();
+            this.redoHistory.push(currentState);
             
             // Get previous state
-            const previousContent = this.undoHistory[this.undoHistory.length - 1];
+            const previousState = this.undoHistory[this.undoHistory.length - 1];
             
             // Apply previous state
             this.isUndoRedo = true;
-            this.noteContent = previousContent;
+            this.noteContent = previousState.content;
             
             // Recalculate stats with new content
             if (this.statsPluginEnabled) {
                 this.calculateStats();
             }
             
-            // Save the undone state
+            // Restore cursor position from the state we're going back to
             this.$nextTick(() => {
                 this.saveNote();
                 this.isUndoRedo = false;
+                if (editor) {
+                    setTimeout(() => {
+                        const newPos = Math.min(previousState.cursorPos, this.noteContent.length);
+                        editor.setSelectionRange(newPos, newPos);
+                        editor.focus();
+                    }, 0);
+                }
             });
         },
         
@@ -2684,25 +2696,34 @@ function noteApp() {
         redo() {
             if (!this.currentNote || this.redoHistory.length === 0) return;
             
+            const editor = document.getElementById('note-editor');
+            
             // Pop from redo history
-            const nextContent = this.redoHistory.pop();
+            const nextState = this.redoHistory.pop();
             
             // Push to undo history
-            this.undoHistory.push(nextContent);
+            this.undoHistory.push(nextState);
             
             // Apply next state
             this.isUndoRedo = true;
-            this.noteContent = nextContent;
+            this.noteContent = nextState.content;
             
             // Recalculate stats with new content
             if (this.statsPluginEnabled) {
                 this.calculateStats();
             }
             
-            // Save the redone state
+            // Restore cursor position from the state we're going forward to
             this.$nextTick(() => {
                 this.saveNote();
                 this.isUndoRedo = false;
+                if (editor) {
+                    setTimeout(() => {
+                        const newPos = Math.min(nextState.cursorPos, this.noteContent.length);
+                        editor.setSelectionRange(newPos, newPos);
+                        editor.focus();
+                    }, 0);
+                }
             });
         },
         
