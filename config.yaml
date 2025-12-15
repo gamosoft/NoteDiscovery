@@ -4,7 +4,7 @@
 app:
   name: "NoteDiscovery"
   tagline: "Your Self-Hosted Knowledge Base"
-  
+
 server:
   host: "0.0.0.0"
   port: 8000
@@ -17,14 +17,14 @@ server:
   
   # Debug mode - shows detailed error messages (DISABLE in production!)
   debug: false
-  
+
 storage:
   notes_dir: "./data"
   plugins_dir: "./plugins"
-  
+
 search:
   enabled: true
-  
+
 authentication:
   # Authentication settings
   # Set enabled to true to require login
@@ -37,7 +37,7 @@ authentication:
   # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
   secret_key: "change_this_to_a_random_secret_key_in_production"
   
-  # Password hash - Generate with: python generate_password.py
+  # Password hash - Generate with: docker compose exec notediscovery python generate_password.py
   # ⚠️ Default password is "admin" - CHANGE THIS for production!
   password_hash: "$2b$12$t/6PGExFzdpU2PUta0iVY.eDQwvu63kH.c/d4bEnnHaQ5CspH1yrG"  # Default: "admin"
   
