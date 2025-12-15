@@ -774,6 +774,9 @@ def apply_template_placeholders(content: str, note_path: str) -> str:
     
     Supported placeholders:
         {{date}}      - Current date (YYYY-MM-DD)
+        {{year}}      - Current year (YYYY)
+        {{month}}     - Current month (MM)
+        {{day}}       - Current day (DD)
         {{time}}      - Current time (HH:MM:SS)
         {{datetime}}  - Current datetime (YYYY-MM-DD HH:MM:SS)
         {{timestamp}} - Unix timestamp
@@ -794,6 +797,9 @@ def apply_template_placeholders(content: str, note_path: str) -> str:
         '{{date}}': now.strftime('%Y-%m-%d'),
         '{{time}}': now.strftime('%H:%M:%S'),
         '{{datetime}}': now.strftime('%Y-%m-%d %H:%M:%S'),
+        '{{year}}': now.strftime('%Y'),
+        '{{month}}': now.strftime('%m'),
+        '{{day}}': now.strftime('%d'),
         '{{timestamp}}': str(int(now.timestamp())),
         '{{title}}': note.stem,
         '{{folder}}': note.parent.name if str(note.parent) != '.' else 'Root',
