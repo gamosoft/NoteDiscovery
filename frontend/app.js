@@ -2671,7 +2671,7 @@ function noteApp() {
         
         // Rename a folder
         async renameFolder(folderPath, currentName) {
-            const newName = prompt(`Rename folder "${currentName}" to:`, currentName);
+            const newName = prompt(this.t('folders.prompt_rename', { name: currentName }), currentName);
             if (!newName || newName === currentName) return;
             
             const sanitizedName = newName.trim().replace(/[^a-zA-Z0-9-_\s]/g, '');
