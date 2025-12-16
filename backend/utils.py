@@ -773,12 +773,15 @@ def apply_template_placeholders(content: str, note_path: str) -> str:
     Replace template placeholders with actual values.
     
     Supported placeholders:
-        {{date}}      - Current date (YYYY-MM-DD)
-        {{time}}      - Current time (HH:MM:SS)
-        {{datetime}}  - Current datetime (YYYY-MM-DD HH:MM:SS)
-        {{timestamp}} - Unix timestamp
-        {{title}}     - Note name without extension
-        {{folder}}    - Parent folder name
+        {{date}}       - Current date (YYYY-MM-DD)
+        {{time}}       - Current time (HH:MM:SS)
+        {{datetime}}   - Current datetime (YYYY-MM-DD HH:MM:SS)
+        {{timestamp}}  - Unix timestamp
+        {{year}}       - Current year (YYYY)
+        {{month}}      - Current month (MM)
+        {{day}}        - Current day (DD)
+        {{title}}      - Note name without extension
+        {{folder}}     - Parent folder name
     
     Args:
         content: Template content with placeholders
@@ -795,6 +798,9 @@ def apply_template_placeholders(content: str, note_path: str) -> str:
         '{{time}}': now.strftime('%H:%M:%S'),
         '{{datetime}}': now.strftime('%Y-%m-%d %H:%M:%S'),
         '{{timestamp}}': str(int(now.timestamp())),
+        '{{year}}': now.strftime('%Y'),
+        '{{month}}': now.strftime('%m'),
+        '{{day}}': now.strftime('%d'),
         '{{title}}': note.stem,
         '{{folder}}': note.parent.name if str(note.parent) != '.' else 'Root',
     }
