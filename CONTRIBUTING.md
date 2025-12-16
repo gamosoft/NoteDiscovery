@@ -139,6 +139,65 @@ Plugins should:
 - Be optional and not break core functionality if disabled
 - Follow the plugin configuration format
 
+## 🌍 Contributing Translations
+
+NoteDiscovery supports multiple languages through JSON locale files. Adding a new language is easy!
+
+### How to Add a New Language
+
+1. **Copy the English locale file:**
+   ```bash
+   cp locales/en-US.json locales/xx-XX.json
+   ```
+   Use the appropriate [BCP 47 language tag](https://en.wikipedia.org/wiki/IETF_language_tag) (e.g., `pt-BR`, `ja-JP`, `zh-CN`).
+
+2. **Update the `_meta` section:**
+   ```json
+   {
+     "_meta": {
+       "code": "xx-XX",
+       "name": "Language Name",
+       "flag": "🇽🇽"
+     },
+     ...
+   }
+   ```
+
+3. **Translate all string values:**
+   - Keep the keys exactly as they are (don't translate keys!)
+   - Translate only the values
+   - Preserve `{{placeholders}}` - they get replaced with dynamic values
+   - Keep emoji prefixes like `✓`, `💡`, `📂` as they are universal
+
+4. **Test your translation:**
+   - Restart the application
+   - Go to Settings → Language dropdown
+   - Your new language should appear automatically
+   - Click through the UI to verify translations
+
+### Translation Guidelines
+
+- **Be consistent** - Use the same terminology throughout
+- **Match the tone** - NoteDiscovery uses friendly, concise language
+- **Preserve formatting** - Keep `\n` for newlines in multi-line strings
+- **Handle plurals simply** - It uses `{{count}}` placeholders (e.g., "hace {{count}}m")
+- **Test date formats** - Dates are formatted using the browser's `Intl` API with your locale code
+
+### What Gets Translated
+
+| Category | Examples |
+|----------|----------|
+| UI Labels | Button text, panel titles, tooltips |
+| Messages | Alerts, confirmations, prompts |
+| Placeholders | Search box, editor hints |
+| Relative times | "just now", "5m ago", "2d ago" |
+
+### What Stays in English
+
+- Technical terms: "Wikilinks", "Markdown", "HTML"
+- Keyboard shortcuts in tooltips: "Ctrl+Z", "Esc"
+- File extensions: ".md", ".json"
+
 ## 📚 Contributing Documentation
 
 Documentation improvements are always welcome! Please:

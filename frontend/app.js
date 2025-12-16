@@ -25,6 +25,8 @@ const ErrorHandler = {
         
         // Show user-friendly alert if requested
         if (showAlert) {
+            // Note: ErrorHandler doesn't have access to Alpine's t() function
+            // This message remains in English as a fallback
             alert(`Failed to ${operation}. Please try again.`);
         }
     }
@@ -34,7 +36,6 @@ function noteApp() {
     return {
         // App state
         appName: 'NoteDiscovery',
-        appTagline: 'Your Self-Hosted Knowledge Base',
         appVersion: '0.0.0',
         authEnabled: false,
         notes: [],
@@ -82,6 +83,12 @@ function noteApp() {
         // Theme state
         currentTheme: 'light',
         availableThemes: [],
+        
+        // Locale/i18n state
+        currentLocale: localStorage.getItem('locale') || 'en-US',
+        availableLocales: [],
+        // Translations loaded from backend (preloaded before Alpine init via window.__preloadedTranslations)
+        translations: window.__preloadedTranslations || {},
         
         // Syntax highlighting
         syntaxHighlightEnabled: false,
@@ -229,7 +236,7 @@ function noteApp() {
                 return this._homepageCache.breadcrumb;
             }
             
-            const breadcrumb = [{ name: 'Home', path: '' }];
+            const breadcrumb = [{ name: this.t('homepage.title'), path: '' }];
             
             if (this.selectedHomepageFolder) {
                 const parts = this.selectedHomepageFolder.split('/').filter(Boolean);
@@ -255,6 +262,18 @@ function noteApp() {
             const sizes = ['B', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        },
+        
+        // Helper: Format date using current locale
+        formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '';
+            return date.toLocaleDateString(this.currentLocale, { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
         },
         
         getFolderNode(folderPath = '') {
@@ -320,6 +339,9 @@ function noteApp() {
             await this.loadConfig();
             await this.loadThemes();
             await this.initTheme();
+            await this.loadAvailableLocales();
+            // Note: Translations are preloaded synchronously before Alpine init (see index.html)
+            // loadLocale() is only called when user changes language from settings
             await this.loadNotes();
             await this.loadTemplates();
             await this.checkStatsPlugin();
@@ -545,7 +567,6 @@ function noteApp() {
                 const response = await fetch('/api/config');
                 const config = await response.json();
                 this.appName = config.name;
-                this.appTagline = config.tagline;
                 this.appVersion = config.version || '0.0.0';
                 this.authEnabled = config.authentication?.enabled || false;
             } catch (error) {
@@ -761,6 +782,68 @@ function noteApp() {
             }
         },
         
+        // ==================== INTERNATIONALIZATION ====================
+        
+        // Translation function - get translated string by key
+        t(key, params = {}) {
+            const keys = key.split('.');
+            let value = this.translations;
+            
+            for (const k of keys) {
+                value = value?.[k];
+            }
+            
+            // Fallback to key if translation not found (silently - default translations are inline)
+            if (typeof value !== 'string') {
+                return key;
+            }
+            
+            // Replace {{param}} placeholders
+            return value.replace(/\{\{(\w+)\}\}/g, (_, name) => params[name] ?? `{{${name}}}`);
+        },
+        
+        // Load available locales from backend
+        async loadAvailableLocales() {
+            try {
+                const response = await fetch('/api/locales');
+                const data = await response.json();
+                this.availableLocales = data.locales || [];
+            } catch (error) {
+                console.error('Failed to load available locales:', error);
+                this.availableLocales = [{ code: 'en-US', name: 'English', flag: '🇺🇸' }];
+            }
+        },
+        
+        // Load translations for a specific locale
+        async loadLocale(localeCode = null) {
+            const targetLocale = localeCode || localStorage.getItem('locale') || 'en-US';
+            
+            try {
+                const response = await fetch(`/api/locales/${targetLocale}`);
+                if (response.ok) {
+                    this.translations = await response.json();
+                    this.currentLocale = targetLocale;
+                    localStorage.setItem('locale', targetLocale);
+                } else if (targetLocale !== 'en-US') {
+                    // Fallback to en-US if requested locale not found
+                    await this.loadLocale('en-US');
+                }
+            } catch (error) {
+                console.error('Failed to load locale:', error);
+                // If en-US also fails, translations will be empty and t() will return keys
+                if (targetLocale !== 'en-US') {
+                    await this.loadLocale('en-US');
+                }
+            }
+        },
+        
+        // Change locale and reload translations
+        async changeLocale(localeCode) {
+            await this.loadLocale(localeCode);
+        },
+        
+        // ==================== END INTERNATIONALIZATION ====================
+        
         // Load all notes
         async loadNotes() {
             try {
@@ -907,7 +990,7 @@ function noteApp() {
                 // CRITICAL: Check if note already exists
                 const existingNote = this.notes.find(note => note.path === notePath);
                 if (existingNote) {
-                    alert(`A note named "${this.newTemplateNoteName.trim()}" already exists in this location.\nPlease choose a different name.`);
+                    alert(this.t('notes.already_exists', { name: this.newTemplateNoteName.trim() }));
                     return;
                 }
                 
@@ -923,7 +1006,7 @@ function noteApp() {
                 
                 if (!response.ok) {
                     const error = await response.json();
-                    alert(error.detail || 'Failed to create note from template');
+                    alert(error.detail || this.t('templates.create_failed'));
                     return;
                 }
                 
@@ -1128,13 +1211,13 @@ function noteApp() {
             const diffHours = Math.floor(diffMins / 60);
             const diffDays = Math.floor(diffHours / 24);
             
-            if (diffSecs < 60) return 'just now';
-            if (diffMins < 60) return `${diffMins}m ago`;
-            if (diffHours < 24) return `${diffHours}h ago`;
-            if (diffDays < 7) return `${diffDays}d ago`;
+            if (diffSecs < 60) return this.t('editor.just_now');
+            if (diffMins < 60) return this.t('editor.minutes_ago', { count: diffMins });
+            if (diffHours < 24) return this.t('editor.hours_ago', { count: diffHours });
+            if (diffDays < 7) return this.t('editor.days_ago', { count: diffDays });
             
-            // For older dates, show the date
-            return modified.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+            // For older dates, show the date in selected locale
+            return modified.toLocaleDateString(this.currentLocale, { month: 'short', day: 'numeric' });
         },
         
         // Parse tags from markdown content (matches backend logic)
@@ -1356,7 +1439,7 @@ function noteApp() {
                             </button>
                             <span class="flex items-center gap-1 flex-1" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; pointer-events: none;">
                                 <span>${folder.name}</span>
-                                ${folder.notes.length === 0 && (!folder.children || Object.keys(folder.children).length === 0) ? '<span class="text-xs" style="color: var(--text-tertiary); font-weight: 400;">(empty)</span>' : ''}
+                                ${folder.notes.length === 0 && (!folder.children || Object.keys(folder.children).length === 0) ? `<span class="text-xs" style="color: var(--text-tertiary); font-weight: 400;">(${this.t('folders.empty')})</span>` : ''}
                             </span>
                         </div>
                         <div class="hover-buttons flex gap-1 transition-opacity absolute right-2 top-1/2 transform -translate-y-1/2" style="opacity: 0; pointer-events: none; background: linear-gradient(to right, transparent, var(--bg-hover) 20%, var(--bg-hover)); padding-left: 20px;" onclick="event.stopPropagation()">
@@ -1678,7 +1761,7 @@ function noteApp() {
         // Handle image files dropped into editor
         async handleImageDrop(event) {
             if (!this.currentNote) {
-                alert('Please open a note first before uploading images.');
+                alert(this.t('notes.open_first'));
                 return;
             }
             
@@ -1690,7 +1773,7 @@ function noteApp() {
             });
             
             if (imageFiles.length === 0) {
-                alert('No valid image files found. Supported formats: JPG, PNG, GIF, WEBP');
+                alert(this.t('images.no_valid_files'));
                 return;
             }
             
@@ -1823,7 +1906,7 @@ function noteApp() {
         // Delete an image
         async deleteImage(imagePath) {
             const filename = imagePath.split('/').pop();
-            if (!confirm(`Delete image "${filename}"?`)) return;
+            if (!confirm(this.t('images.confirm_delete', { name: filename }))) return;
             
             try {
                 const response = await fetch(`/api/notes/${encodeURIComponent(imagePath)}`, {
@@ -1896,7 +1979,7 @@ function noteApp() {
                     if (noteByPathCI) {
                         this.loadNote(noteByPathCI.path);
                 } else {
-                    alert(`Note not found: ${notePath}`);
+                    alert(this.t('notes.not_found', { path: notePath }));
                     }
                 }
             }
@@ -1996,11 +2079,11 @@ function noteApp() {
                         }
                     } else {
                         const errorData = await response.json().catch(() => ({}));
-                        alert(errorData.detail || 'Failed to move note.');
+                        alert(errorData.detail || this.t('move.failed_note'));
                     }
                 } catch (error) {
                     console.error('Failed to move note:', error);
-                    alert('Failed to move note.');
+                    alert(this.t('move.failed_note'));
                 }
                 
                 return;
@@ -2011,7 +2094,7 @@ function noteApp() {
                 // Prevent dropping folder into itself or its subfolders
                 if (targetFolderPath === draggedFolderPath || 
                     targetFolderPath.startsWith(draggedFolderPath + '/')) {
-                    alert('Cannot move folder into itself or its subfolder.');
+                    alert(this.t('folders.cannot_move_into_self'));
                     return;
                 }
                 
@@ -2058,11 +2141,11 @@ function noteApp() {
                         }
                     } else {
                         const errorData = await response.json().catch(() => ({}));
-                        alert(errorData.detail || 'Failed to move folder.');
+                        alert(errorData.detail || this.t('move.failed_folder'));
                     }
                 } catch (error) {
                     console.error('Failed to move folder:', error);
-                    alert('Failed to move folder.');
+                    alert(this.t('move.failed_folder'));
                 }
                 this.dropTarget = null;
             }
@@ -2459,15 +2542,15 @@ function noteApp() {
             this.closeDropdown();
             
             const promptText = targetFolder 
-                ? `Create note in "${targetFolder}".\nEnter note name:`
-                : 'Enter note name (you can use folder/name):';
+                ? this.t('notes.prompt_name_in_folder', { folder: targetFolder })
+                : this.t('notes.prompt_name_with_path');
             
             const noteName = prompt(promptText);
             if (!noteName) return;
             
             const sanitizedName = noteName.trim().replace(/[^a-zA-Z0-9-_\s\/]/g, '');
             if (!sanitizedName) {
-                alert('Invalid note name.');
+                alert(this.t('notes.invalid_name'));
                 return;
             }
             
@@ -2481,7 +2564,7 @@ function noteApp() {
             // CRITICAL: Check if note already exists
             const existingNote = this.notes.find(note => note.path === notePath);
             if (existingNote) {
-                alert(`A note named "${sanitizedName}" already exists in this location.\nPlease choose a different name.`);
+                alert(this.t('notes.already_exists', { name: sanitizedName }));
                 return;
             }
             
@@ -2520,15 +2603,15 @@ function noteApp() {
             this.closeDropdown();
             
             const promptText = targetFolder 
-                ? `Create subfolder in "${targetFolder}".\nEnter folder name:`
-                : 'Create new folder.\nEnter folder path (e.g., "Projects" or "Work/2025"):';
+                ? this.t('folders.prompt_name_in_folder', { folder: targetFolder })
+                : this.t('folders.prompt_name_with_path');
             
             const folderName = prompt(promptText);
             if (!folderName) return;
             
             const sanitizedName = folderName.trim().replace(/[^a-zA-Z0-9-_\s\/]/g, '');
             if (!sanitizedName) {
-                alert('Invalid folder name.');
+                alert(this.t('folders.invalid_name'));
                 return;
             }
             
@@ -2537,7 +2620,7 @@ function noteApp() {
             // Check if folder already exists
             const existingFolder = this.allFolders.find(folder => folder === folderPath);
             if (existingFolder) {
-                alert(`A folder named "${sanitizedName}" already exists in this location.\nPlease choose a different name.`);
+                alert(this.t('folders.already_exists', { name: sanitizedName }));
                 return;
             }
             
@@ -2567,12 +2650,12 @@ function noteApp() {
         
         // Rename a folder
         async renameFolder(folderPath, currentName) {
-            const newName = prompt(`Rename folder "${currentName}" to:`, currentName);
+            const newName = prompt(this.t('folders.prompt_rename', { name: currentName }), currentName);
             if (!newName || newName === currentName) return;
             
             const sanitizedName = newName.trim().replace(/[^a-zA-Z0-9-_\s]/g, '');
             if (!sanitizedName) {
-                alert('Invalid folder name.');
+                alert(this.t('folders.invalid_name'));
                 return;
             }
             
@@ -2630,14 +2713,7 @@ function noteApp() {
         
         // Delete folder
         async deleteFolder(folderPath, folderName) {
-            const confirmation = confirm(
-                `⚠️ WARNING ⚠️\n\n` +
-                `Are you sure you want to delete the folder "${folderName}"?\n\n` +
-                `This will PERMANENTLY delete:\n` +
-                `• All notes inside this folder\n` +
-                `• All subfolders and their contents\n\n` +
-                `This action CANNOT be undone!`
-            );
+            const confirmation = confirm(this.t('folders.confirm_delete', { name: folderName }));
             
             if (!confirmation) return;
             
@@ -2945,7 +3021,7 @@ function noteApp() {
             const newName = this.currentNoteName.trim();
             
             if (!newName) {
-                alert('Note name cannot be empty.');
+                alert(this.t('notes.empty_name'));
                 return;
             }
             
@@ -2957,7 +3033,7 @@ function noteApp() {
             // Check if a note with the new name already exists
             const existingNote = this.notes.find(n => n.path.toLowerCase() === newPath.toLowerCase());
             if (existingNote) {
-                alert(`A note named "${newName}" already exists in this folder.`);
+                alert(this.t('notes.already_exists', { name: newName }));
                 // Reset the name in the UI
                 this.currentNoteName = oldPath.split('/').pop().replace('.md', '');
                 return;
@@ -3003,7 +3079,7 @@ function noteApp() {
         
         // Delete any note from sidebar
         async deleteNote(notePath, noteName) {
-            if (!confirm(`Delete "${noteName}"?`)) return;
+            if (!confirm(this.t('notes.confirm_delete', { name: noteName }))) return;
             
             try {
                 const response = await fetch(`/api/notes/${notePath}`, {
@@ -3799,7 +3875,7 @@ function noteApp() {
                     date = new Date(value);
                 }
                 if (!isNaN(date.getTime())) {
-                    return date.toLocaleDateString('en-US', { 
+                    return date.toLocaleDateString(this.currentLocale, { 
                         year: 'numeric', 
                         month: 'short', 
                         day: 'numeric' 
@@ -3809,7 +3885,7 @@ function noteApp() {
             
             // Booleans
             if (typeof value === 'boolean') {
-                return value ? '✓ Yes' : '✗ No';
+                return value ? this.t('common.yes') : this.t('common.no');
             }
             
             return String(value);
@@ -4083,7 +4159,7 @@ function noteApp() {
         // Export current note as HTML
         async exportToHTML() {
             if (!this.currentNote || !this.noteContent) {
-                alert('No note content to export');
+                alert(this.t('notes.no_content'));
                 return;
             }
             
@@ -4322,7 +4398,7 @@ function noteApp() {
                 
             } catch (error) {
                 console.error('HTML export failed:', error);
-                alert(`Failed to export HTML: ${error.message}`);
+                alert(this.t('export.failed', { error: error.message }));
             }
         },
         
@@ -4715,10 +4791,10 @@ function noteApp() {
                 </div>
                 <div class="graph-legend-item">
                     <span class="graph-legend-dot" style="background: ${mdColor};"></span>
-                    <span style="color: ${textColor};">Markdown links</span>
+                    <span style="color: ${textColor};">${this.t('graph.markdown_links')}</span>
                 </div>
                 <div style="margin-top: 8px; font-size: 10px; color: ${textColor}; opacity: 0.7;">
-                    Click: select • Double-click: open
+                    ${this.t('graph.click_hint')}
                 </div>
             `;
             container.appendChild(legend);

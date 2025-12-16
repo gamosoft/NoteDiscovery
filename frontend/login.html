@@ -6,6 +6,40 @@
     <title>Login - NoteDiscovery</title>
     <link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
     
+    <!-- Preload translations (same approach as index.html) -->
+    <script>
+        (function() {
+            const locale = localStorage.getItem('locale') || 'en-US';
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/api/locales/' + locale, false);
+            try {
+                xhr.send();
+                if (xhr.status === 200) {
+                    window.__translations = JSON.parse(xhr.responseText);
+                } else if (locale !== 'en-US') {
+                    xhr.open('GET', '/api/locales/en-US', false);
+                    xhr.send();
+                    if (xhr.status === 200) {
+                        window.__translations = JSON.parse(xhr.responseText);
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to preload translations:', e);
+                window.__translations = {};
+            }
+            
+            // Simple translation function
+            window.t = function(key) {
+                const keys = key.split('.');
+                let value = window.__translations;
+                for (const k of keys) {
+                    value = value?.[k];
+                }
+                return typeof value === 'string' ? value : key;
+            };
+        })();
+    </script>
+    
     <!-- Theme styles will be loaded dynamically -->
     <script>
         // Load theme immediately (same approach as index.html)
@@ -191,7 +225,7 @@
     <div class="login-container">
         <img src="/static/logo.svg" alt="NoteDiscovery" class="logo">
         <h1>NoteDiscovery</h1>
-        <p class="tagline">Your Self-Hosted Knowledge Base</p>
+        <p class="tagline" id="tagline"></p>
         
         <form method="post" action="/login">
             <div>
@@ -199,18 +233,16 @@
                     type="password" 
                     name="password" 
                     id="password"
-                    placeholder="Enter your password" 
                     required 
                     autofocus
-                    <!-- ERROR_CLASS_PLACEHOLDER -->
                 >
-                <!-- ERROR_MESSAGE_PLACEHOLDER -->
+                <div class="error-message" id="error-message" style="display: none;"></div>
             </div>
-            <button type="submit">🔓 Unlock</button>
+            <button type="submit" id="submit-btn"></button>
         </form>
         
         <div class="footer">
-            🔒 Secure & Self-Hosted
+            <span id="footer-text"></span>
             <div style="margin-top: 8px; font-size: 12px; opacity: 0.6;">
                 <a href="https://www.notediscovery.com" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
                     <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,6 +253,26 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Apply translations after DOM is ready
+        document.getElementById('tagline').textContent = t('login.tagline');
+        document.getElementById('password').placeholder = t('login.password_placeholder');
+        document.getElementById('submit-btn').textContent = t('login.unlock_button');
+        document.getElementById('footer-text').textContent = t('login.footer');
+        document.title = t('login.title') + ' - NoteDiscovery';
+        
+        // Handle error from URL params
+        var urlParams = new URLSearchParams(window.location.search);
+        var errorCode = urlParams.get('error');
+        if (errorCode) {
+            var errorEl = document.getElementById('error-message');
+            var passwordEl = document.getElementById('password');
+            errorEl.textContent = t('login.error_' + errorCode);
+            errorEl.style.display = 'flex';
+            passwordEl.classList.add('error');
+        }
+    </script>
 </body>
 </html>
 

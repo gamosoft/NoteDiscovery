@@ -1,5 +1,12 @@
 # 📝 NoteDiscovery
 
+![GitHub Stars](https://img.shields.io/github/stars/gamosoft/notediscovery?style=flat)
+![Build](https://img.shields.io/github/actions/workflow/status/gamosoft/notediscovery/docker-publish.yml)
+![Latest Version](https://img.shields.io/github/v/tag/gamosoft/notediscovery)
+![License](https://img.shields.io/github/license/gamosoft/notediscovery)
+
+
+
 > Your Self-Hosted Knowledge Base
 
 🌐 **[Visit the official website](https://www.notediscovery.com)**
@@ -19,6 +26,14 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 - **Knowledge workers** building a personal wiki or second brain
 - **Teams** looking for a self-hosted alternative to commercial apps
 - **Anyone** who values simplicity, speed, and ownership
+
+
+## 💖 Thanks for using NoteDiscovery!
+If this project has been useful to you, consider supporting its development, it truly makes a difference!
+
+<p align="center">
+  <a href="https://ko-fi.com/gamosoft"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Buy Me a Coffee at ko-fi.com"></a>
+</p>
 
 ## ✨ Why NoteDiscovery?
 
@@ -46,6 +61,7 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 - 🧮 **Math Support** - LaTeX/MathJax for beautiful equations
 - 📄 **HTML Export** - Share notes as standalone HTML files
 - 🕸️ **Graph View** - Interactive visualization of connected notes
+- ⭐ **Favorites** - Star your most-used notes for instant access
 
 ## 🚀 Quick Start
 
@@ -127,6 +143,7 @@ docker run -d \
   -v $(pwd)/data:/app/data \
   -v $(pwd)/plugins:/app/plugins \
   -v $(pwd)/themes:/app/themes \
+  -v $(pwd)/locales:/app/locales \
   -v $(pwd)/config.yaml:/app/config.yaml \
   --restart unless-stopped \
   ghcr.io/gamosoft/notediscovery:latest
@@ -140,6 +157,7 @@ docker run -d `
   -v ${PWD}/data:/app/data `
   -v ${PWD}/plugins:/app/plugins `
   -v ${PWD}/themes:/app/themes `
+  -v ${PWD}/locales:/app/locales `
   -v ${PWD}/config.yaml:/app/config.yaml `
   --restart unless-stopped `
   ghcr.io/gamosoft/notediscovery:latest
@@ -221,6 +239,25 @@ Want to learn more?
 - 🔐 **[AUTHENTICATION.md](documentation/AUTHENTICATION.md)** - Enable password protection for your instance
 - 🔧 **[ENVIRONMENT_VARIABLES.md](documentation/ENVIRONMENT_VARIABLES.md)** - Configure settings via environment variables
 
+## 🌍 Multiple Languages
+
+NoteDiscovery supports multiple languages! Currently available:
+- 🇺🇸 English (en-US) - Default
+- 🇪🇸 Español (es-ES)
+- 🇩🇪 Deutsch (de-DE)
+- 🇫🇷 Français (fr-FR)
+
+**To change language:** Go to Settings (gear icon) → Language dropdown.
+
+**To add your own language:** See the [Contributing Guidelines](CONTRIBUTING.md#-contributing-translations) for instructions on creating translation files.
+
+**Docker users:** Mount your custom locales folder to add or override translations:
+
+```yaml
+volumes:
+  - ./locales:/app/locales  # Custom translations
+```
+
 💡 **Pro Tip:** If you clone this repository, you can mount the `documentation/` folder to view these docs inside the app:
 
 ```yaml
@@ -231,10 +268,6 @@ volumes:
 ```
 
 Then access them at `http://localhost:8000` - the docs will appear as a `docs/` folder in the file browser!
-
-## 💖 Support Development
-
-If you find NoteDiscovery useful, consider [☕ buying me a coffee](https://ko-fi.com/gamosoft) to help keep the project going. Every bit helps with new features, bug fixes, and improvements. Thank you!
 
 ## 🤝 Contributing
 

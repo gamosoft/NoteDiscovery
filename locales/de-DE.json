@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "code": "de-DE",
+    "name": "Deutsch",
+    "flag": "🇩🇪"
+  },
+
+  "app": {
+    "tagline": "Deine Selbstgehostete Wissensdatenbank"
+  },
+
+  "common": {
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "rename": "Umbenennen",
+    "create": "Erstellen",
+    "close": "Schließen",
+    "yes": "✓ Ja",
+    "no": "✗ Nein",
+    "ok": "OK",
+    "error": "Fehler",
+    "loading": "Laden...",
+    "saved": "✓ Gespeichert",
+    "saving": "Speichern...",
+    "copied": "✓ Kopiert!",
+    "failed": "{{action}} fehlgeschlagen. Bitte versuche es erneut."
+  },
+
+  "sidebar": {
+    "title": "DATEIEN",
+    "favorites_title": "Favoriten",
+    "folders_and_notes": "Ordner & Notizen",
+    "new_button": "+ Neu",
+    "new_note": "Neue Notiz",
+    "new_folder": "Neuer Ordner",
+    "new_from_template": "Neu aus Vorlage",
+    "search_placeholder": "Notizen durchsuchen...",
+    "search_hint": "Tippe, um deine Notizen zu durchsuchen",
+    "clear_search": "Suche löschen",
+    "drag_hint": "💡 Ziehen=Verschieben",
+    "root_folder": "📂 Hauptordner",
+    "no_notes": "Noch keine Notizen. Erstelle deine erste Notiz!",
+    "no_notes_yet": "Noch keine Notizen oder Ordner.",
+    "create_first": "Erstelle deine erste Notiz oder Ordner!",
+    "no_favorites": "Noch keine Favoriten",
+    "no_results": "Keine Ergebnisse gefunden",
+    "expand_all": "Alle Ordner aufklappen",
+    "collapse_all": "Alle Ordner zuklappen",
+    "toggle_sidebar": "Seitenleiste umschalten",
+    "go_to_homepage": "Zur Startseite",
+    "files": "Dateien",
+    "search": "Suchen",
+    "search_title": "SUCHE",
+    "settings": "Einstellungen",
+    "settings_title": "EINSTELLUNGEN",
+    "filtered_notes": "Gefilterte Notizen"
+  },
+
+  "editor": {
+    "placeholder": "Beginne in Markdown zu schreiben...",
+    "drop_hint": "💡 Hier ablegen, um an Cursorposition einzufügen...",
+    "mode_edit": "Bearbeiten",
+    "mode_split": "Teilen",
+    "mode_preview": "Vorschau",
+    "edited": "Bearbeitet {{time}}",
+    "just_now": "gerade eben",
+    "minutes_ago": "vor {{count}}m",
+    "hours_ago": "vor {{count}}h",
+    "days_ago": "vor {{count}}T"
+  },
+
+  "notes": {
+    "confirm_delete": "\"{{name}}\" löschen?",
+    "already_exists": "Eine Notiz mit dem Namen \"{{name}}\" existiert bereits an diesem Ort.\nBitte wähle einen anderen Namen.",
+    "prompt_name": "Notizname eingeben:",
+    "prompt_name_in_folder": "Notiz in \"{{folder}}\" erstellen.\nNotizname eingeben:",
+    "prompt_name_with_path": "Notizname eingeben (du kannst Ordner/Name verwenden):",
+    "prompt_rename": "Neuen Namen eingeben:",
+    "invalid_name": "Ungültiger Notizname.",
+    "empty_name": "Der Notizname darf nicht leer sein.",
+    "not_found": "Notiz nicht gefunden: {{path}}",
+    "no_content": "Kein Inhalt zum Exportieren",
+    "open_first": "Bitte öffne zuerst eine Notiz, bevor du Bilder hochlädst."
+  },
+
+  "folders": {
+    "confirm_delete": "⚠️ WARNUNG ⚠️\n\nBist du sicher, dass du den Ordner \"{{name}}\" löschen möchtest?\n\nDies wird DAUERHAFT löschen:\n• Alle Notizen in diesem Ordner\n• Alle Unterordner und deren Inhalte\n\nDiese Aktion kann NICHT rückgängig gemacht werden!",
+    "already_exists": "Ein Ordner mit dem Namen \"{{name}}\" existiert bereits an diesem Ort.\nBitte wähle einen anderen Namen.",
+    "prompt_name": "Ordnername eingeben:",
+    "prompt_name_in_folder": "Unterordner in \"{{folder}}\" erstellen.\nOrdnername eingeben:",
+    "prompt_name_with_path": "Neuen Ordner erstellen.\nOrdnerpfad eingeben (z.B. \"Projekte\" oder \"Arbeit/2025\"):",
+    "prompt_rename": "Ordner \"{{name}}\" umbenennen zu:",
+    "invalid_name": "Ungültiger Ordnername.",
+    "cannot_move_into_self": "Ordner kann nicht in sich selbst oder einen Unterordner verschoben werden.",
+    "empty": "leer"
+  },
+
+  "toolbar": {
+    "undo": "Rückgängig (Strg+Z)",
+    "redo": "Wiederholen (Strg+Y)",
+    "delete_note": "Notiz löschen",
+    "delete_image": "Bild löschen",
+    "export_html": "Als HTML exportieren",
+    "copy_link": "Link in Zwischenablage kopieren",
+    "add_favorite": "Zu Favoriten hinzufügen",
+    "remove_favorite": "Aus Favoriten entfernen"
+  },
+
+  "zen_mode": {
+    "title": "Zen-Modus",
+    "tooltip": "Zen-Modus (Strg+Alt+Z)",
+    "exit": "Zen-Modus beenden",
+    "exit_hint": "Zen-Modus beenden (Esc)"
+  },
+
+  "tags": {
+    "title": "Schlagwörter",
+    "no_tags": "Keine Schlagwörter gefunden",
+    "clear_all": "Schlagwort-Filter löschen",
+    "filter_by": "Nach {{tag}} filtern ({{count}} Notizen)"
+  },
+
+  "stats": {
+    "words": "Wörter",
+    "reading_time": "~{{minutes}}m Lesezeit",
+    "links": "{{count}} Links",
+    "click_details": "▼ Klicken für Details"
+  },
+
+  "graph": {
+    "title": "Graphansicht",
+    "empty": "Keine Verbindungen anzuzeigen",
+    "markdown_links": "Markdown-Links",
+    "click_hint": "Klick: auswählen • Doppelklick: öffnen"
+  },
+
+  "templates": {
+    "title": "Vorlagen",
+    "select": "Vorlage auswählen...",
+    "prompt_name": "Notizname eingeben:",
+    "no_templates": "Keine Vorlagen gefunden. Erstelle Vorlagen im _templates Ordner.",
+    "create_failed": "Erstellung der Notiz aus Vorlage fehlgeschlagen",
+    "create_from_template": "Aus Vorlage erstellen",
+    "select_template": "Vorlage auswählen",
+    "choose_template": "Vorlage wählen",
+    "note_name": "Notizname",
+    "available_placeholders": "Verfügbare Platzhalter",
+    "create_note": "Notiz erstellen"
+  },
+
+  "export": {
+    "failed": "HTML-Export fehlgeschlagen: {{error}}"
+  },
+
+  "login": {
+    "title": "Anmelden",
+    "tagline": "Deine Selbstgehostete Wissensdatenbank",
+    "password_placeholder": "Passwort eingeben",
+    "unlock_button": "🔓 Entsperren",
+    "footer": "🔒 Sicher & Selbstgehostet",
+    "error_incorrect_password": "Falsches Passwort. Bitte versuche es erneut."
+  },
+
+  "images": {
+    "confirm_delete": "Bild \"{{name}}\" löschen?",
+    "upload_failed": "Bild-Upload fehlgeschlagen",
+    "no_valid_files": "Keine gültigen Bilddateien gefunden. Unterstützte Formate: JPG, PNG, GIF, WEBP",
+    "formats": "Unterstützt JPG, PNG, GIF, WebP (max 10MB)"
+  },
+
+  "move": {
+    "failed_note": "Verschieben der Notiz fehlgeschlagen.",
+    "failed_folder": "Verschieben des Ordners fehlgeschlagen."
+  },
+
+  "search": {
+    "previous": "Vorheriger (Umschalt+F3)",
+    "next": "Nächster (F3)",
+    "matches": "{{current}} von {{total}}"
+  },
+
+  "theme": {
+    "title": "Design"
+  },
+
+  "language": {
+    "title": "Sprache"
+  },
+
+  "syntax_highlight": {
+    "title": "Editor-Syntaxhervorhebung",
+    "description": "Markdown-Syntax im Editor einfärben",
+    "enable": "Syntaxhervorhebung aktivieren",
+    "disable": "Syntaxhervorhebung deaktivieren"
+  },
+
+  "settings": {
+    "account": "Konto",
+    "logout": "Abmelden"
+  },
+
+  "homepage": {
+    "title": "Startseite",
+    "welcome": "Willkommen bei NoteDiscovery",
+    "get_started": "Erstelle etwas, um loszulegen",
+    "no_notes_title": "Noch keine Notizen",
+    "no_notes_desc": "Erstelle deine erste Notiz oder Ordner",
+    "folder_empty": "Dieser Ordner ist leer",
+    "note_singular": "Notiz",
+    "note_plural": "Notizen",
+    "folder_singular": "Ordner",
+    "folder_plural": "Ordner"
+  }
+}
+

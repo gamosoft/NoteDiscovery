@@ -1,9 +1,8 @@
 # NoteDiscovery Configuration
-# Easy to rebrand: just change these values!
 
 app:
   name: "NoteDiscovery"
-  tagline: "Your Self-Hosted Knowledge Base"
+  # Tagline is now localized - see locales/*.json files (app.tagline key)
   
 server:
   host: "0.0.0.0"
@@ -28,7 +27,7 @@ search:
 authentication:
   # Authentication settings
   # Set enabled to true to require login
-  enabled: false
+  enabled: true
   
   # ⚠️ SECURITY WARNING: Change these values before exposing to the internet!
   # Default values below are for LOCAL TESTING ONLY
