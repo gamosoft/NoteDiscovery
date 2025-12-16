@@ -40,6 +40,9 @@ Templates support dynamic placeholders that are replaced when you create a note:
 | `{{time}}` | Current time | `14:30:45` |
 | `{{datetime}}` | Current date and time | `2025-11-26 14:30:45` |
 | `{{timestamp}}` | Unix timestamp | `1732632645` |
+| `{{year}}` | Current year | `2025` |
+| `{{month}}` | Current month | `11` |
+| `{{day}}` | Current day | `26` |
 | `{{title}}` | Note name (without .md) | `Weekly Meeting` |
 | `{{folder}}` | Parent folder name | `Projects` |
 

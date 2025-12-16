@@ -412,6 +412,9 @@ Creates a new note from a template with placeholder replacement.
 - `{{time}}` - Current time (HH:MM:SS)
 - `{{datetime}}` - Current datetime
 - `{{timestamp}}` - Unix timestamp
+- `{{year}}` - Current year (YYYY)
+- `{{month}}` - Current month (MM)
+- `{{day}}` - Current day (DD)
 - `{{title}}` - Note name without extension
 - `{{folder}}` - Parent folder name
 

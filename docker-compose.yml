@@ -11,6 +11,8 @@ services:
       - ./plugins:/app/plugins
       # Custom themes (REQUIRED - must contain theme .css files)
       - ./themes:/app/themes
+      # Custom locales/translations (optional - add your own language files)
+      - ./locales:/app/locales
       # Config file (REQUIRED - must exist as a file, not directory!)
       - ./config.yaml:/app/config.yaml
     restart: unless-stopped

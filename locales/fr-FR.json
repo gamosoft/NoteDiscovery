@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "code": "fr-FR",
+    "name": "Français",
+    "flag": "🇫🇷"
+  },
+
+  "app": {
+    "tagline": "Votre Base de Connaissances Auto-Hébergée"
+  },
+
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "rename": "Renommer",
+    "create": "Créer",
+    "close": "Fermer",
+    "yes": "✓ Oui",
+    "no": "✗ Non",
+    "ok": "OK",
+    "error": "Erreur",
+    "loading": "Chargement...",
+    "saved": "✓ Enregistré",
+    "saving": "Enregistrement...",
+    "copied": "✓ Copié !",
+    "failed": "Échec de {{action}}. Veuillez réessayer."
+  },
+
+  "sidebar": {
+    "title": "FICHIERS",
+    "favorites_title": "Favoris",
+    "folders_and_notes": "Dossiers et Notes",
+    "new_button": "+ Nouveau",
+    "new_note": "Nouvelle Note",
+    "new_folder": "Nouveau Dossier",
+    "new_from_template": "Nouveau depuis Modèle",
+    "search_placeholder": "Rechercher des notes...",
+    "search_hint": "Tapez pour rechercher vos notes",
+    "clear_search": "Effacer la recherche",
+    "drag_hint": "💡 Glisser=Déplacer",
+    "root_folder": "📂 Dossier racine",
+    "no_notes": "Pas encore de notes. Créez votre première note !",
+    "no_notes_yet": "Pas encore de notes ni de dossiers.",
+    "create_first": "Créez votre première note ou dossier !",
+    "no_favorites": "Pas encore de favoris",
+    "no_results": "Aucun résultat trouvé",
+    "expand_all": "Développer tous les dossiers",
+    "collapse_all": "Réduire tous les dossiers",
+    "toggle_sidebar": "Afficher/Masquer la barre latérale",
+    "go_to_homepage": "Aller à l'accueil",
+    "files": "Fichiers",
+    "search": "Rechercher",
+    "search_title": "RECHERCHE",
+    "settings": "Paramètres",
+    "settings_title": "PARAMÈTRES",
+    "filtered_notes": "Notes Filtrées"
+  },
+
+  "editor": {
+    "placeholder": "Commencez à écrire en markdown...",
+    "drop_hint": "💡 Déposez ici pour insérer à la position du curseur...",
+    "mode_edit": "Éditer",
+    "mode_split": "Diviser",
+    "mode_preview": "Aperçu",
+    "edited": "Modifié {{time}}",
+    "just_now": "à l'instant",
+    "minutes_ago": "il y a {{count}}m",
+    "hours_ago": "il y a {{count}}h",
+    "days_ago": "il y a {{count}}j"
+  },
+
+  "notes": {
+    "confirm_delete": "Supprimer \"{{name}}\" ?",
+    "already_exists": "Une note nommée \"{{name}}\" existe déjà à cet emplacement.\nVeuillez choisir un autre nom.",
+    "prompt_name": "Entrez le nom de la note :",
+    "prompt_name_in_folder": "Créer une note dans \"{{folder}}\".\nEntrez le nom de la note :",
+    "prompt_name_with_path": "Entrez le nom de la note (vous pouvez utiliser dossier/nom) :",
+    "prompt_rename": "Entrez le nouveau nom :",
+    "invalid_name": "Nom de note invalide.",
+    "empty_name": "Le nom de la note ne peut pas être vide.",
+    "not_found": "Note introuvable : {{path}}",
+    "no_content": "Aucun contenu à exporter",
+    "open_first": "Veuillez d'abord ouvrir une note avant de télécharger des images."
+  },
+
+  "folders": {
+    "confirm_delete": "⚠️ ATTENTION ⚠️\n\nÊtes-vous sûr de vouloir supprimer le dossier \"{{name}}\" ?\n\nCeci supprimera DÉFINITIVEMENT :\n• Toutes les notes dans ce dossier\n• Tous les sous-dossiers et leur contenu\n\nCette action est IRRÉVERSIBLE !",
+    "already_exists": "Un dossier nommé \"{{name}}\" existe déjà à cet emplacement.\nVeuillez choisir un autre nom.",
+    "prompt_name": "Entrez le nom du dossier :",
+    "prompt_name_in_folder": "Créer un sous-dossier dans \"{{folder}}\".\nEntrez le nom du dossier :",
+    "prompt_name_with_path": "Créer un nouveau dossier.\nEntrez le chemin du dossier (ex. \"Projets\" ou \"Travail/2025\") :",
+    "prompt_rename": "Renommer le dossier \"{{name}}\" en :",
+    "invalid_name": "Nom de dossier invalide.",
+    "cannot_move_into_self": "Impossible de déplacer un dossier dans lui-même ou dans un sous-dossier.",
+    "empty": "vide"
+  },
+
+  "toolbar": {
+    "undo": "Annuler (Ctrl+Z)",
+    "redo": "Rétablir (Ctrl+Y)",
+    "delete_note": "Supprimer la note",
+    "delete_image": "Supprimer l'image",
+    "export_html": "Exporter en HTML",
+    "copy_link": "Copier le lien dans le presse-papiers",
+    "add_favorite": "Ajouter aux favoris",
+    "remove_favorite": "Retirer des favoris"
+  },
+
+  "zen_mode": {
+    "title": "Mode Zen",
+    "tooltip": "Mode Zen (Ctrl+Alt+Z)",
+    "exit": "Quitter le Mode Zen",
+    "exit_hint": "Quitter le Mode Zen (Échap)"
+  },
+
+  "tags": {
+    "title": "Étiquettes",
+    "no_tags": "Aucune étiquette trouvée",
+    "clear_all": "Effacer les filtres d'étiquettes",
+    "filter_by": "Filtrer par {{tag}} ({{count}} notes)"
+  },
+
+  "stats": {
+    "words": "mots",
+    "reading_time": "~{{minutes}}m de lecture",
+    "links": "{{count}} liens",
+    "click_details": "▼ Cliquez pour les détails"
+  },
+
+  "graph": {
+    "title": "Vue Graphique",
+    "empty": "Aucune connexion à afficher",
+    "markdown_links": "Liens Markdown",
+    "click_hint": "Clic : sélectionner • Double-clic : ouvrir"
+  },
+
+  "templates": {
+    "title": "Modèles",
+    "select": "Sélectionner un modèle...",
+    "prompt_name": "Entrez le nom de la note :",
+    "no_templates": "Aucun modèle trouvé. Créez des modèles dans le dossier _templates.",
+    "create_failed": "Échec de la création de la note depuis le modèle",
+    "create_from_template": "Créer depuis un Modèle",
+    "select_template": "Sélectionner un Modèle",
+    "choose_template": "Choisir un modèle",
+    "note_name": "Nom de la Note",
+    "available_placeholders": "Variables disponibles",
+    "create_note": "Créer la Note"
+  },
+
+  "export": {
+    "failed": "Échec de l'export HTML : {{error}}"
+  },
+
+  "login": {
+    "title": "Connexion",
+    "tagline": "Votre Base de Connaissances Auto-Hébergée",
+    "password_placeholder": "Entrez votre mot de passe",
+    "unlock_button": "🔓 Déverrouiller",
+    "footer": "🔒 Sécurisé et Auto-Hébergé",
+    "error_incorrect_password": "Mot de passe incorrect. Veuillez réessayer."
+  },
+
+  "images": {
+    "confirm_delete": "Supprimer l'image \"{{name}}\" ?",
+    "upload_failed": "Échec du téléchargement de l'image",
+    "no_valid_files": "Aucun fichier image valide trouvé. Formats supportés : JPG, PNG, GIF, WEBP",
+    "formats": "Supporte JPG, PNG, GIF, WebP (max 10 Mo)"
+  },
+
+  "move": {
+    "failed_note": "Échec du déplacement de la note.",
+    "failed_folder": "Échec du déplacement du dossier."
+  },
+
+  "search": {
+    "previous": "Précédent (Maj+F3)",
+    "next": "Suivant (F3)",
+    "matches": "{{current}} sur {{total}}"
+  },
+
+  "theme": {
+    "title": "Thème"
+  },
+
+  "language": {
+    "title": "Langue"
+  },
+
+  "syntax_highlight": {
+    "title": "Coloration Syntaxique de l'Éditeur",
+    "description": "Coloriser la syntaxe markdown dans l'éditeur",
+    "enable": "Activer la coloration syntaxique",
+    "disable": "Désactiver la coloration syntaxique"
+  },
+
+  "settings": {
+    "account": "Compte",
+    "logout": "Déconnexion"
+  },
+
+  "homepage": {
+    "title": "Accueil",
+    "welcome": "Bienvenue sur NoteDiscovery",
+    "get_started": "Créez quelque chose pour commencer",
+    "no_notes_title": "Pas encore de notes",
+    "no_notes_desc": "Créez votre première note ou dossier",
+    "folder_empty": "Ce dossier est vide",
+    "note_singular": "note",
+    "note_plural": "notes",
+    "folder_singular": "dossier",
+    "folder_plural": "dossiers"
+  }
+}
+

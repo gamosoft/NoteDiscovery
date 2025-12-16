@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "code": "es-ES",
+    "name": "Español",
+    "flag": "🇪🇸"
+  },
+
+  "app": {
+    "tagline": "Tu Base de Conocimientos Autoalojada"
+  },
+
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "rename": "Renombrar",
+    "create": "Crear",
+    "close": "Cerrar",
+    "yes": "✓ Sí",
+    "no": "✗ No",
+    "ok": "Aceptar",
+    "error": "Error",
+    "loading": "Cargando...",
+    "saved": "✓ Guardado",
+    "saving": "Guardando...",
+    "copied": "✓ ¡Copiado!",
+    "failed": "Error al {{action}}. Por favor, inténtalo de nuevo."
+  },
+
+  "sidebar": {
+    "title": "ARCHIVOS",
+    "favorites_title": "Favoritos",
+    "folders_and_notes": "Carpetas y Notas",
+    "new_button": "+ Nuevo",
+    "new_note": "Nueva Nota",
+    "new_folder": "Nueva Carpeta",
+    "new_from_template": "Nueva desde Plantilla",
+    "search_placeholder": "Buscar notas...",
+    "search_hint": "Escribe para buscar tus notas",
+    "clear_search": "Limpiar búsqueda",
+    "drag_hint": "💡 Arrastrar=Mover",
+    "root_folder": "📂 Carpeta raíz",
+    "no_notes": "Aún no hay notas. ¡Crea tu primera nota!",
+    "no_notes_yet": "Aún no hay notas ni carpetas.",
+    "create_first": "¡Crea tu primera nota o carpeta!",
+    "no_favorites": "Aún no hay favoritos",
+    "no_results": "No se encontraron resultados",
+    "expand_all": "Expandir todas las carpetas",
+    "collapse_all": "Contraer todas las carpetas",
+    "toggle_sidebar": "Alternar barra lateral",
+    "go_to_homepage": "Ir al inicio",
+    "files": "Archivos",
+    "search": "Buscar",
+    "search_title": "BÚSQUEDA",
+    "settings": "Configuración",
+    "settings_title": "CONFIGURACIÓN",
+    "filtered_notes": "Notas Filtradas"
+  },
+
+  "editor": {
+    "placeholder": "Empieza a escribir en markdown...",
+    "drop_hint": "💡 Suelta aquí para insertar en la posición del cursor...",
+    "mode_edit": "Editar",
+    "mode_split": "Dividir",
+    "mode_preview": "Vista previa",
+    "edited": "Editado {{time}}",
+    "just_now": "ahora mismo",
+    "minutes_ago": "hace {{count}}m",
+    "hours_ago": "hace {{count}}h",
+    "days_ago": "hace {{count}}d"
+  },
+
+  "notes": {
+    "confirm_delete": "¿Eliminar \"{{name}}\"?",
+    "already_exists": "Ya existe una nota llamada \"{{name}}\" en esta ubicación.\nPor favor, elige un nombre diferente.",
+    "prompt_name": "Introduce el nombre de la nota:",
+    "prompt_name_in_folder": "Crear nota en \"{{folder}}\".\nIntroduce el nombre de la nota:",
+    "prompt_name_with_path": "Introduce el nombre de la nota (puedes usar carpeta/nombre):",
+    "prompt_rename": "Introduce el nuevo nombre:",
+    "invalid_name": "Nombre de nota inválido.",
+    "empty_name": "El nombre de la nota no puede estar vacío.",
+    "not_found": "Nota no encontrada: {{path}}",
+    "no_content": "No hay contenido para exportar",
+    "open_first": "Por favor, abre una nota antes de subir imágenes."
+  },
+
+  "folders": {
+    "confirm_delete": "⚠️ ADVERTENCIA ⚠️\n\n¿Estás seguro de que quieres eliminar la carpeta \"{{name}}\"?\n\nEsto eliminará PERMANENTEMENTE:\n• Todas las notas dentro de esta carpeta\n• Todas las subcarpetas y su contenido\n\n¡Esta acción NO se puede deshacer!",
+    "already_exists": "Ya existe una carpeta llamada \"{{name}}\" en esta ubicación.\nPor favor, elige un nombre diferente.",
+    "prompt_name": "Introduce el nombre de la carpeta:",
+    "prompt_name_in_folder": "Crear subcarpeta en \"{{folder}}\".\nIntroduce el nombre de la carpeta:",
+    "prompt_name_with_path": "Crear nueva carpeta.\nIntroduce la ruta de la carpeta (ej., \"Proyectos\" o \"Trabajo/2025\"):",
+    "prompt_rename": "Renombrar carpeta \"{{name}}\" a:",
+    "invalid_name": "Nombre de carpeta inválido.",
+    "cannot_move_into_self": "No se puede mover una carpeta dentro de sí misma o de una subcarpeta.",
+    "empty": "vacía"
+  },
+
+  "toolbar": {
+    "undo": "Deshacer (Ctrl+Z)",
+    "redo": "Rehacer (Ctrl+Y)",
+    "delete_note": "Eliminar nota",
+    "delete_image": "Eliminar imagen",
+    "export_html": "Exportar como HTML",
+    "copy_link": "Copiar enlace al portapapeles",
+    "add_favorite": "Añadir a favoritos",
+    "remove_favorite": "Quitar de favoritos"
+  },
+
+  "zen_mode": {
+    "title": "Modo Zen",
+    "tooltip": "Modo Zen (Ctrl+Alt+Z)",
+    "exit": "Salir del Modo Zen",
+    "exit_hint": "Salir del Modo Zen (Esc)"
+  },
+
+  "tags": {
+    "title": "Etiquetas",
+    "no_tags": "No se encontraron etiquetas",
+    "clear_all": "Limpiar filtros de etiquetas",
+    "filter_by": "Filtrar por {{tag}} ({{count}} notas)"
+  },
+
+  "stats": {
+    "words": "palabras",
+    "reading_time": "~{{minutes}}m de lectura",
+    "links": "{{count}} enlaces",
+    "click_details": "▼ Clic para detalles"
+  },
+
+  "graph": {
+    "title": "Vista de Grafo",
+    "empty": "No hay conexiones para mostrar",
+    "markdown_links": "Enlaces Markdown",
+    "click_hint": "Clic: seleccionar • Doble clic: abrir"
+  },
+
+  "templates": {
+    "title": "Plantillas",
+    "select": "Selecciona una plantilla...",
+    "prompt_name": "Introduce el nombre de la nota:",
+    "no_templates": "No se encontraron plantillas. Crea plantillas en la carpeta _templates.",
+    "create_failed": "Error al crear nota desde plantilla",
+    "create_from_template": "Crear desde Plantilla",
+    "select_template": "Seleccionar Plantilla",
+    "choose_template": "Elige una plantilla",
+    "note_name": "Nombre de la Nota",
+    "available_placeholders": "Marcadores disponibles",
+    "create_note": "Crear Nota"
+  },
+
+  "export": {
+    "failed": "Error al exportar HTML: {{error}}"
+  },
+
+  "login": {
+    "title": "Iniciar sesión",
+    "tagline": "Tu Base de Conocimientos Autoalojada",
+    "password_placeholder": "Introduce tu contraseña",
+    "unlock_button": "🔓 Desbloquear",
+    "footer": "🔒 Seguro y Autoalojado",
+    "error_incorrect_password": "Contraseña incorrecta. Por favor, inténtalo de nuevo."
+  },
+
+  "images": {
+    "confirm_delete": "¿Eliminar imagen \"{{name}}\"?",
+    "upload_failed": "Error al subir imagen",
+    "no_valid_files": "No se encontraron archivos de imagen válidos. Formatos soportados: JPG, PNG, GIF, WEBP",
+    "formats": "Soporta JPG, PNG, GIF, WebP (máx 10MB)"
+  },
+
+  "move": {
+    "failed_note": "Error al mover la nota.",
+    "failed_folder": "Error al mover la carpeta."
+  },
+
+  "search": {
+    "previous": "Anterior (Shift+F3)",
+    "next": "Siguiente (F3)",
+    "matches": "{{current}} de {{total}}"
+  },
+
+  "theme": {
+    "title": "Tema"
+  },
+
+  "language": {
+    "title": "Idioma"
+  },
+
+  "syntax_highlight": {
+    "title": "Resaltado de Sintaxis del Editor",
+    "description": "Colorear sintaxis markdown en el editor",
+    "enable": "Activar resaltado de sintaxis",
+    "disable": "Desactivar resaltado de sintaxis"
+  },
+
+  "settings": {
+    "account": "Cuenta",
+    "logout": "Cerrar sesión"
+  },
+
+  "homepage": {
+    "title": "Inicio",
+    "welcome": "Bienvenido a NoteDiscovery",
+    "get_started": "Crea algo para empezar",
+    "no_notes_title": "Aún no hay notas",
+    "no_notes_desc": "Crea tu primera nota o carpeta",
+    "folder_empty": "Esta carpeta está vacía",
+    "note_singular": "nota",
+    "note_plural": "notas",
+    "folder_singular": "carpeta",
+    "folder_plural": "carpetas"
+  }
+}
+

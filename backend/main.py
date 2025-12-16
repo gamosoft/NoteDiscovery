@@ -80,8 +80,9 @@ if 'AUTHENTICATION_SECRET_KEY' in os.environ:
 # Initialize app
 app = FastAPI(
     title=config['app']['name'],
-    description=config['app']['tagline'],
-    version=config['app']['version']
+    version=config['app']['version'],
+    docs_url=None,    # Disable Swagger UI at /docs
+    redoc_url=None    # Disable ReDoc at /redoc
 )
 
 # CORS middleware configuration
@@ -96,7 +97,8 @@ app.add_middleware(
 )
 print(f"🌐 CORS allowed origins: {allowed_origins}")
 
-# ============================================================================
+# ===========================================================
+# =================
 # Security Helpers
 # ============================================================================
 
@@ -252,14 +254,7 @@ async def login_page(request: Request, error: str = None):
     async with aiofiles.open(login_path, 'r', encoding='utf-8') as f:
         content = await f.read()
     
-    # Inject error message if present
-    if error:
-        content = content.replace('<!-- ERROR_CLASS_PLACEHOLDER -->', 'class="error"')
-        content = content.replace('<!-- ERROR_MESSAGE_PLACEHOLDER -->', 
-                                 f'<div class="error-message">{error}</div>')
-    else:
-        content = content.replace('<!-- ERROR_CLASS_PLACEHOLDER -->', '')
-        content = content.replace('<!-- ERROR_MESSAGE_PLACEHOLDER -->', '')
+    # No server-side manipulation needed - frontend handles error display via URL params
     
     return content
 
@@ -280,8 +275,8 @@ async def login(request: Request, password: str = Form(...)):
         request.session['authenticated'] = True
         return RedirectResponse(url="/", status_code=303)
     else:
-        # Redirect back to login with error message
-        return RedirectResponse(url="/login?error=Incorrect+password.+Please+try+again.", status_code=303)
+        # Redirect back to login with error code (frontend will translate)
+        return RedirectResponse(url="/login?error=incorrect_password", status_code=303)
 
 
 @app.get("/logout")
@@ -325,8 +320,7 @@ async def api_documentation():
     return {
         "app": {
             "name": config['app']['name'],
-            "version": config['app']['version'],
-            "description": config['app']['tagline']
+            "version": config['app']['version']
         },
         "endpoints": [
             {
@@ -339,7 +333,7 @@ async def api_documentation():
                 "method": "GET",
                 "path": "/api/config",
                 "description": "Get application configuration",
-                "response": "{ name, tagline, version, searchEnabled }"
+                "response": "{ name, version, searchEnabled }"
             },
             {
                 "method": "GET",
@@ -489,7 +483,6 @@ async def get_config():
     """Get app configuration for frontend"""
     return {
         "name": config['app']['name'],
-        "tagline": config['app']['tagline'],
         "version": config['app']['version'],
         "searchEnabled": config['search']['enabled'],
         "demoMode": DEMO_MODE,  # Expose demo mode flag to frontend
@@ -517,6 +510,50 @@ async def get_theme(theme_id: str):
         raise HTTPException(status_code=404, detail="Theme not found")
     
     return {"css": css, "theme_id": theme_id}
+
+
+# Locales endpoints (unauthenticated - needed for login page and initial load)
+@app.get("/api/locales")
+async def get_available_locales():
+    """Get list of available locales"""
+    import json
+    locales_dir = Path(__file__).parent.parent / "locales"
+    locales = []
+    
+    if locales_dir.exists():
+        for file in sorted(locales_dir.glob("*.json")):
+            try:
+                with open(file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    meta = data.get('_meta', {})
+                    locales.append({
+                        "code": meta.get('code', file.stem),
+                        "name": meta.get('name', file.stem),
+                        "flag": meta.get('flag', '🌐')
+                    })
+            except (json.JSONDecodeError, IOError):
+                # Skip invalid locale files
+                continue
+    
+    return {"locales": locales}
+
+
+@app.get("/api/locales/{locale_code}")
+async def get_locale(locale_code: str):
+    """Get translations for a specific locale"""
+    import json
+    locales_dir = Path(__file__).parent.parent / "locales"
+    locale_file = locales_dir / f"{locale_code}.json"
+    
+    if not locale_file.exists():
+        raise HTTPException(status_code=404, detail="Locale not found")
+    
+    try:
+        with open(locale_file, 'r', encoding='utf-8') as f:
+            translations = json.load(f)
+        return translations
+    except (json.JSONDecodeError, IOError) as e:
+        raise HTTPException(status_code=500, detail=f"Failed to load locale: {str(e)}")
 
 
 @api_router.post("/folders")

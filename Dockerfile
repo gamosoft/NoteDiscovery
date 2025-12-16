@@ -28,6 +28,7 @@ COPY config.yaml .
 COPY VERSION .
 COPY plugins ./plugins
 COPY themes ./themes
+COPY locales ./locales
 COPY generate_password.py .
 
 # Create data directory
