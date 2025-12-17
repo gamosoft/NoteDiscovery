@@ -62,6 +62,7 @@ If this project has been useful to you, consider supporting its development, it 
 - 📄 **HTML Export** - Share notes as standalone HTML files
 - 🕸️ **Graph View** - Interactive visualization of connected notes
 - ⭐ **Favorites** - Star your most-used notes for instant access
+- 📑 **Outline Panel** - Navigate headings with click-to-jump TOC
 
 ## 🚀 Quick Start
 

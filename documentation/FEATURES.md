@@ -37,11 +37,30 @@
 ### Internal Links
 - **Wikilinks** - `[[Note Name]]` Obsidian-style syntax for quick linking
 - **Wikilinks with display text** - `[[Note Name|Click here]]` to customize link text
+- **Section anchors** - `[[Note Name#heading]]` to link directly to a heading
+- **Same-page anchors** - `[[#heading]]` to link within the current note
 - **Broken link detection** - Non-existent note links shown dimmed
-- **Markdown links** - `[Note Name](note.md)` standard syntax also supported
+- **Markdown links** - `[text](note.md)` standard syntax also supported
+- **Markdown section links** - `[text](note.md#heading)` for heading anchors
 - **Drag to link** - Drag notes or images into the editor to insert links
 - **Click to navigate** - Jump between notes seamlessly
 - **External links** - Open in new tabs automatically
+
+### Outline Panel
+- **Table of Contents** - View all headings (H1-H6) in sidebar
+- **Click to navigate** - Jump to any heading in edit or preview mode
+- **Real-time updates** - Outline updates as you type
+- **Hierarchical view** - Indentation shows heading structure
+- **Heading count badge** - Quick indicator of document structure
+
+### Section Link Syntax
+To link to a heading, convert the heading text to a slug: **lowercase, spaces → dashes, remove special chars**.
+
+| Heading | Slug | Link Example |
+|---------|------|--------------|
+| `## Getting Started` | `getting-started` | `[[note#getting-started]]` |
+| `### API Reference` | `api-reference` | `[API](note#api-reference)` |
+| `## What's New?` | `whats-new` | `[[#whats-new]]` (same page) |
 
 ### Direct URLs
 - **Deep linking** - Open specific notes via URL (e.g., `/folder/note`)
