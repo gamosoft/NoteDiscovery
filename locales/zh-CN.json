@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "code": "zh-CN",
+    "name": "Chinese (Simplified)",
+    "flag": "🇨🇳"
+  },
+
+  "app": {
+    "tagline": "您的自托管知识库"
+  },
+
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "rename": "重命名",
+    "create": "创建",
+    "close": "关闭",
+    "yes": "✓ 是",
+    "no": "✗ 否",
+    "ok": "确定",
+    "error": "错误",
+    "loading": "加载中...",
+    "saved": "✓ 已保存",
+    "saving": "保存中...",
+    "copied": "✓ 已复制!",
+    "failed": "{{action}} 失败。请重试。"
+  },
+
+  "sidebar": {
+    "title": "文件",
+    "favorites_title": "收藏夹",
+    "folders_and_notes": "文件夹和笔记",
+    "new_button": "+ 新建",
+    "new_note": "新建笔记",
+    "new_folder": "新建文件夹",
+    "new_from_template": "从模板新建",
+    "search_placeholder": "搜索笔记...",
+    "search_hint": "输入以搜索您的笔记",
+    "clear_search": "清除搜索",
+    "drag_hint": "💡 拖动=移动",
+    "root_folder": "📂 根文件夹",
+    "no_notes": "还没有笔记。创建您的第一篇笔记！",
+    "no_notes_yet": "还没有笔记或文件夹。",
+    "create_first": "创建您的第一篇笔记或文件夹！",
+    "no_favorites": "还没有收藏夹",
+    "no_results": "未找到结果",
+    "expand_all": "展开所有文件夹",
+    "collapse_all": "折叠所有文件夹",
+    "toggle_sidebar": "切换侧边栏",
+    "go_to_homepage": "前往主页",
+    "files": "文件",
+    "search": "搜索",
+    "search_title": "搜索",
+    "settings": "设置",
+    "settings_title": "设置",
+    "filtered_notes": "筛选的笔记"
+  },
+
+  "editor": {
+    "placeholder": "开始用 Markdown 写作...",
+    "drop_hint": "💡 拖放到此处以插入到光标位置...",
+    "mode_edit": "编辑",
+    "mode_split": "分屏",
+    "mode_preview": "预览",
+    "edited": "已编辑 {{time}}",
+    "just_now": "刚刚",
+    "minutes_ago": "{{count}}分钟前",
+    "hours_ago": "{{count}}小时前",
+    "days_ago": "{{count}}天前"
+  },
+
+  "notes": {
+    "confirm_delete": "删除 \"{{name}}\"？",
+    "already_exists": "此位置已存在名为 \"{{name}}\" 的笔记。\n请选择一个不同的名称。",
+    "prompt_name": "输入笔记名称：",
+    "prompt_name_in_folder": "在 \"{{folder}}\" 中创建笔记。\n输入笔记名称：",
+    "prompt_name_with_path": "输入笔记名称（您可以使用文件夹/名称）：",
+    "prompt_rename": "输入新名称：",
+    "invalid_name": "无效的笔记名称。",
+    "empty_name": "笔记名称不能为空。",
+    "not_found": "未找到笔记：{{path}}",
+    "no_content": "没有可导出的笔记内容",
+    "open_first": "请先打开一篇笔记，然后再上传图片。"
+  },
+
+  "folders": {
+    "confirm_delete": "⚠️ 警告 ⚠️\n\n您确定要删除文件夹 \"{{name}}\" 吗？\n\n这将永久删除：\n• 此文件夹内的所有笔记\n• 所有子文件夹及其内容\n\n此操作无法撤销！",
+    "already_exists": "此位置已存在名为 \"{{name}}\" 的文件夹。\n请选择一个不同的名称。",
+    "prompt_name": "输入文件夹名称：",
+    "prompt_name_in_folder": "在 \"{{folder}}\" 中创建子文件夹。\n输入文件夹名称：",
+    "prompt_name_with_path": "创建新文件夹。\n输入文件夹路径（例如 \"Projects\" 或 \"Work/2025\"）：",
+    "prompt_rename": "将文件夹 \"{{name}}\" 重命名为：",
+    "invalid_name": "无效的文件夹名称。",
+    "cannot_move_into_self": "无法将文件夹移动到其自身或其子文件夹中。",
+    "empty": "空"
+  },
+
+  "toolbar": {
+    "undo": "撤销 (Ctrl+Z)",
+    "redo": "重做 (Ctrl+Y)",
+    "delete_note": "删除笔记",
+    "delete_image": "删除图片",
+    "export_html": "导出为 HTML",
+    "copy_link": "复制链接到剪贴板",
+    "add_favorite": "添加到收藏夹",
+    "remove_favorite": "从收藏夹移除"
+  },
+
+  "zen_mode": {
+    "title": "禅模式",
+    "tooltip": "禅模式 (Ctrl+Alt+Z)",
+    "exit": "退出禅模式",
+    "exit_hint": "退出禅模式 (Esc)"
+  },
+
+  "tags": {
+    "title": "标签",
+    "no_tags": "未找到标签",
+    "clear_all": "清除所有标签过滤器",
+    "filter_by": "按 {{tag}} 过滤 ({{count}} 条笔记)"
+  },
+
+  "stats": {
+    "words": "字数",
+    "reading_time": "~{{minutes}}分钟阅读",
+    "links": "{{count}} 个链接",
+    "click_details": "▼ 点击查看详情"
+  },
+
+  "graph": {
+    "title": "图谱",
+    "empty": "无连接可显示",
+    "markdown_links": "Markdown 链接",
+    "click_hint": "点击：选择 • 双击：打开"
+  },
+
+  "templates": {
+    "title": "模板",
+    "select": "选择一个模板...",
+    "prompt_name": "输入笔记名称：",
+    "no_templates": "未找到模板。在 _templates 文件夹中创建模板。",
+    "create_failed": "从模板创建笔记失败",
+    "create_from_template": "从模板创建",
+    "select_template": "选择模板",
+    "choose_template": "选择一个模板",
+    "note_name": "笔记名称",
+    "available_placeholders": "可用占位符",
+    "create_note": "创建笔记"
+  },
+
+  "export": {
+    "failed": "导出 HTML 失败：{{error}}"
+  },
+
+  "login": {
+    "title": "登录",
+    "tagline": "您的自托管知识库",
+    "password_placeholder": "输入您的密码",
+    "unlock_button": "🔓 解锁",
+    "footer": "🔒 安全且自托管",
+    "error_incorrect_password": "密码错误。请重试。"
+  },
+
+  "images": {
+    "confirm_delete": "删除图片 \"{{name}}\"？",
+    "upload_failed": "上传图片失败",
+    "no_valid_files": "未找到有效的图片文件。支持的格式：JPG、PNG、GIF、WEBP",
+    "formats": "支持 JPG、PNG、GIF、WebP（最大 10MB）"
+  },
+
+  "move": {
+    "failed_note": "移动笔记失败。",
+    "failed_folder": "移动文件夹失败。"
+  },
+
+  "search": {
+    "previous": "上一个 (Shift+F3)",
+    "next": "下一个 (F3)",
+    "matches": "{{current}} / {{total}}"
+  },
+
+  "theme": {
+    "title": "主题"
+  },
+
+  "language": {
+    "title": "语言"
+  },
+
+  "syntax_highlight": {
+    "title": "编辑器语法高亮",
+    "description": "在编辑器中为 Markdown 语法着色",
+    "enable": "启用语法高亮",
+    "disable": "禁用语法高亮"
+  },
+
+  "settings": {
+    "account": "账户",
+    "logout": "登出"
+  },
+
+  "homepage": {
+    "title": "首页",
+    "welcome": "欢迎使用 NoteDiscovery",
+    "get_started": "创建一些内容以开始使用",
+    "no_notes_title": "尚无笔记",
+    "no_notes_desc": "创建您的第一篇笔记或文件夹",
+    "folder_empty": "此文件夹为空",
+    "note_singular": "笔记",
+    "note_plural": "笔记",
+    "folder_singular": "文件夹",
+    "folder_plural": "文件夹"
+  }
+}
+
