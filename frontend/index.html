@@ -1157,7 +1157,7 @@
                     :class="{'active': activePanel === 'files'}"
                     @click="activePanel = 'files'"
                     :title="t('sidebar.files')"
-                    aria-label="Files panel"
+                    :aria-label="t('sidebar.files')"
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
@@ -1170,7 +1170,7 @@
                     :class="{'active': activePanel === 'search'}"
                     @click="activePanel = 'search'"
                     :title="t('sidebar.search')"
-                    aria-label="Search panel"
+                    :aria-label="t('sidebar.search')"
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -1191,7 +1191,7 @@
                     :class="{'active': activePanel === 'tags'}"
                     @click="activePanel = 'tags'"
                     :title="t('tags.title')"
-                    aria-label="Tags panel"
+                    :aria-label="t('tags.title')"
                 >
                     <svg fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
@@ -1212,7 +1212,7 @@
                     :class="{'active': activePanel === 'outline'}"
                     @click="activePanel = 'outline'"
                     :title="t('outline.title')"
-                    aria-label="Outline panel"
+                    :aria-label="t('outline.title')"
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
@@ -1235,7 +1235,7 @@
                     :class="{'active': showGraph}"
                     @click="showGraph = true; initGraph()"
                     :title="t('graph.title')"
-                    aria-label="Graph view"
+                    :aria-label="t('graph.title')"
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
@@ -1248,7 +1248,7 @@
                     :class="{'active': activePanel === 'settings'}"
                     @click="activePanel = 'settings'"
                     :title="t('sidebar.settings')"
-                    aria-label="Settings panel"
+                    :aria-label="t('sidebar.settings')"
                 >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
@@ -2656,23 +2656,23 @@
             class="mobile-bottom-tab"
             :class="{'active': activePanel === 'files'}"
             @click="activePanel = 'files'; mobileSidebarOpen = true;"
-            aria-label="Files"
+            :aria-label="t('sidebar.files')"
         >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
             </svg>
-            <span>Files</span>
+            <span x-text="t('sidebar.files')"></span>
         </button>
         <button 
             class="mobile-bottom-tab relative"
             :class="{'active': activePanel === 'search'}"
             @click="activePanel = 'search'; mobileSidebarOpen = true;"
-            aria-label="Search"
+            :aria-label="t('sidebar.search')"
         >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
-            <span>Search</span>
+            <span x-text="t('sidebar.search')"></span>
             <!-- Search results badge -->
             <span 
                 x-show="searchQuery.trim() && searchResults.length > 0"
@@ -2686,12 +2686,12 @@
             class="mobile-bottom-tab relative"
             :class="{'active': activePanel === 'tags'}"
             @click="activePanel = 'tags'; mobileSidebarOpen = true;"
-            aria-label="Tags"
+            :aria-label="t('tags.title')"
         >
             <svg fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                 <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
             </svg>
-            <span>Tags</span>
+            <span x-text="t('tags.title')"></span>
             <!-- Filtered notes badge (shows result count when tags selected) -->
             <span 
                 x-show="selectedTags.length > 0"
@@ -2705,24 +2705,24 @@
             class="mobile-bottom-tab"
             :class="{'active': showGraph}"
             @click="showGraph = true; initGraph(); mobileSidebarOpen = false;"
-            aria-label="Graph"
+            :aria-label="t('graph.title')"
         >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
             </svg>
-            <span>Graph</span>
+            <span x-text="t('graph.title')"></span>
         </button>
         <button 
             class="mobile-bottom-tab"
             :class="{'active': activePanel === 'settings'}"
             @click="activePanel = 'settings'; mobileSidebarOpen = true;"
-            aria-label="Settings"
+            :aria-label="t('sidebar.settings')"
         >
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
             </svg>
-            <span>Settings</span>
+            <span x-text="t('sidebar.settings')"></span>
         </button>
     </nav>
     
