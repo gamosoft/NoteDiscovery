@@ -217,6 +217,7 @@ function noteApp() {
         redoHistory: [],
         maxHistorySize: CONFIG.MAX_UNDO_HISTORY,
         isUndoRedo: false,
+        hasPendingHistoryChanges: false,
         
         // Stats plugin state
         statsPluginEnabled: false,
@@ -2472,6 +2473,7 @@ function noteApp() {
                 // Initialize undo/redo history for this note (with cursor at start)
                 this.undoHistory = [{ content: data.content, cursorPos: 0 }];
                 this.redoHistory = [];
+                this.hasPendingHistoryChanges = false;
                 
                 // Update browser URL and history
                 if (updateHistory) {
@@ -3077,18 +3079,35 @@ function noteApp() {
             this.extractOutline(this.noteContent);
             
             this.saveTimeout = setTimeout(() => {
+                // Commit to undo history when autosave triggers (same debounce timing)
+                if (this.hasPendingHistoryChanges) {
+                    this.commitToHistory();
+                }
                 this.saveNote();
             }, CONFIG.AUTOSAVE_DELAY);
         },
         
-        // Push current content to undo history (with cursor position)
+        // Mark that we have pending changes (called on each keystroke)
         pushToHistory() {
+            this.hasPendingHistoryChanges = true;
+        },
+        
+        // Immediately commit pending changes to history (call before undo/redo)
+        flushHistory() {
+            if (this.hasPendingHistoryChanges) {
+                this.commitToHistory();
+            }
+        },
+        
+        // Actually commit to undo history (internal)
+        commitToHistory() {
             const editor = document.getElementById('note-editor');
             const cursorPos = editor ? editor.selectionStart : 0;
             
-            // Only push if content actually changed
+            // Only push if content actually changed from last history entry
             if (this.undoHistory.length > 0 && 
                 this.undoHistory[this.undoHistory.length - 1].content === this.noteContent) {
+                this.hasPendingHistoryChanges = false;
                 return;
             }
             
@@ -3101,11 +3120,17 @@ function noteApp() {
             
             // Clear redo history when new change is made
             this.redoHistory = [];
+            this.hasPendingHistoryChanges = false;
         },
         
         // Undo last change
         undo() {
-            if (!this.currentNote || this.undoHistory.length <= 1) return;
+            if (!this.currentNote) return;
+            
+            // Flush any pending history changes first (so we don't lose unsaved edits)
+            this.flushHistory();
+            
+            if (this.undoHistory.length <= 1) return;
             
             const editor = document.getElementById('note-editor');
             
@@ -3141,7 +3166,12 @@ function noteApp() {
         
         // Redo last undone change
         redo() {
-            if (!this.currentNote || this.redoHistory.length === 0) return;
+            if (!this.currentNote) return;
+            
+            // Flush any pending history changes first
+            this.flushHistory();
+            
+            if (this.redoHistory.length === 0) return;
             
             const editor = document.getElementById('note-editor');
             
@@ -4826,6 +4856,11 @@ function noteApp() {
             this.currentImage = '';
             this.outline = [];
             this.mobileSidebarOpen = false;
+            
+            // Clear undo/redo history
+            this.undoHistory = [];
+            this.redoHistory = [];
+            this.hasPendingHistoryChanges = false;
             
             // Invalidate cache to force recalculation
             this._homepageCache = {
