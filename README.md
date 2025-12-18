@@ -66,136 +66,63 @@ If this project has been useful to you, consider supporting its development, it 
 
 ## 🚀 Quick Start
 
-### Running from GitHub Container Registry (Easiest & Recommended)
+### Quick Setup
 
-Use the pre-built image directly from GHCR - no building required!
-
-> **💡 Tip**: Always use `ghcr.io/gamosoft/notediscovery:latest` to get the newest features and fixes.
-
-> **📁 Important - Volume Mapping**: The container needs local folders/files to work:
-> - **Required**: `data` folder - **Your personal notes** will be stored here (create an empty folder)
-> - **Required**: `themes` folder with theme `.css` files (at least a single theme must exist)
-> - **Required**: `plugins` folder (can be empty for basic functionality)
-> - **Required**: `config.yaml` file (needed for the app to run)
-> - **Optional**: `documentation` folder - If you cloned the repo, mount this to view app docs inside NoteDiscovery
-> 
-> **Setup Options:**
-> 
-> 1. **Minimal** (quick test - download just the essentials):
->    ```bash
->    # Linux/macOS
->    mkdir -p data plugins themes  # data/ is for YOUR notes
->    curl -O https://raw.githubusercontent.com/gamosoft/notediscovery/main/config.yaml
->    # Download at least light and dark themes
->    curl -o themes/light.css https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/light.css
->    curl -o themes/dark.css https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/dark.css
->    ```
->    
->    ```powershell
->    # Windows PowerShell
->    mkdir data, plugins, themes -Force  # data\ is for YOUR notes
->    Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/config.yaml -OutFile config.yaml
->    # Download at least light and dark themes
->    Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/light.css -OutFile themes/light.css
->    Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/dark.css -OutFile themes/dark.css
->    ```
-> 
-> 2. **Full Setup** (recommended - includes all themes, plugins, and documentation):
->    ```bash
->    git clone https://github.com/gamosoft/notediscovery.git
->    cd notediscovery
->    # The data/ folder is empty - for your personal notes
->    # The documentation/ folder has app docs you can optionally mount
->    ```
-
-> **🔐 Security Note**: Authentication is **disabled by default** with password `admin`. 
-> - ✅ **Local/Testing**: Default credentials are fine
-> - ⚠️ **Public Network**: Change password immediately - see [AUTHENTICATION.md](documentation/AUTHENTICATION.md)
-> - 🎭 **Demo Deployment**: Uses default "admin" password
-
-**Option 1: Docker Compose (Recommended)**
-
-> 💡 **Multi-Architecture Support**: Docker images are available for both `x86_64` and `ARM64` (Raspberry Pi, Apple Silicon, etc.)
-
+**Linux/macOS:**
 ```bash
-# Download the docker-compose file
-curl -O https://raw.githubusercontent.com/gamosoft/notediscovery/main/docker-compose.ghcr.yml
-
-# Or if you cloned the repo, just use it directly
-docker-compose -f docker-compose.ghcr.yml up -d
-
-# Access at http://localhost:8000
-# Login with default password: admin
-
-# View logs
-docker-compose -f docker-compose.ghcr.yml logs -f
-
-# Stop the application
-docker-compose -f docker-compose.ghcr.yml down
-```
-
-**Option 2: Docker Run (Alternative)**
-
-```bash
-# Linux/macOS
-docker run -d \
-  --name notediscovery \
-  -p 8000:8000 \
+mkdir -p notediscovery/data && cd notediscovery
+docker run -d --name notediscovery -p 8000:8000 \
   -v $(pwd)/data:/app/data \
-  -v $(pwd)/plugins:/app/plugins \
-  -v $(pwd)/themes:/app/themes \
-  -v $(pwd)/locales:/app/locales \
-  -v $(pwd)/config.yaml:/app/config.yaml \
-  --restart unless-stopped \
   ghcr.io/gamosoft/notediscovery:latest
 ```
 
+**Windows (PowerShell):**
 ```powershell
-# Windows PowerShell
-docker run -d `
-  --name notediscovery `
-  -p 8000:8000 `
+mkdir notediscovery\data; cd notediscovery
+docker run -d --name notediscovery -p 8000:8000 `
   -v ${PWD}/data:/app/data `
-  -v ${PWD}/plugins:/app/plugins `
-  -v ${PWD}/themes:/app/themes `
-  -v ${PWD}/locales:/app/locales `
-  -v ${PWD}/config.yaml:/app/config.yaml `
-  --restart unless-stopped `
   ghcr.io/gamosoft/notediscovery:latest
 ```
 
-Access at http://localhost:8000
+Open **http://localhost:8000** — done! 🎉  
 
-**Why use the GHCR image?**
-- ✅ No build time - instant deployment
-- ✅ Always up-to-date with the latest release
-- ✅ Tested and verified builds
-- ✅ Smaller download with optimized layers
 
-### Running with Docker Compose (Recommended for Development)
+> 💡 Your notes are saved in `./data/`. Themes, plugins, locales and default configuration values are included in the image.
 
-Docker ensures consistent environment and easy deployment:
+### Using Docker Compose
 
+Two docker-compose files are provided:
+
+| File | Use Case |
+|------|----------|
+| `docker-compose.ghcr.yml` | **Recommended** - Uses pre-built image from GitHub Container Registry |
+| `docker-compose.yml` | For development - Builds from local source |
+
+**Option 1: Pre-built image (fastest)**
+
+Linux/macOS:
 ```bash
-# Clone the repository
+mkdir -p notediscovery/data && cd notediscovery
+curl -O https://raw.githubusercontent.com/gamosoft/notediscovery/main/docker-compose.ghcr.yml
+docker-compose -f docker-compose.ghcr.yml up -d
+```
+
+Windows (PowerShell):
+```powershell
+mkdir notediscovery\data; cd notediscovery
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/docker-compose.ghcr.yml -OutFile docker-compose.ghcr.yml
+docker-compose -f docker-compose.ghcr.yml up -d
+```
+
+**Option 2: Build from source (for development)**
+```bash
 git clone https://github.com/gamosoft/notediscovery.git
 cd notediscovery
-
-# Start with Docker Compose
 docker-compose up -d
-
-# Access at http://localhost:8000
-
-# View logs
-docker-compose logs -f
-
-# Stop the application
-docker-compose down
 ```
 
-**Requirements:**
-- Docker
-- Docker Compose
+See [Advanced Docker Setup](#advanced-docker-setup) for volume details.
+
 
 ### Running Locally (Without Docker)
 
@@ -219,11 +146,20 @@ python run.py
 - Python 3.8 or higher
 - pip (Python package manager)
 
-**Dependencies installed:**
-- FastAPI - Web framework
-- Uvicorn - ASGI server
-- PyYAML - Configuration handling
-- aiofiles - Async file operations
+### Advanced Docker Setup
+
+The image includes bundled config, themes, plugins, and locales. To customize, you must:
+1. **Map the volume** in your docker-compose or docker run command
+2. **Provide content** - the file/folder must exist with valid content (empty = app might break!)
+
+| Volume | Purpose | Bundled? |
+|--------|---------|----------|
+| `data/` | Your notes | ❌ You must create |
+| `config.yaml` | App settings | ✅ Yes |
+| `themes/` | Custom themes | ✅ Yes |
+| `plugins/` | Custom plugins | ✅ Yes |
+| `locales/` | Translations | ✅ Yes |
+
 
 ## 📚 Documentation
 

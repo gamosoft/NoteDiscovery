@@ -5,16 +5,13 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Persist notes and data
+      # Required: Your notes
       - ./data:/app/data
-      # Custom plugins
-      - ./plugins:/app/plugins
-      # Custom themes (REQUIRED - must contain theme .css files)
-      - ./themes:/app/themes
-      # Custom locales/translations (optional - add your own language files)
-      - ./locales:/app/locales      
-      # Config file (REQUIRED - must exist as a file, not directory!)
-      - ./config.yaml:/app/config.yaml
+      # Optional: Uncomment to customize (file/folder must exist with content!)
+      # - ./config.yaml:/app/config.yaml
+      # - ./themes:/app/themes
+      # - ./plugins:/app/plugins
+      # - ./locales:/app/locales
     restart: unless-stopped
     environment:
       - TZ=UTC

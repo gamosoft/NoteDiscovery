@@ -2,7 +2,6 @@
 
 app:
   name: "NoteDiscovery"
-  # Tagline is now localized - see locales/*.json files (app.tagline key)
   
 server:
   host: "0.0.0.0"
