@@ -9,9 +9,15 @@ import os
 import subprocess
 from pathlib import Path
 
+try:
+    import colorama
+    colorama.just_fix_windows_console()
+except ImportError:
+    colorama = None
+
 def main():
     print("🚀 Starting NoteDiscovery...\n")
-    
+
     # Check if requirements are installed
     try:
         import fastapi
@@ -19,14 +25,14 @@ def main():
     except ImportError:
         print("📦 Installing dependencies...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-    
+
     # Create data directories
     Path("data").mkdir(parents=True, exist_ok=True)
     Path("plugins").mkdir(parents=True, exist_ok=True)
-    
+
     # Get port from environment variable or use default
     port = os.getenv("PORT", "8000")
-    
+
     print("✓ Dependencies installed")
     print("✓ Directories created")
     print("\n" + "="*50)
@@ -39,7 +45,7 @@ def main():
     print("   - Plugins go in ./plugins/")
     print(f"   - Change port with: PORT={port} python run.py")
     print("\n" + "="*50 + "\n")
-    
+
     # Run the application
     subprocess.call([
         sys.executable, "-m", "uvicorn",
