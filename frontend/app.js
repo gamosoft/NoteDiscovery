@@ -454,6 +454,7 @@ function noteApp() {
             // Set initial homepage state ONLY if we're actually on the homepage
             if (window.location.pathname === '/') {
                 window.history.replaceState({ homepageFolder: '' }, '', '/');
+                document.title = this.appName;
             }
             
             // Listen for browser back/forward navigation
@@ -478,7 +479,7 @@ function noteApp() {
                     this.noteContent = '';
                     this.currentNoteName = '';
                     this.outline = [];
-                    document.title = 'NoteDiscovery';
+                    document.title = this.appName;
                     
                     // Restore homepage folder state if it was saved
                     if (e.state && e.state.homepageFolder !== undefined) {
@@ -2159,7 +2160,7 @@ function noteApp() {
             
             // Update browser tab title for image
             const imageName = imagePath.split('/').pop();
-            document.title = `${imageName} - NoteDiscovery`;
+            document.title = `${imageName} - ${this.appName}`;
             
             // Update browser URL
             if (updateHistory) {
@@ -2475,7 +2476,7 @@ function noteApp() {
                         this.currentNote = '';
                         this.noteContent = '';
                         this.currentImage = '';
-                        document.title = 'NoteDiscovery';
+                        document.title = this.appName;
                         return;
                     }
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -2491,7 +2492,7 @@ function noteApp() {
                 this.currentImage = ''; // Clear image viewer when loading a note
                 
                 // Update browser tab title
-                document.title = `${this.currentNoteName} - NoteDiscovery`;
+                document.title = `${this.currentNoteName} - ${this.appName}`;
                 this.lastSaved = false;
                 
                 // Extract outline for TOC panel
@@ -3076,7 +3077,7 @@ function noteApp() {
                     if (this.currentNote && this.currentNote.startsWith(folderPrefix)) {
                         this.currentNote = '';
                         this.noteContent = '';
-                        document.title = 'NoteDiscovery';
+                        document.title = this.appName;
                     }
                     
                     await this.loadNotes();
@@ -3570,7 +3571,7 @@ function noteApp() {
                         this.currentNoteName = '';
                         this._lastRenderedContent = ''; // Clear render cache
                         this._cachedRenderedHTML = '';
-                        document.title = 'NoteDiscovery';
+                        document.title = this.appName;
                         // Redirect to root
                         window.history.replaceState({}, '', '/');
                     }
@@ -4991,7 +4992,7 @@ function noteApp() {
             this.noteContent = '';
             this.currentImage = '';
             this.outline = [];
-            document.title = 'NoteDiscovery';
+            document.title = this.appName;
             
             // Invalidate cache to force recalculation
             this._homepageCache = {
@@ -5014,7 +5015,7 @@ function noteApp() {
             this.currentImage = '';
             this.outline = [];
             this.mobileSidebarOpen = false;
-            document.title = 'NoteDiscovery';
+            document.title = this.appName;
             
             // Clear undo/redo history
             this.undoHistory = [];

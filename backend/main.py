@@ -269,7 +269,9 @@ async def login_page(request: Request, error: str = None):
     async with aiofiles.open(login_path, 'r', encoding='utf-8') as f:
         content = await f.read()
     
-    # No server-side manipulation needed - frontend handles error display via URL params
+    # Inject app name throughout the login page
+    app_name = config['app']['name']
+    content = content.replace('NoteDiscovery', app_name)
     
     return content
 
@@ -326,6 +328,9 @@ async def root(request: Request):
     index_path = static_path / "index.html"
     async with aiofiles.open(index_path, 'r', encoding='utf-8') as f:
         content = await f.read()
+    # Inject app name into title
+    app_name = config['app']['name']
+    content = content.replace('<title>NoteDiscovery</title>', f'<title>{app_name}</title>')
     return content
 
 
@@ -1265,6 +1270,9 @@ async def catch_all(full_path: str, request: Request):
     index_path = static_path / "index.html"
     async with aiofiles.open(index_path, 'r', encoding='utf-8') as f:
         content = await f.read()
+    # Inject app name into title
+    app_name = config['app']['name']
+    content = content.replace('<title>NoteDiscovery</title>', f'<title>{app_name}</title>')
     return content
 
 
