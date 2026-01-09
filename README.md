@@ -146,6 +146,31 @@ python run.py
 - Python 3.8 or higher
 - pip (Python package manager)
 
+#### Using Virtual Environments (Recommended for Arch/Fedora/Ubuntu 23.04+)
+
+Modern Linux distributions enforce [PEP 668](https://peps.python.org/pep-0668/), which prevents system-wide pip installs. Use a virtual environment instead:
+
+```bash
+# Clone the repository
+git clone https://github.com/gamosoft/notediscovery.git
+cd notediscovery
+
+# Create a virtual environment
+python -m venv venv
+
+# Activate it (choose your shell):
+source venv/bin/activate        # Bash/Zsh (most Linux distros)
+source venv/bin/activate.fish   # Fish (CachyOS, etc.)
+source venv/bin/activate.csh    # Csh/Tcsh
+.\venv\Scripts\activate         # Windows PowerShell
+
+# Install dependencies and run
+pip install -r requirements.txt
+python run.py
+```
+
+> 💡 **Tip:** You'll need to activate the virtual environment (`source venv/bin/activate`) each time you open a new terminal before running the app.
+
 ### Advanced Docker Setup
 
 The image includes bundled config, themes, plugins, and locales. To customize, you must:
