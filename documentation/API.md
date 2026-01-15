@@ -305,11 +305,11 @@ GET /health
 ```
 Returns system health status.
 
-### API Info
+### Swagger UI (Interactive Docs)
 ```http
 GET /api
 ```
-Self-documenting endpoint listing all available API routes.
+Interactive API documentation with try-it-out functionality (Swagger UI).
 
 ---
 
@@ -519,5 +519,5 @@ All endpoints return JSON responses:
 ```
 ---
 
-💡 **Tip:** Use the `/api` endpoint to get a live, self-documented list of all available endpoints!
+💡 **Tip:** Visit `/api` for interactive Swagger UI documentation where you can try endpoints directly in your browser!
 

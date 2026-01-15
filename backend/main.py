@@ -112,12 +112,28 @@ if 'AUTHENTICATION_SECRET_KEY' in os.environ:
     config['authentication']['secret_key'] = os.getenv('AUTHENTICATION_SECRET_KEY')
     print("🔐 Secret key loaded from AUTHENTICATION_SECRET_KEY env var")
 
+# OpenAPI tag metadata for grouping endpoints in Swagger UI
+tags_metadata = [
+    {"name": "Notes", "description": "Create, read, update, delete notes"},
+    {"name": "Folders", "description": "Folder management"},
+    {"name": "Images", "description": "Image viewing and uploads"},
+    {"name": "Search", "description": "Full-text search"},
+    {"name": "Sharing", "description": "Public note sharing via tokens"},
+    {"name": "Themes", "description": "UI theme management"},
+    {"name": "Templates", "description": "Note templates"},
+    {"name": "Tags", "description": "Tag-based organization"},
+    {"name": "Graph", "description": "Note relationship graph"},
+    {"name": "Plugins", "description": "Plugin management"},
+    {"name": "System", "description": "Health checks and configuration"},
+]
+
 # Initialize app
 app = FastAPI(
     title=config['app']['name'],
     version=config['app']['version'],
-    docs_url=None,    # Disable Swagger UI at /docs
-    redoc_url=None    # Disable ReDoc at /redoc
+    docs_url='/api', # Default is /docs
+    redoc_url=None,    # Disable ReDoc at /redoc
+    openapi_tags=tags_metadata
 )
 
 # CORS middleware configuration
@@ -357,171 +373,7 @@ pages_router = APIRouter(
 # Application Routes (with auth via router dependencies)
 # ============================================================================
 
-@api_router.get("")
-async def api_documentation():
-    """API Documentation - List all available endpoints"""
-    return {
-        "app": {
-            "name": config['app']['name'],
-            "version": config['app']['version']
-        },
-        "endpoints": [
-            {
-                "method": "GET",
-                "path": "/api",
-                "description": "API documentation - lists all available endpoints",
-                "response": "API documentation object"
-            },
-            {
-                "method": "GET",
-                "path": "/api/config",
-                "description": "Get application configuration",
-                "response": "{ name, version, searchEnabled }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/themes",
-                "description": "List all available themes",
-                "response": "{ themes: [{ id, name, builtin }] }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/themes/{theme_id}",
-                "description": "Get CSS content for a specific theme",
-                "parameters": {"theme_id": "Theme identifier (e.g., 'dark', 'light', 'dracula')"},
-                "response": "{ css, theme_id }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/notes",
-                "description": "List all notes and folders",
-                "response": "{ notes: [{ path, name, folder }], folders: [path] }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/notes/{note_path}",
-                "description": "Get content of a specific note",
-                "parameters": {"note_path": "Path to note (e.g., 'test.md', 'folder/note.md')"},
-                "response": "{ content }"
-            },
-            {
-                "method": "POST",
-                "path": "/api/notes/{note_path}",
-                "description": "Create or update a note",
-                "parameters": {"note_path": "Path to note"},
-                "body": {"content": "Markdown content of the note"},
-                "response": "{ success, message }"
-            },
-            {
-                "method": "DELETE",
-                "path": "/api/notes/{note_path}",
-                "description": "Delete a note",
-                "parameters": {"note_path": "Path to note"},
-                "response": "{ success, message }"
-            },
-            {
-                "method": "POST",
-                "path": "/api/notes/move",
-                "description": "Move a note to a different location",
-                "body": {"oldPath": "Current note path", "newPath": "New note path"},
-                "response": "{ success, oldPath, newPath }"
-            },
-            {
-                "method": "POST",
-                "path": "/api/folders",
-                "description": "Create a new folder",
-                "body": {"path": "Folder path (e.g., 'Projects', 'Work/2025')"},
-                "response": "{ success, path }"
-            },
-            {
-                "method": "POST",
-                "path": "/api/folders/move",
-                "description": "Move a folder to a different location",
-                "body": {"oldPath": "Current folder path", "newPath": "New folder path"},
-                "response": "{ success, oldPath, newPath }"
-            },
-            {
-                "method": "POST",
-                "path": "/api/folders/rename",
-                "description": "Rename a folder",
-                "body": {"oldPath": "Current folder path", "newPath": "New folder path"},
-                "response": "{ success, oldPath, newPath }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/tags",
-                "description": "Get all tags used across all notes with their counts",
-                "response": "{ tags: { tag_name: count, ... } }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/tags/{tag_name}",
-                "description": "Get all notes that have a specific tag",
-                "parameters": {"tag_name": "Tag to filter by (case-insensitive)"},
-                "response": "{ tag, count, notes: [{ path, name, folder, tags }] }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/search",
-                "description": "Search notes by content",
-                "parameters": {"q": "Search query string"},
-                "response": "{ results: [{ path, name, folder, snippet }], query }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/graph",
-                "description": "Get graph data for note visualization",
-                "response": "{ nodes: [{ id, label }], edges: [] }"
-            },
-            {
-                "method": "GET",
-                "path": "/api/plugins",
-                "description": "List all loaded plugins",
-                "response": "{ plugins: [{ id, name, version, enabled }] }"
-            },
-            {
-                "method": "POST",
-                "path": "/api/plugins/{plugin_name}/toggle",
-                "description": "Enable or disable a plugin",
-                "parameters": {"plugin_name": "Plugin identifier"},
-                "body": {"enabled": "true/false"},
-                "response": "{ success, plugin, enabled }"
-            },
-            {
-                "method": "GET",
-                "path": "/health",
-                "description": "Health check endpoint",
-                "response": "{ status: 'healthy', app, version }"
-            }
-        ],
-        "notes": {
-            "authentication": "Not required (add authentication in config.yaml if needed)",
-            "base_url": "http://localhost:8000",
-            "content_type": "application/json",
-            "cors": "Enabled for all origins"
-        },
-        "examples": {
-            "create_note": {
-                "curl": "curl -X POST http://localhost:8000/api/notes/test.md -H 'Content-Type: application/json' -d '{\"content\": \"# Hello World\"}'",
-                "description": "Create a new note named test.md"
-            },
-            "search_notes": {
-                "curl": "curl http://localhost:8000/api/search?q=hello",
-                "description": "Search for notes containing 'hello'"
-            },
-            "list_themes": {
-                "curl": "curl http://localhost:8000/api/themes",
-                "description": "Get all available themes"
-            },
-            "enable_plugin": {
-                "curl": "curl -X POST http://localhost:8000/api/plugins/git_backup/toggle -H 'Content-Type: application/json' -d '{\"enabled\": true}'",
-                "description": "Enable the git_backup plugin"
-            }
-        }
-    }
-
-
-@api_router.get("/config")
+@api_router.get("/config", tags=["System"])
 async def get_config():
     """Get app configuration for frontend"""
     return {
@@ -535,7 +387,7 @@ async def get_config():
     }
 
 
-@api_router.get("/themes")
+@api_router.get("/themes", tags=["Themes"])
 async def list_themes():
     """Get all available themes"""
     themes_dir = Path(__file__).parent.parent / "themes"
@@ -599,7 +451,7 @@ async def get_locale(locale_code: str):
         raise HTTPException(status_code=500, detail=f"Failed to load locale: {str(e)}")
 
 
-@api_router.post("/folders")
+@api_router.post("/folders", tags=["Folders"])
 @limiter.limit("30/minute")
 async def create_new_folder(request: Request, data: dict):
     """Create a new folder"""
@@ -624,7 +476,7 @@ async def create_new_folder(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to create folder"))
 
 
-@api_router.get("/images/{image_path:path}")
+@api_router.get("/images/{image_path:path}", tags=["Images"])
 async def get_image(image_path: str):
     """
     Serve an image file with authentication protection.
@@ -654,7 +506,7 @@ async def get_image(image_path: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to load image"))
 
 
-@api_router.post("/upload-image")
+@api_router.post("/upload-image", tags=["Images"])
 @limiter.limit("20/minute")
 async def upload_image(request: Request, file: UploadFile = File(...), note_path: str = Form(...)):
     """
@@ -710,7 +562,7 @@ async def upload_image(request: Request, file: UploadFile = File(...), note_path
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to upload image"))
 
 
-@api_router.post("/notes/move")
+@api_router.post("/notes/move", tags=["Notes"])
 @limiter.limit("30/minute")
 async def move_note_endpoint(request: Request, data: dict):
     """Move a note to a different folder"""
@@ -744,7 +596,7 @@ async def move_note_endpoint(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to move note"))
 
 
-@api_router.post("/folders/move")
+@api_router.post("/folders/move", tags=["Folders"])
 @limiter.limit("20/minute")
 async def move_folder_endpoint(request: Request, data: dict):
     """Move a folder to a different location"""
@@ -772,7 +624,7 @@ async def move_folder_endpoint(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to move folder"))
 
 
-@api_router.post("/folders/rename")
+@api_router.post("/folders/rename", tags=["Folders"])
 @limiter.limit("30/minute")
 async def rename_folder_endpoint(request: Request, data: dict):
     """Rename a folder"""
@@ -800,7 +652,7 @@ async def rename_folder_endpoint(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to rename folder"))
 
 
-@api_router.delete("/folders/{folder_path:path}")
+@api_router.delete("/folders/{folder_path:path}", tags=["Folders"])
 @limiter.limit("20/minute")
 async def delete_folder_endpoint(request: Request, folder_path: str):
     """Delete a folder and all its contents"""
@@ -826,7 +678,7 @@ async def delete_folder_endpoint(request: Request, folder_path: str):
 
 # --- Tags Endpoints ---
 
-@api_router.get("/tags")
+@api_router.get("/tags", tags=["Tags"])
 async def list_tags():
     """
     Get all tags used across all notes with their counts.
@@ -841,7 +693,7 @@ async def list_tags():
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to load tags"))
 
 
-@api_router.get("/tags/{tag_name}")
+@api_router.get("/tags/{tag_name}", tags=["Tags"])
 async def get_notes_by_tag_endpoint(tag_name: str):
     """
     Get all notes that have a specific tag.
@@ -865,7 +717,7 @@ async def get_notes_by_tag_endpoint(tag_name: str):
 
 # --- Template Endpoints ---
 
-@api_router.get("/templates")
+@api_router.get("/templates", tags=["Templates"])
 @limiter.limit("120/minute")
 async def list_templates(request: Request):
     """
@@ -881,7 +733,7 @@ async def list_templates(request: Request):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to list templates"))
 
 
-@api_router.get("/templates/{template_name}")
+@api_router.get("/templates/{template_name}", tags=["Templates"])
 @limiter.limit("120/minute")
 async def get_template(request: Request, template_name: str):
     """
@@ -909,7 +761,7 @@ async def get_template(request: Request, template_name: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get template"))
 
 
-@api_router.post("/templates/create-note")
+@api_router.post("/templates/create-note", tags=["Templates"])
 @limiter.limit("60/minute")
 async def create_note_from_template(request: Request, data: dict):
     """
@@ -969,7 +821,7 @@ async def create_note_from_template(request: Request, data: dict):
 
 # --- Notes Endpoints ---
 
-@api_router.get("/notes")
+@api_router.get("/notes", tags=["Notes"])
 async def list_notes():
     """List all notes with metadata"""
     try:
@@ -980,7 +832,7 @@ async def list_notes():
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to list notes"))
 
 
-@api_router.get("/notes/{note_path:path}")
+@api_router.get("/notes/{note_path:path}", tags=["Notes"])
 async def get_note(note_path: str):
     """Get a specific note's content"""
     try:
@@ -1004,7 +856,7 @@ async def get_note(note_path: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to load note"))
 
 
-@api_router.post("/notes/{note_path:path}")
+@api_router.post("/notes/{note_path:path}", tags=["Notes"])
 @limiter.limit("60/minute")
 async def create_or_update_note(request: Request, note_path: str, content: dict):
     """Create or update a note"""
@@ -1045,7 +897,7 @@ async def create_or_update_note(request: Request, note_path: str, content: dict)
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to save note"))
 
 
-@api_router.delete("/notes/{note_path:path}")
+@api_router.delete("/notes/{note_path:path}", tags=["Notes"])
 @limiter.limit("30/minute")
 async def remove_note(request: Request, note_path: str):
     """Delete a note"""
@@ -1071,7 +923,7 @@ async def remove_note(request: Request, note_path: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to delete note"))
 
 
-@api_router.get("/search")
+@api_router.get("/search", tags=["Search"])
 async def search(q: str):
     """Search notes by content"""
     try:
@@ -1090,7 +942,7 @@ async def search(q: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Search failed"))
 
 
-@api_router.get("/graph")
+@api_router.get("/graph", tags=["Graph"])
 async def get_graph():
     """Get graph data for note visualization with wikilink and markdown link detection"""
     try:
@@ -1233,13 +1085,13 @@ async def get_graph():
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to generate graph data"))
 
 
-@api_router.get("/plugins")
+@api_router.get("/plugins", tags=["Plugins"])
 async def list_plugins():
     """List all available plugins"""
     return {"plugins": plugin_manager.list_plugins()}
 
 
-@api_router.get("/plugins/note_stats/calculate")
+@api_router.get("/plugins/note_stats/calculate", tags=["Plugins"])
 async def calculate_note_stats(content: str):
     """Calculate statistics for note content (if plugin enabled)"""
     try:
@@ -1253,7 +1105,7 @@ async def calculate_note_stats(content: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to calculate note statistics"))
 
 
-@api_router.post("/plugins/{plugin_name}/toggle")
+@api_router.post("/plugins/{plugin_name}/toggle", tags=["Plugins"])
 @limiter.limit("10/minute")
 async def toggle_plugin(request: Request, plugin_name: str, enabled: dict):
     """Enable or disable a plugin"""
@@ -1277,7 +1129,7 @@ async def toggle_plugin(request: Request, plugin_name: str, enabled: dict):
 # Share Token Endpoints (authenticated)
 # ============================================================================
 
-@api_router.post("/share/{note_path:path}")
+@api_router.post("/share/{note_path:path}", tags=["Sharing"])
 @limiter.limit("30/minute")
 async def create_share(request: Request, note_path: str, data: dict = None):
     """
@@ -1324,7 +1176,7 @@ async def create_share(request: Request, note_path: str, data: dict = None):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to create share"))
 
 
-@api_router.get("/share/{note_path:path}")
+@api_router.get("/share/{note_path:path}", tags=["Sharing"])
 @limiter.limit("120/minute")
 async def get_share_status(request: Request, note_path: str):
     """
@@ -1350,7 +1202,7 @@ async def get_share_status(request: Request, note_path: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get share status"))
 
 
-@api_router.get("/shared-notes")
+@api_router.get("/shared-notes", tags=["Sharing"])
 @limiter.limit("60/minute")
 async def list_shared_notes(request: Request):
     """
@@ -1365,7 +1217,7 @@ async def list_shared_notes(request: Request):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get shared notes"))
 
 
-@api_router.delete("/share/{note_path:path}")
+@api_router.delete("/share/{note_path:path}", tags=["Sharing"])
 @limiter.limit("30/minute")
 async def delete_share(request: Request, note_path: str):
     """
@@ -1393,7 +1245,7 @@ async def delete_share(request: Request, note_path: str):
 # Public Share Endpoint (no authentication required)
 # ============================================================================
 
-@app.get("/share/{token}", response_class=HTMLResponse)
+@app.get("/share/{token}", response_class=HTMLResponse, tags=["Sharing"])
 @limiter.limit("60/minute")
 async def view_shared_note(request: Request, token: str):
     """
@@ -1464,7 +1316,7 @@ async def view_shared_note(request: Request, token: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to load shared note"))
 
 
-@app.get("/health")
+@app.get("/health", tags=["System"])
 async def health_check():
     """Health check endpoint"""
     return {
