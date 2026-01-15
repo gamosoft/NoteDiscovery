@@ -1998,21 +1998,52 @@ function noteApp() {
             event.preventDefault();
             this.dropTarget = 'editor';
             
-            // Update cursor position as user drags over text
+            // Focus the textarea
             const textarea = event.target;
-            const textLength = textarea.value.length;
+            if (textarea.tagName !== 'TEXTAREA') return;
             
-            // Calculate approximate cursor position based on mouse position
-            // This gives a rough idea of where the link will be inserted
             textarea.focus();
             
-            // Try to set cursor at click position (works in most browsers)
-            if (textarea.setSelectionRange && document.caretPositionFromPoint) {
-                const pos = document.caretPositionFromPoint(event.clientX, event.clientY);
-                if (pos && pos.offsetNode === textarea) {
-                    textarea.setSelectionRange(pos.offset, pos.offset);
-                }
+            // Calculate cursor position from mouse coordinates
+            const pos = this.getTextareaCursorFromPoint(textarea, event.clientX, event.clientY);
+            if (pos >= 0) {
+                textarea.setSelectionRange(pos, pos);
             }
+        },
+        
+        // Calculate textarea cursor position from mouse coordinates
+        getTextareaCursorFromPoint(textarea, x, y) {
+            const rect = textarea.getBoundingClientRect();
+            const style = window.getComputedStyle(textarea);
+            const lineHeight = parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2;
+            const paddingTop = parseFloat(style.paddingTop) || 0;
+            const paddingLeft = parseFloat(style.paddingLeft) || 0;
+            
+            // Calculate which line we're on
+            const relativeY = y - rect.top - paddingTop + textarea.scrollTop;
+            const lineIndex = Math.max(0, Math.floor(relativeY / lineHeight));
+            
+            // Split content into lines
+            const lines = textarea.value.split('\n');
+            
+            // Find the character position at the start of this line
+            let charPos = 0;
+            for (let i = 0; i < Math.min(lineIndex, lines.length); i++) {
+                charPos += lines[i].length + 1; // +1 for newline
+            }
+            
+            // If we're beyond the last line, position at end
+            if (lineIndex >= lines.length) {
+                return textarea.value.length;
+            }
+            
+            // Approximate character position within the line based on X coordinate
+            const relativeX = x - rect.left - paddingLeft;
+            const charWidth = parseFloat(style.fontSize) * 0.6; // Approximate for monospace
+            const charInLine = Math.max(0, Math.floor(relativeX / charWidth));
+            const lineLength = lines[lineIndex]?.length || 0;
+            
+            return charPos + Math.min(charInLine, lineLength);
         },
         
         // Handle dragenter on editor
@@ -2060,9 +2091,11 @@ function noteApp() {
                 link = `[${noteName}](${encodedPath})`;
             }
             
-            // Insert at cursor position
+            // Insert at drop position
             const textarea = event.target;
-            const cursorPos = textarea.selectionStart || 0;
+            // Recalculate position from drop coordinates for accuracy
+            let cursorPos = this.getTextareaCursorFromPoint(textarea, event.clientX, event.clientY);
+            if (cursorPos < 0) cursorPos = textarea.selectionStart || 0;
             const textBefore = this.noteContent.substring(0, cursorPos);
             const textAfter = this.noteContent.substring(cursorPos);
             
@@ -2100,7 +2133,9 @@ function noteApp() {
             }
             
             const textarea = event.target;
-            const cursorPos = textarea.selectionStart || 0;
+            // Calculate cursor position from drop coordinates
+            let cursorPos = this.getTextareaCursorFromPoint(textarea, event.clientX, event.clientY);
+            if (cursorPos < 0) cursorPos = textarea.selectionStart || 0;
             
             // Upload each image
             for (const file of imageFiles) {
