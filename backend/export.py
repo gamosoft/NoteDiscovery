@@ -522,6 +522,43 @@ def generate_export_html(
             font-style: italic;
         }}
         
+        /* Copy button for code blocks */
+        .markdown-preview pre {{
+            position: relative;
+        }}
+        
+        .copy-btn {{
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            background-color: var(--bg-secondary, #e1e4e8);
+            color: var(--text-secondary, #586069);
+            border: 1px solid var(--border-primary, #d0d7de);
+            border-radius: 0.25rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }}
+        
+        .markdown-preview pre:hover .copy-btn {{
+            opacity: 1;
+        }}
+        
+        .copy-btn:hover {{
+            background-color: var(--accent-primary, #0366d6);
+            color: white;
+            border-color: var(--accent-primary, #0366d6);
+        }}
+        
+        .copy-btn.copied {{
+            background-color: #10b981;
+            color: white;
+            border-color: #10b981;
+        }}
+        
         @media (max-width: 768px) {{
             body {{
                 padding: 1rem;
@@ -553,6 +590,31 @@ def generate_export_html(
         
         // Render markdown
         document.getElementById('content').innerHTML = marked.parse(markdown);
+        
+        // Add copy buttons to code blocks
+        document.querySelectorAll('.markdown-preview pre').forEach(pre => {{
+            const btn = document.createElement('button');
+            btn.className = 'copy-btn';
+            btn.textContent = 'Copy';
+            btn.addEventListener('click', async () => {{
+                const code = pre.querySelector('code');
+                if (code) {{
+                    try {{
+                        await navigator.clipboard.writeText(code.textContent);
+                        btn.textContent = 'Copied!';
+                        btn.classList.add('copied');
+                        setTimeout(() => {{
+                            btn.textContent = 'Copy';
+                            btn.classList.remove('copied');
+                        }}, 2000);
+                    }} catch (err) {{
+                        btn.textContent = 'Failed';
+                        setTimeout(() => btn.textContent = 'Copy', 2000);
+                    }}
+                }}
+            }});
+            pre.appendChild(btn);
+        }});
     </script>
 </body>
 </html>'''
