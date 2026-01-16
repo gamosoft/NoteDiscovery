@@ -1795,7 +1795,7 @@
                     </a>
                     <!-- Ko-fi support link (demo mode only) -->
                     <template x-if="demoMode">
-                        <div class="mt-3 flex flex-col gap-2 items-start">
+                        <div class="mt-3 flex flex-col gap-2 items-center">
                             <a 
                                 href="https://ko-fi.com/gamosoft" 
                                 target="_blank" 
@@ -1811,11 +1811,9 @@
                                 href="https://www.pikapods.com/pods?run=notediscovery" 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all hover:scale-105"
-                                style="background-color: #4f46e5; color: white;"
+                                class="inline-flex items-center transition-all hover:scale-105"
                             >
-                                <span>☁️</span>
-                                <span x-text="t('support.deploy_own')"></span>
+                                <img src="https://www.pikapods.com/static/run-button.svg" alt="Run on PikaPods" style="height: 28px;">
                             </a>
                         </div>
                     </template>
