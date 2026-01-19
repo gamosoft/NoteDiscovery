@@ -1741,9 +1741,6 @@ function noteApp() {
         handleFolderClick(el) {
             this.toggleFolder(el.dataset.path);
         },
-        handleFolderDragStart(el, event) {
-            this.onItemDragStart(el.dataset.path, 'folder', event);
-        },
         handleFolderDragOver(el, event) {
             event.preventDefault();
             this.dragOverFolder = el.dataset.path;
@@ -1772,12 +1769,9 @@ function noteApp() {
             this.deleteFolder(el.dataset.path, el.dataset.name);
         },
         
-        // Item (note/image) handlers - read from dataset
+        // Item (note/media) handlers - read from dataset
         handleItemClick(el) {
             this.openItem(el.dataset.path, el.dataset.type);
-        },
-        handleItemDragStart(el, event) {
-            this.onItemDragStart(el.dataset.path, el.dataset.type || 'note', event);
         },
         handleItemHover(el, isEnter) {
             const path = el.dataset.path;
@@ -1816,7 +1810,7 @@ function noteApp() {
                         data-path="${esc(folder.path)}"
                         data-name="${esc(folder.name)}"
                         draggable="true"
-                        ondragstart="window.$root.handleFolderDragStart(this, event)"
+                        ondragstart="window.$root.onItemDragStart(this.dataset.path, 'folder', event)"
                         ondragend="window.$root.onItemDragEnd()"
                         ondragover="window.$root.handleFolderDragOver(this, event)"
                         ondragenter="window.$root.handleFolderDragOver(this, event)"
@@ -1909,7 +1903,7 @@ function noteApp() {
                                 data-name="${esc(note.name)}"
                                 data-type="${note.type}"
                                 draggable="true"
-                                ondragstart="window.$root.handleItemDragStart(this, event)"
+                                ondragstart="window.$root.onItemDragStart(this.dataset.path, this.dataset.type || 'note', event)"
                                 ondragend="window.$root.onItemDragEnd()"
                                 onclick="window.$root.handleItemClick(this)"
                                 class="note-item px-2 py-1 text-sm relative"

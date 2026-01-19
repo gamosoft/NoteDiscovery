@@ -1542,6 +1542,7 @@
                                 @mouseout="if(currentNote !== note.path && currentMedia !== note.path) $el.style.backgroundColor='transparent'"
                             >
                                 <span class="truncate" style="display: block; padding-right: 30px;" :title="note.name">
+                                    <span x-show="note.type === 'note' && isNoteShared(note.path)" style="opacity: 0.6; margin-right: 2px;" title="Shared">🔗</span>
                                     <span x-text="getMediaIcon(note.type)"></span>
                                     <span x-text="note.name"></span>
                                 </span>
