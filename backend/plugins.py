@@ -75,6 +75,15 @@ class Plugin:
         """
         pass
 
+    def on_app_shutdown(self):
+        """
+        Called when the application is shutting down.
+        Plugins can use this to stop background threads, close external connections,
+        flush cached state to disk, or perform any other cleanup required before
+        the process exits.
+        """
+        pass
+
 
 class PluginManager:
     """Manages loading and execution of plugins"""
@@ -181,6 +190,17 @@ class Plugin:
                 json.dump(config, f, indent=2)
         except Exception as e:
             print(f"Failed to save plugin config: {e}")
+
+    def save_config(self):
+        """
+        Public wrapper to persist plugin enabled/disabled states to disk.
+        This is safe to call during shutdown; errors will be caught and logged
+        so that shutdown proceeds without crashing the whole process.
+        """
+        try:
+            self._save_config()
+        except Exception as e:
+            print(f"Failed to persist plugin config during shutdown: {e}")
     
     def _apply_saved_state(self):
         """Apply saved plugin states after loading plugins"""
