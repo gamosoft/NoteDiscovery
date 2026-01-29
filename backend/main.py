@@ -217,8 +217,9 @@ ensure_directories(config)
 # Initialize plugin manager
 plugin_manager = PluginManager(config['storage']['plugins_dir'])
 
-# Run app startup hooks
-plugin_manager.run_hook('on_app_startup')
+# Startup hooks are executed as part of FastAPI lifecycle events (see below).
+# This ensures plugins and other subsystems are started when the server is
+# actually ready and allows us to run proper shutdown logic when the app stops.
 
 # Mount static files
 static_path = Path(__file__).parent.parent / "frontend"
@@ -1430,6 +1431,48 @@ async def catch_all(full_path: str, request: Request):
 # Authentication is applied via router dependencies
 app.include_router(api_router)
 app.include_router(pages_router)
+
+
+# ---------------------------------------------------------------------------
+# Lifecycle events - startup and shutdown handlers
+# ---------------------------------------------------------------------------
+@app.on_event("startup")
+async def on_startup():
+    """
+    Application startup event. This runs when the ASGI server signals the
+    application is ready to accept connections. Run plugin startup hooks here
+    so plugins can initialize resources that need the application context.
+    """
+    print("🔁 Application startup - running startup hooks")
+    try:
+        plugin_manager.run_hook('on_app_startup')
+    except Exception as e:
+        # Don't let plugin errors prevent the app from starting. Log and continue.
+        print(f"Startup hook error: {e}")
+
+
+@app.on_event("shutdown")
+async def on_shutdown():
+    """
+    Application shutdown event. Perform graceful cleanup here. This handler
+    should be quick but may run cleanup operations that need a short timeout
+    (e.g., flushing state to disk, stopping background threads).
+    """
+    print("🛑 Shutdown initiated - running cleanup handlers")
+
+    # Notify plugins about shutdown so they can release resources
+    try:
+        plugin_manager.run_hook('on_app_shutdown')
+    except Exception as e:
+        print(f"Shutdown hook error: {e}")
+
+    # Persist plugin configuration/state; don't raise on failure
+    try:
+        plugin_manager.save_config()
+    except Exception as e:
+        print(f"Failed to save plugin config during shutdown: {e}")
+
+    print("🛑 Shutdown cleanup complete")
 
 
 if __name__ == "__main__":

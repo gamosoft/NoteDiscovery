@@ -44,6 +44,8 @@ ENV PORT=8000
 HEALTHCHECK --interval=60s --timeout=3s --start-period=5s --retries=3 \
     CMD python -c "import os, urllib.request; urllib.request.urlopen(f'http://localhost:{os.getenv(\"PORT\", \"8000\")}/health')"
 
-# Run the application (shell form to allow environment variable expansion)
-CMD uvicorn backend.main:app --host 0.0.0.0 --port $PORT --timeout-graceful-shutdown 2
-
+# Run the application with an exec wrapper so the uvicorn process replaces
+# the shell and becomes PID 1. This ensures it receives SIGTERM/SIGINT directly
+# and can run its graceful shutdown handlers. The command is still able to use
+# the $PORT environment variable because it's executed via a shell wrapper.
+CMD ["sh", "-c", "exec uvicorn backend.main:app --host 0.0.0.0 --port $PORT --timeout-graceful-shutdown 5"]

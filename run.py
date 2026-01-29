@@ -74,7 +74,7 @@ def main():
         "--reload",
         "--host", "0.0.0.0",
         "--port", port,
-        "--timeout-graceful-shutdown", "2"
+        "--timeout-graceful-shutdown", "5"  # allow more time for graceful shutdown
     ])
 
 if __name__ == "__main__":
