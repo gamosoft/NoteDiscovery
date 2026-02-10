@@ -126,7 +126,9 @@
     "stop_sharing": "停止分享",
     "confirm_revoke": "您确定要停止分享此笔记吗？分享链接将不再有效。",
     "error_creating": "创建分享链接失败：{{error}}",
-    "error_revoking": "撤销分享链接失败：{{error}}"
+    "error_revoking": "撤销分享链接失败：{{error}}",
+    "show_qr": "显示二维码",
+    "hide_qr": "隐藏二维码"
   },
 
   "quick_switcher": {

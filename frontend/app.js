@@ -277,6 +277,7 @@ function noteApp() {
         showShareModal: false,
         shareInfo: null,
         shareLoading: false,
+        showShareQR: false,
         shareLinkCopied: false,
         _sharedNotePaths: new Set(),  // O(1) lookup for shared note indicators
         
@@ -5378,13 +5379,40 @@ function noteApp() {
             this.closeQuickSwitcher();
         },
         
+        // Close share modal and reset state after animation
+        closeShareModal() {
+            this.showShareModal = false;
+            // Delay state reset until modal is fully hidden
+            setTimeout(() => {
+                this.showShareQR = false;
+                this.shareInfo = null;
+                this.shareLoading = false;
+            }, 200);
+        },
+        
+        // Generate QR code for share URL
+        generateQRCode(url) {
+            if (!url || typeof qrcode === 'undefined') return '';
+            try {
+                const qr = qrcode(0, 'M'); // 0 = auto version, M = medium error correction
+                qr.addData(url);
+                qr.make();
+                return qr.createDataURL(4); // 4 = module size in pixels
+            } catch (e) {
+                console.error('QR code generation failed:', e);
+                return '';
+            }
+        },
+        
         // Open share modal and fetch current share status
         async openShareModal() {
             if (!this.currentNote) return;
             
-            this.showShareModal = true;
-            this.shareLoading = true;
+            // Reset state BEFORE showing modal to prevent flicker
+            this.showShareQR = false;
             this.shareInfo = null;
+            this.shareLoading = true;
+            this.showShareModal = true;
             
             try {
                 const notePath = this.currentNote.replace('.md', '');

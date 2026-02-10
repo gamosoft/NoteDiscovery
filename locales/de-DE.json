@@ -127,7 +127,9 @@
     "stop_sharing": "Freigabe beenden",
     "confirm_revoke": "Sind Sie sicher, dass Sie die Freigabe dieser Notiz beenden möchten? Der Freigabelink funktioniert dann nicht mehr.",
     "error_creating": "Fehler beim Erstellen des Freigabelinks: {{error}}",
-    "error_revoking": "Fehler beim Widerrufen des Freigabelinks: {{error}}"
+    "error_revoking": "Fehler beim Widerrufen des Freigabelinks: {{error}}",
+    "show_qr": "QR-Code anzeigen",
+    "hide_qr": "QR-Code ausblenden"
   },
 
   "quick_switcher": {

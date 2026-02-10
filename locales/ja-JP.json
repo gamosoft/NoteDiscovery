@@ -126,7 +126,9 @@
     "stop_sharing": "共有を停止",
     "confirm_revoke": "このノートの共有を停止してもよろしいですか？共有リンクは機能しなくなります。",
     "error_creating": "共有リンクの作成に失敗しました: {{error}}",
-    "error_revoking": "共有リンクの取り消しに失敗しました: {{error}}"
+    "error_revoking": "共有リンクの取り消しに失敗しました: {{error}}",
+    "show_qr": "QRコードを表示",
+    "hide_qr": "QRコードを非表示"
   },
 
   "quick_switcher": {

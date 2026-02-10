@@ -127,7 +127,9 @@
     "stop_sharing": "Dejar de compartir",
     "confirm_revoke": "¿Estás seguro de que quieres dejar de compartir esta nota? El enlace dejará de funcionar.",
     "error_creating": "Error al crear el enlace: {{error}}",
-    "error_revoking": "Error al revocar el enlace: {{error}}"
+    "error_revoking": "Error al revocar el enlace: {{error}}",
+    "show_qr": "Mostrar código QR",
+    "hide_qr": "Ocultar código QR"
   },
 
   "quick_switcher": {

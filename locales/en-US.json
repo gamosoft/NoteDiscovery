@@ -127,7 +127,9 @@
     "stop_sharing": "Stop Sharing",
     "confirm_revoke": "Are you sure you want to stop sharing this note? The share link will no longer work.",
     "error_creating": "Failed to create share link: {{error}}",
-    "error_revoking": "Failed to revoke share link: {{error}}"
+    "error_revoking": "Failed to revoke share link: {{error}}",
+    "show_qr": "Show QR Code",
+    "hide_qr": "Hide QR Code"
   },
 
   "quick_switcher": {

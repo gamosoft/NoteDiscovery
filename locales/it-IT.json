@@ -126,7 +126,9 @@
     "stop_sharing": "Interrompi condivisione",
     "confirm_revoke": "Sei sicuro di voler interrompere la condivisione di questa nota? Il link non funzionerà più.",
     "error_creating": "Impossibile creare il link: {{error}}",
-    "error_revoking": "Impossibile revocare il link: {{error}}"
+    "error_revoking": "Impossibile revocare il link: {{error}}",
+    "show_qr": "Mostra codice QR",
+    "hide_qr": "Nascondi codice QR"
   },
 
   "quick_switcher": {

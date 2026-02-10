@@ -126,7 +126,9 @@
     "stop_sharing": "Prenehaj deliti",
     "confirm_revoke": "Ali ste prepričani, da želite prenehati deliti ta zapis? Povezava ne bo več delovala.",
     "error_creating": "Napaka pri ustvarjanju povezave: {{error}}",
-    "error_revoking": "Napaka pri preklicu povezave: {{error}}"
+    "error_revoking": "Napaka pri preklicu povezave: {{error}}",
+    "show_qr": "Prikaži QR kodo",
+    "hide_qr": "Skrij QR kodo"
   },
 
   "quick_switcher": {
