@@ -94,15 +94,12 @@ def scan_notes_fast_walk(notes_dir: str, use_cache: bool = True, include_media: 
     Args:
         notes_dir: Base notes directory
     """
-    started_at = time.perf_counter()
     notes_path = Path(notes_dir)
 
     cache_key = (str(notes_path.resolve()), include_media)
     if use_cache:
         cached = _scan_cache_get(cache_key)
         if cached is not None:
-            elapsed_ms = (time.perf_counter() - started_at) * 1000
-            print(f"[profile] scan_notes_fast_walk cache hit: {elapsed_ms:.2f} ms")
             return cached
 
         if not include_media:
@@ -120,8 +117,6 @@ def scan_notes_fast_walk(notes_dir: str, use_cache: bool = True, include_media: 
 
                 normalized_value = (normalized_notes, media_folders)
                 _scan_cache_set(cache_key, normalized_value)
-                elapsed_ms = (time.perf_counter() - started_at) * 1000
-                print(f"[profile] scan_notes_fast_walk cache hit (media reuse): {elapsed_ms:.2f} ms")
                 return normalized_value
 
     notes: List[Dict] = []
@@ -170,8 +165,6 @@ def scan_notes_fast_walk(notes_dir: str, use_cache: bool = True, include_media: 
     value = (sorted(notes, key=lambda x: x.get('modified', ''), reverse=True), sorted(folders_set))
     if use_cache:
         _scan_cache_set(cache_key, value)
-    elapsed_ms = (time.perf_counter() - started_at) * 1000
-    print(f"[profile] scan_notes_fast_walk full scan: {elapsed_ms:.2f} ms (notes={len(value[0])}, folders={len(value[1])})")
     return value
 
 def move_note(notes_dir: str, old_path: str, new_path: str) -> tuple[bool, str]:
