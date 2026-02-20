@@ -21,7 +21,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from .utils import (
-    get_all_notes,
+    scan_notes_fast_walk,
     get_note_content,
     save_note,
     delete_note,
@@ -29,7 +29,6 @@ from .utils import (
     create_note_metadata,
     ensure_directories,
     create_folder,
-    get_all_folders,
     move_note,
     move_folder,
     rename_folder,
@@ -900,8 +899,7 @@ async def create_note_from_template(request: Request, data: dict):
 async def list_notes():
     """List all notes with metadata"""
     try:
-        notes = get_all_notes(config['storage']['notes_dir'])
-        folders = get_all_folders(config['storage']['notes_dir'])
+        notes, folders = scan_notes_fast_walk(config['storage']['notes_dir'], include_media=True)
         return {"notes": notes, "folders": folders}
     except Exception as e:
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to list notes"))
@@ -1023,7 +1021,7 @@ async def get_graph():
     try:
         import re
         import urllib.parse
-        notes = get_all_notes(config['storage']['notes_dir'])
+        notes, _folders = scan_notes_fast_walk(config['storage']['notes_dir'], include_media=False)
         nodes = []
         edges = []
         
