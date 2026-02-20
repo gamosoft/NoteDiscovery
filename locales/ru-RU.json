@@ -216,7 +216,8 @@
     "match_of": "Результат {{current}} из {{total}}",
     "result_singular": "результат",
     "result_plural": "результатов",
-    "no_results": "Нет заметок с \"{{query}}\""
+    "no_results": "Нет заметок с \"{{query}}\"",
+    "searching": "Поиск \"{{query}}\"..."
   },
 
   "theme": {

@@ -217,7 +217,8 @@
     "match_of": "Coincidencia {{current}} de {{total}}",
     "result_singular": "resultado",
     "result_plural": "resultados",
-    "no_results": "Ninguna nota contiene \"{{query}}\""
+    "no_results": "Ninguna nota contiene \"{{query}}\"",
+    "searching": "Buscando \"{{query}}\"..."
   },
 
   "theme": {

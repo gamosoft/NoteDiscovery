@@ -216,7 +216,8 @@
     "match_of": "Zadetek {{current}} od {{total}}",
     "result_singular": "rezultat",
     "result_plural": "rezultatov",
-    "no_results": "Nobena beležka ne vsebuje \"{{query}}\""
+    "no_results": "Nobena beležka ne vsebuje \"{{query}}\"",
+    "searching": "Iskanje \"{{query}}\"..."
   },
 
   "theme": {

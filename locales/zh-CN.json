@@ -216,7 +216,8 @@
     "match_of": "第 {{current}} 个，共 {{total}} 个",
     "result_singular": "个结果",
     "result_plural": "个结果",
-    "no_results": "没有笔记包含\"{{query}}\""
+    "no_results": "没有笔记包含\"{{query}}\"",
+    "searching": "正在搜索\"{{query}}\"..."
   },
 
   "theme": {

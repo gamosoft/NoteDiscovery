@@ -217,7 +217,8 @@
     "match_of": "Megfelelő {{current}} / {{total}}",
     "result_singular": "eredmény",
     "result_plural": "eredmények",
-    "no_results": "Nincs jegyzet amely tartalmazza a következőt: \"{{query}}\""
+    "no_results": "Nincs jegyzet amely tartalmazza a következőt: \"{{query}}\"",
+    "searching": "\"{{query}}\" keresése..."
   },
 
   "theme": {
