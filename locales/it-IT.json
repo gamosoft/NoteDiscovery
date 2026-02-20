@@ -216,7 +216,8 @@
     "match_of": "Risultato {{current}} di {{total}}",
     "result_singular": "risultato",
     "result_plural": "risultati",
-    "no_results": "Nessuna nota contiene \"{{query}}\""
+    "no_results": "Nessuna nota contiene \"{{query}}\"",
+    "searching": "Ricerca di \"{{query}}\"..."
   },
 
   "theme": {

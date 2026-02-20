@@ -3,6 +3,7 @@
 // Configuration constants
 const CONFIG = {
     AUTOSAVE_DELAY: 1000,              // ms - Delay before triggering autosave
+    SEARCH_DEBOUNCE_DELAY: 1000,        // ms - Delay before running note search while typing
     SAVE_INDICATOR_DURATION: 2000,     // ms - How long to show "saved" indicator
     SCROLL_SYNC_DELAY: 50,             // ms - Delay to prevent scroll sync interference
     SCROLL_SYNC_MAX_RETRIES: 10,       // Maximum attempts to find editor/preview elements
@@ -223,6 +224,10 @@ function noteApp() {
         selectedTags: [],
         tagsExpanded: false,
         tagReloadTimeout: null, // For debouncing tag reloads
+
+        // Search state
+        searchDebounceTimeout: null,
+        isSearching: false,
         
         // Outline (TOC) state
         outline: [], // [{level: 1, text: 'Heading', slug: 'heading'}, ...]
@@ -1418,6 +1423,7 @@ function noteApp() {
             
             // Case 1: No filters at all → show full folder tree
             if (!hasTextSearch && !hasTagFilter) {
+                this.isSearching = false;
                 this.searchResults = [];
                 this.currentSearchHighlight = '';
                 this.clearSearchHighlights();
@@ -1427,6 +1433,7 @@ function noteApp() {
             
             // Case 2: Only tag filter → convert to flat list of matching notes
             if (hasTagFilter && !hasTextSearch) {
+                this.isSearching = false;
                 this.searchResults = this.notes.filter(note => 
                     note.type === 'note' && this.noteMatchesTags(note)
                 );
@@ -1437,6 +1444,7 @@ function noteApp() {
             
             // Case 3: Text search (with or without tag filter)
             if (hasTextSearch) {
+                this.isSearching = true;
                 try {
                     const response = await fetch(`/api/search?q=${encodeURIComponent(this.searchQuery)}`);
                     const data = await response.json();
@@ -1461,6 +1469,9 @@ function noteApp() {
                     }
                 } catch (error) {
                     console.error('Search failed:', error);
+                    this.searchResults = [];
+                } finally {
+                    this.isSearching = false;
                 }
             }
         },
@@ -3831,6 +3842,26 @@ function noteApp() {
         },
         
         // Search notes
+        debouncedSearchNotes() {
+            if (this.searchDebounceTimeout) {
+                clearTimeout(this.searchDebounceTimeout);
+            }
+
+            const hasTextSearch = this.searchQuery.trim().length > 0;
+            if (!hasTextSearch) {
+                this.isSearching = false;
+                this.searchNotes();
+                return;
+            }
+
+            this.isSearching = true;
+            this.searchResults = [];
+
+            this.searchDebounceTimeout = setTimeout(() => {
+                this.searchNotes();
+            }, CONFIG.SEARCH_DEBOUNCE_DELAY);
+        },
+
         // Search notes by text (calls unified filter logic)
         async searchNotes() {
             await this.applyFilters();

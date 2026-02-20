@@ -217,7 +217,8 @@
     "match_of": "Treffer {{current}} von {{total}}",
     "result_singular": "Ergebnis",
     "result_plural": "Ergebnisse",
-    "no_results": "Keine Notizen enthalten \"{{query}}\""
+    "no_results": "Keine Notizen enthalten \"{{query}}\"",
+    "searching": "Suche nach \"{{query}}\"..."
   },
 
   "theme": {

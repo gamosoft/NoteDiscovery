@@ -216,7 +216,8 @@
     "match_of": "{{total}}件中{{current}}件目",
     "result_singular": "件",
     "result_plural": "件",
-    "no_results": "「{{query}}」を含むノートはありません"
+    "no_results": "「{{query}}」を含むノートはありません",
+    "searching": "「{{query}}」を検索中..."
   },
 
   "theme": {
