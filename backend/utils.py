@@ -5,6 +5,8 @@ Utility functions for file operations, search, and markdown processing
 import os
 import re
 import shutil
+import threading
+import time
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple
 from datetime import datetime, timezone
@@ -13,6 +15,34 @@ from datetime import datetime, timezone
 # In-memory cache for parsed tags
 # Format: {file_path: (mtime, tags)}
 _tag_cache: Dict[str, Tuple[float, List[str]]] = {}
+
+# Notes tree scan cache (TTL).
+#
+# This avoids repeated full-directory walks when multiple endpoints (or the UI)
+# request indexes in quick succession.
+
+_SCAN_WALK_CACHE_LOCK = threading.Lock()
+_SCAN_WALK_CACHE_TTL_SECONDS = 1.0
+# key: (resolved_notes_dir, include_media) -> (cached_at_monotonic_seconds, (notes, folders))
+_SCAN_WALK_CACHE: Dict[Tuple[str, bool], Tuple[float, Tuple[List[Dict], List[str]]]] = {}
+
+
+def _scan_cache_get(key: Tuple[str, bool]) -> Optional[Tuple[List[Dict], List[str]]]:
+    now = time.monotonic()
+    with _SCAN_WALK_CACHE_LOCK:
+        entry = _SCAN_WALK_CACHE.get(key)
+        if not entry:
+            return None
+        cached_at, value = entry
+        if (now - cached_at) > _SCAN_WALK_CACHE_TTL_SECONDS:
+            _SCAN_WALK_CACHE.pop(key, None)
+            return None
+        return value
+
+
+def _scan_cache_set(key: Tuple[str, bool], value: Tuple[List[Dict], List[str]]) -> None:
+    with _SCAN_WALK_CACHE_LOCK:
+        _SCAN_WALK_CACHE[key] = (time.monotonic(), value)
 
 
 def validate_path_security(notes_dir: str, path: Path) -> bool:
@@ -58,20 +88,84 @@ def create_folder(notes_dir: str, folder_path: str) -> bool:
     return True
 
 
-def get_all_folders(notes_dir: str) -> List[str]:
-    """Get all folders in the notes directory, including empty ones"""
-    folders = []
-    notes_path = Path(notes_dir)
-    
-    for item in notes_path.rglob("*"):
-        if item.is_dir():
-            relative_path = item.relative_to(notes_path)
-            folder_path = str(relative_path.as_posix())
-            if folder_path and not folder_path.startswith('.'):
-                folders.append(folder_path)
-    
-    return sorted(folders)
+def scan_notes_fast_walk(notes_dir: str, use_cache: bool = True, include_media: bool = False) -> Tuple[List[Dict], List[str]]:
+    """Fast scanner using os.walk (pure Python + stdlib).
 
+    Args:
+        notes_dir: Base notes directory
+    """
+    notes_path = Path(notes_dir)
+
+    cache_key = (str(notes_path.resolve()), include_media)
+    if use_cache:
+        cached = _scan_cache_get(cache_key)
+        if cached is not None:
+            return cached
+
+        if not include_media:
+            media_cache_key = (str(notes_path.resolve()), True)
+            media_cached = _scan_cache_get(media_cache_key)
+            if media_cached is not None:
+                media_notes, media_folders = media_cached
+                normalized_notes = []
+                for note in media_notes:
+                    if not Path(note.get("path", "")).match("*.md"):
+                        continue
+                    normalized_note = dict(note)
+                    normalized_note["type"] = "note"
+                    normalized_notes.append(normalized_note)
+
+                normalized_value = (normalized_notes, media_folders)
+                _scan_cache_set(cache_key, normalized_value)
+                return normalized_value
+
+    notes: List[Dict] = []
+    folders_set = set()
+
+    for root, dirnames, filenames in os.walk(notes_path):
+        # Skip descending into dot-dirs
+        dirnames[:] = [d for d in dirnames if not d.startswith('.')]
+
+        root_path = Path(root)
+        rel_folder = root_path.relative_to(notes_path).as_posix()
+        if rel_folder != "." and not rel_folder.startswith('.'):
+            folders_set.add(rel_folder)
+
+        for filename in filenames:
+            if filename.startswith('.'):
+                continue
+
+            full_path = root_path / filename
+            try:
+                st = full_path.stat()
+            except OSError:
+                continue
+
+            relative_path = full_path.relative_to(notes_path)
+            media_type = get_media_type(filename) if include_media else None
+            is_markdown = full_path.suffix.lower() == '.md'
+            should_include = is_markdown or (include_media and media_type is not None)
+
+            if not should_include:
+                continue
+
+            folder = relative_path.parent.as_posix()
+            # Get tags for this note (cached)
+            tags = get_tags_cached(full_path) if is_markdown else []
+            notes.append({
+                "name": full_path.stem,
+                "path": relative_path.as_posix(),
+                "folder": "" if folder == "." else folder,
+                "modified": datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).isoformat(),
+                "size": st.st_size,
+                "type": media_type if media_type else "note",
+                "tags": tags,
+            })
+
+    value = (sorted(notes, key=lambda x: x.get('modified', ''), reverse=True), sorted(folders_set))
+    if use_cache:
+        _scan_cache_set(cache_key, value)
+    return value
 
 def move_note(notes_dir: str, old_path: str, new_path: str) -> tuple[bool, str]:
     """Move a note to a different location
@@ -200,34 +294,6 @@ def delete_folder(notes_dir: str, folder_path: str) -> bool:
         return False
 
 
-def get_all_notes(notes_dir: str) -> List[Dict]:
-    """Recursively get all markdown notes and images"""
-    items = []
-    notes_path = Path(notes_dir)
-    
-    # Get all markdown notes
-    for md_file in notes_path.rglob("*.md"):
-        relative_path = md_file.relative_to(notes_path)
-        stat = md_file.stat()
-        
-        # Get tags for this note (cached)
-        tags = get_tags_cached(md_file)
-        
-        items.append({
-            "name": md_file.stem,
-            "path": str(relative_path.as_posix()),
-            "folder": str(relative_path.parent.as_posix()) if str(relative_path.parent) != "." else "",
-            "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
-            "size": stat.st_size,
-            "type": "note",
-            "tags": tags
-        })
-    
-    # Get all images
-    images = get_all_images(notes_dir)
-    items.extend(images)
-    
-    return sorted(items, key=lambda x: x['modified'], reverse=True)
 
 
 def get_note_content(notes_dir: str, note_path: str) -> Optional[str]:
@@ -297,9 +363,10 @@ def search_notes(notes_dir: str, query: str) -> List[Dict]:
     """
     from html import escape
     results = []
-    notes_path = Path(notes_dir)
-    
-    for md_file in notes_path.rglob("*.md"):
+    notes, _folders = scan_notes_fast_walk(notes_dir, include_media=False)
+
+    for note in notes:
+        md_file = Path(notes_dir) / note["path"]
         try:
             with open(md_file, 'r', encoding='utf-8') as f:
                 content = f.read()
@@ -343,7 +410,7 @@ def search_notes(notes_dir: str, query: str) -> List[Dict]:
                         "context": snippet
                     })
                 
-                relative_path = md_file.relative_to(notes_path)
+                relative_path = Path(note["path"])
                 results.append({
                     "name": md_file.stem,
                     "path": str(relative_path.as_posix()),
@@ -510,41 +577,6 @@ def get_media_type(filename: str) -> Optional[str]:
     return None
 
 
-def get_all_images(notes_dir: str) -> List[Dict]:
-    """
-    Get all media files (images, audio, video, documents) from anywhere in the notes directory.
-    Returns list of media dictionaries with metadata.
-    Note: Function name kept as 'get_all_images' for backward compatibility.
-    """
-    media_files = []
-    notes_path = Path(notes_dir)
-    
-    # Find all media files recursively in the entire notes directory
-    for media_file in notes_path.rglob("*"):
-        # Skip directories and hidden files/folders
-        if media_file.is_dir():
-            continue
-        if any(part.startswith('.') for part in media_file.parts):
-            continue
-        
-        # Check if it's a media file
-        media_type = get_media_type(media_file.name)
-        if media_type:
-            relative_path = media_file.relative_to(notes_path)
-            stat = media_file.stat()
-            
-            media_files.append({
-                "name": media_file.name,
-                "path": str(relative_path.as_posix()),
-                "folder": str(relative_path.parent.as_posix()) if relative_path.parent != Path('.') else "",
-                "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
-                "size": stat.st_size,
-                "type": media_type  # 'image', 'audio', 'video', or 'document'
-            })
-    
-    return media_files
-
-
 def parse_tags(content: str) -> List[str]:
     """
     Extract tags from YAML frontmatter in markdown content.
@@ -688,9 +720,10 @@ def get_all_tags(notes_dir: str) -> Dict[str, int]:
         Dictionary mapping tag names to note counts
     """
     tag_counts = {}
-    notes_path = Path(notes_dir)
-    
-    for md_file in notes_path.rglob("*.md"):
+    notes, _folders = scan_notes_fast_walk(notes_dir, include_media=False)
+
+    for note in notes:
+        md_file = Path(notes_dir) / note["path"]
         # Get tags using cache
         tags = get_tags_cached(md_file)
         
@@ -713,22 +746,20 @@ def get_notes_by_tag(notes_dir: str, tag: str) -> List[Dict]:
     """
     matching_notes = []
     tag_lower = tag.lower()
-    notes_path = Path(notes_dir)
-    
-    for md_file in notes_path.rglob("*.md"):
+    notes, _folders = scan_notes_fast_walk(notes_dir, include_media=False)
+
+    for note in notes:
+        md_file = Path(notes_dir) / note["path"]
         # Get tags using cache
         tags = get_tags_cached(md_file)
         
         if tag_lower in tags:
-            relative_path = md_file.relative_to(notes_path)
-            stat = md_file.stat()
-            
             matching_notes.append({
-                "name": md_file.stem,
-                "path": str(relative_path.as_posix()),
-                "folder": str(relative_path.parent.as_posix()) if str(relative_path.parent) != "." else "",
-                "modified": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
-                "size": stat.st_size,
+                "name": note["name"],
+                "path": note["path"],
+                "folder": note["folder"],
+                "modified": note["modified"],
+                "size": note["size"],
                 "tags": tags
             })
     

@@ -13,8 +13,8 @@ from pathlib import Path
 from typing import Optional, Tuple
 import mimetypes
 
-# Import shared media type definitions from utils to avoid duplication
-from backend.utils import MEDIA_EXTENSIONS, get_media_type
+# Import shared media type definitions and scanner from utils to avoid duplication
+from backend.utils import MEDIA_EXTENSIONS, get_media_type, scan_notes_fast_walk
 
 
 def get_media_as_base64(media_path: Path) -> Optional[Tuple[str, str]]:
@@ -111,8 +111,10 @@ def find_media_in_attachments(media_name: str, note_folder: Path, notes_dir: Pat
     # Fallback: search all _attachments folders recursively (slower but thorough)
     # This handles cross-folder media references like in Obsidian
     try:
-        for attachment_folder in notes_dir.rglob('_attachments'):
-            if attachment_folder.is_dir():
+        _files, folders = scan_notes_fast_walk(str(notes_dir), include_media=False)
+        for folder in folders:
+            if folder == '_attachments' or folder.endswith('/_attachments'):
+                attachment_folder = notes_dir / folder
                 candidate = attachment_folder / media_name
                 if candidate.exists() and candidate.is_file():
                     try:
