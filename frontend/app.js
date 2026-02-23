@@ -3,7 +3,7 @@
 // Configuration constants
 const CONFIG = {
     AUTOSAVE_DELAY: 1000,              // ms - Delay before triggering autosave
-    SEARCH_DEBOUNCE_DELAY: 1000,        // ms - Delay before running note search while typing
+    SEARCH_DEBOUNCE_DELAY: 500,        // ms - Delay before running note search while typing
     SAVE_INDICATOR_DURATION: 2000,     // ms - How long to show "saved" indicator
     SCROLL_SYNC_DELAY: 50,             // ms - Delay to prevent scroll sync interference
     SCROLL_SYNC_MAX_RETRIES: 10,       // Maximum attempts to find editor/preview elements
@@ -212,7 +212,8 @@ function noteApp() {
         readableLineLength: true,
         
         // Hide underscore-prefixed folders (_attachments, _templates) from sidebar
-        hideUnderscoreFolders: false,
+        // Read synchronously to prevent flash on initial render
+        hideUnderscoreFolders: localStorage.getItem('hideUnderscoreFolders') === 'true',
         
         // Icon rail / panel state
         activePanel: 'files', // 'files', 'search', 'tags', 'settings'
