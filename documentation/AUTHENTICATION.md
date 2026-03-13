@@ -50,11 +50,7 @@ python -c "import secrets; print(secrets.token_hex(32))"
 
 ### Step 2: Configure Authentication
 
-Choose **one** of these options:
-
-#### Option A: Plain Text Password (Recommended)
-
-The easiest approach. Your password is automatically hashed at startup.
+Your password is automatically hashed at startup using bcrypt.
 
 **Via Environment Variables (Docker):**
 ```bash
@@ -70,29 +66,6 @@ docker run -d \
 authentication:
   enabled: true
   password: "your_secure_password"
-  secret_key: "your_generated_secret_key"
-```
-
----
-
-#### Option B: Pre-Hashed Password (Advanced)
-
-For users who prefer to hash passwords themselves.
-
-**Generate a hash:**
-```bash
-# Docker
-docker exec -it notediscovery python generate_password.py
-
-# Local
-python generate_password.py
-```
-
-**Then configure:**
-```yaml
-authentication:
-  enabled: true
-  password_hash: "$2b$12$..."  # paste your hash here
   secret_key: "your_generated_secret_key"
 ```
 
@@ -117,16 +90,14 @@ Navigate to `http://localhost:8000` — you'll be redirected to the login page.
 
 ## Configuration Priority
 
-If multiple sources are configured, this priority applies (first wins):
+Environment variables override config.yaml:
 
-| Priority | Source | Type |
-|----------|--------|------|
-| 1st | `AUTHENTICATION_PASSWORD` env var | Plain text |
-| 2nd | `AUTHENTICATION_PASSWORD_HASH` env var | Pre-hashed |
-| 3rd | `password` in config.yaml | Plain text |
-| 4th | `password_hash` in config.yaml | Pre-hashed |
+| Priority | Source |
+|----------|--------|
+| 1st | `AUTHENTICATION_PASSWORD` env var |
+| 2nd | `password` in config.yaml |
 
-**Example:** If you set `AUTHENTICATION_PASSWORD` as an env var, it overrides anything in config.yaml.
+**Example:** If you set `AUTHENTICATION_PASSWORD` as an env var, it overrides config.yaml.
 
 ---
 
@@ -152,6 +123,42 @@ This is a **simple single-user** system. NOT suitable for:
 2. **Strong password** — At least 12 characters, mixed case, numbers, symbols
 3. **Unique secret key** — Never reuse across applications
 4. **Keep config secure** — Don't commit credentials to version control
+
+---
+
+## API Key Authentication
+
+For external integrations (MCP servers, scripts, automation), use an API key instead of session cookies.
+
+### Setup
+
+```bash
+# Generate a secure key
+python -c "import secrets; print(secrets.token_hex(32))"
+```
+
+**Via Environment Variable:**
+```bash
+docker run -e AUTHENTICATION_API_KEY=your_api_key ...
+```
+
+**Via config.yaml:**
+```yaml
+authentication:
+  api_key: "your_64_character_hex_key"
+```
+
+### Usage
+
+```bash
+# Option 1: Bearer token
+curl -H "Authorization: Bearer YOUR_API_KEY" http://localhost:8000/api/notes
+
+# Option 2: X-API-Key header
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:8000/api/notes
+```
+
+Both session auth (web UI) and API key auth work simultaneously when enabled.
 
 ---
 

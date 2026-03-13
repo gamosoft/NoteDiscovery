@@ -27,9 +27,8 @@ services:
       
       # ⚠️ DEMO CREDENTIALS - DO NOT USE IN PRODUCTION! ⚠️
       # These are public demo credentials for testing only.
-      # Password: "admin"
-      - key: AUTHENTICATION_PASSWORD_HASH
-        value: "$2b$12$t/6PGExFzdpU2PUta0iVY.eDQwvu63kH.c/d4bEnnHaQ5CspH1yrG"
+      - key: AUTHENTICATION_PASSWORD
+        value: "admin"
       
       # ⚠️ PUBLIC SECRET KEY - DEMO ONLY! ⚠️
       # For production, generate a new key with:

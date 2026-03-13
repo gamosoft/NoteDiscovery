@@ -347,6 +347,15 @@ NoteDiscovery can be installed as a standalone app on your device:
 - **Instant switch** - Change language in Settings without reload
 - **Community translations** - Contributions welcome!
 
+## 🔐 Authentication
+
+- **Password protection** - Single-user login system
+- **Session-based auth** - Secure cookie-based sessions (7 days default)
+- **API key support** - Bearer token or `X-API-Key` header for external integrations
+- **Environment overrides** - Configure via env vars for Docker deployments
+
+📄 **See [AUTHENTICATION.md](AUTHENTICATION.md)** for setup guide.
+
 ## 🚀 Performance
 
 - **Instant loading** - No lag, no loading spinners

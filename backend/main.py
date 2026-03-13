@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException, UploadFile, File, Request, Form, Dep
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, APIKeyHeader
 from starlette.middleware.sessions import SessionMiddleware
 import os
 import yaml
@@ -16,6 +17,7 @@ from typing import List, Optional
 import aiofiles
 from datetime import datetime
 import bcrypt
+import secrets
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -78,38 +80,64 @@ else:
     print(f"🔐 Authentication {'ENABLED' if config.get('authentication', {}).get('enabled', False) else 'DISABLED'} (from config.yaml)")
 
 # Password configuration priority:
-# 1. AUTHENTICATION_PASSWORD env var (plain text, hashed at startup)
-# 2. AUTHENTICATION_PASSWORD_HASH env var (pre-hashed)
-# 3. authentication.password in config.yaml (plain text, hashed at startup)
-# 4. authentication.password_hash in config.yaml (pre-hashed)
+# 1. AUTHENTICATION_PASSWORD env var (hashed at startup)
+# 2. authentication.password in config.yaml (hashed at startup)
 # Default password is "admin" if nothing is configured
 if 'AUTHENTICATION_PASSWORD' in os.environ:
-    # Plain text password from env var - hash it
-    plain_password = os.getenv('AUTHENTICATION_PASSWORD')
+    plain_password = os.getenv('AUTHENTICATION_PASSWORD', '').strip()
+    if plain_password:
+        config['authentication']['password_hash'] = bcrypt.hashpw(
+            plain_password.encode('utf-8'), 
+            bcrypt.gensalt()
+        ).decode('utf-8')
+        print("🔑 Password loaded from AUTHENTICATION_PASSWORD env var")
+    else:
+        print("⚠️  WARNING: AUTHENTICATION_PASSWORD env var is empty - ignoring")
+elif config.get('authentication', {}).get('password', '').strip():
+    plain_password = config['authentication']['password'].strip()
     config['authentication']['password_hash'] = bcrypt.hashpw(
         plain_password.encode('utf-8'), 
         bcrypt.gensalt()
     ).decode('utf-8')
-    print("🔑 Password loaded from AUTHENTICATION_PASSWORD env var (hashed at startup)")
-elif 'AUTHENTICATION_PASSWORD_HASH' in os.environ:
-    # Pre-hashed password from env var
-    config['authentication']['password_hash'] = os.getenv('AUTHENTICATION_PASSWORD_HASH')
-    print("🔑 Password hash loaded from AUTHENTICATION_PASSWORD_HASH env var")
-elif config.get('authentication', {}).get('password'):
-    # Plain text password from config.yaml - hash it
-    plain_password = config['authentication']['password']
-    config['authentication']['password_hash'] = bcrypt.hashpw(
-        plain_password.encode('utf-8'), 
-        bcrypt.gensalt()
-    ).decode('utf-8')
-    # Clear the plain text password from config for security
     del config['authentication']['password']
-    print("🔑 Password loaded from config.yaml (hashed at startup)")
+    print("🔑 Password loaded from config.yaml")
 
 # Allow secret key to be set via environment variable (for session security)
 if 'AUTHENTICATION_SECRET_KEY' in os.environ:
     config['authentication']['secret_key'] = os.getenv('AUTHENTICATION_SECRET_KEY')
     print("🔐 Secret key loaded from AUTHENTICATION_SECRET_KEY env var")
+
+# API key configuration for external integrations (MCP servers, scripts, etc.)
+# Priority: AUTHENTICATION_API_KEY env var > authentication.api_key in config.yaml
+if 'AUTHENTICATION_API_KEY' in os.environ:
+    api_key_value = os.getenv('AUTHENTICATION_API_KEY', '').strip()
+    if api_key_value:
+        config['authentication']['api_key'] = api_key_value
+        print("🔑 API key loaded from AUTHENTICATION_API_KEY env var")
+    else:
+        config['authentication']['api_key'] = ''
+elif config.get('authentication', {}).get('api_key', '').strip():
+    print("🔑 API key loaded from config.yaml")
+else:
+    config['authentication']['api_key'] = ''
+
+# Warnings for missing authentication methods (only when auth is enabled)
+if config.get('authentication', {}).get('enabled', False):
+    _has_password = bool(config.get('authentication', {}).get('password_hash', ''))
+    _has_api_key = bool(config.get('authentication', {}).get('api_key', '').strip())
+    _secret_key = config.get('authentication', {}).get('secret_key', '')
+    _is_default_secret = _secret_key in ('', 'change_this_to_a_random_secret_key_in_production')
+    
+    if not _has_password and not _has_api_key:
+        print("🚨 CRITICAL: Authentication enabled but NO auth methods configured - ALL access will be denied!")
+    else:
+        if not _has_password:
+            print("⚠️  WARNING: No password configured - web UI login will not work")
+        if not _has_api_key:
+            print("⚠️  WARNING: No API key configured - external integrations will require session cookies")
+    
+    if _is_default_secret:
+        print("🚨 SECURITY WARNING: Using default secret_key - sessions can be forged! Change it in config.yaml")
 
 # OpenAPI tag metadata for grouping endpoints in Swagger UI
 tags_metadata = [
@@ -274,19 +302,88 @@ async def http_exception_handler(request: Request, exc: HTTPException):
 # Authentication Helpers
 # ============================================================================
 
+# Security schemes for API authentication (auto_error=False for optional auth)
+# These are automatically added to OpenAPI docs (/api)
+bearer_scheme = HTTPBearer(auto_error=False, description="Bearer token authentication")
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False, description="API key header authentication")
+
+
 def auth_enabled() -> bool:
     """Check if authentication is enabled in config"""
     return config.get('authentication', {}).get('enabled', False)
 
 
-async def require_auth(request: Request):
-    """Dependency to require authentication on protected routes"""
+def get_api_key() -> str:
+    """Get the configured API key (empty string if not set)"""
+    return config.get('authentication', {}).get('api_key', '').strip()
+
+
+def verify_api_key(provided_key: str) -> bool:
+    """
+    Verify an API key using constant-time comparison.
+    
+    Uses secrets.compare_digest to prevent timing attacks where an attacker
+    could determine the correct key by measuring response times.
+    
+    Args:
+        provided_key: The API key provided in the request
+        
+    Returns:
+        True if the key is valid, False otherwise
+    """
+    configured_key = get_api_key()
+    
+    # No API key configured = API key auth disabled
+    if not configured_key:
+        return False
+    
+    # Empty provided key is always invalid
+    if not provided_key:
+        return False
+    
+    # Constant-time comparison to prevent timing attacks
+    try:
+        return secrets.compare_digest(provided_key.encode('utf-8'), configured_key.encode('utf-8'))
+    except Exception:
+        return False
+
+
+async def require_auth(
+    request: Request,
+    bearer_credentials: Optional[HTTPAuthorizationCredentials] = Depends(bearer_scheme),
+    x_api_key: Optional[str] = Depends(api_key_header)
+):
+    """
+    Dependency to require authentication on protected routes.
+    
+    Supports two authentication methods:
+    1. Session-based auth (web UI login with password)
+    2. API key auth (for external integrations like MCP servers)
+    
+    API key can be provided via:
+    - Authorization: Bearer YOUR_API_KEY
+    - X-API-Key: YOUR_API_KEY
+    
+    Raises:
+        HTTPException: 401 if authentication fails
+    """
     if not auth_enabled():
         return  # Auth disabled, allow all
     
-    if not request.session.get('authenticated'):
-        # Always raise exception - route handlers will catch and redirect as needed
-        raise HTTPException(status_code=401, detail="Not authenticated")
+    # Method 1: Check Bearer token (parsed by FastAPI's HTTPBearer)
+    if bearer_credentials and verify_api_key(bearer_credentials.credentials):
+        return  # Valid Bearer token - authenticated
+    
+    # Method 2: Check X-API-Key header (parsed by FastAPI's APIKeyHeader)
+    if x_api_key and verify_api_key(x_api_key):
+        return  # Valid API key header - authenticated
+    
+    # Method 3: Check session-based authentication (web UI)
+    if request.session.get('authenticated'):
+        return  # Valid session - authenticated
+    
+    # No valid authentication method - deny access
+    raise HTTPException(status_code=401, detail="Not authenticated")
 
 
 def verify_password(password: str) -> bool:
