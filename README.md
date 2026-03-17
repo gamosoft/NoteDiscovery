@@ -66,6 +66,41 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 - 🕸️ **Graph View** - Interactive visualization of connected notes
 - ⭐ **Favorites** - Star your most-used notes for instant access
 - 📑 **Outline Panel** - Navigate headings with click-to-jump TOC
+- 🤖 **AI Assistant Ready** - MCP integration for Claude, Cursor & more
+
+## 🤖 AI-Powered Note Management
+
+<p align="center">
+  <img src="https://img.shields.io/badge/MCP-Compatible-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDJhMTAgMTAgMCAxIDAgMTAgMTBIMTJWMnoiLz48cGF0aCBkPSJNMjEuMTggOC44MmMtLjI4LS40LS43Mi0uODItMS4xOC0uODJoLTNjLS40NiAwLS45LjQyLTEuMTguODItLjI4LjQtLjMyLjk4LS4xMiAxLjQybDEuNSAzYy4yLjQ0LjY2LjcgMS4xMi43aDEuMzZjLjQ2IDAgLjkyLS4yNiAxLjEyLS43bDEuNS0zYy4yLS40NC4xNi0xLjAyLS4xMi0xLjQyeiIvPjwvc3ZnPg==" alt="MCP Compatible">
+  <img src="https://img.shields.io/badge/Works%20with-Claude-orange?style=for-the-badge" alt="Works with Claude">
+  <img src="https://img.shields.io/badge/Works%20with-Cursor-blue?style=for-the-badge" alt="Works with Cursor">
+</p>
+
+NoteDiscovery includes a built-in **Model Context Protocol (MCP)** server, letting AI assistants directly interact with your notes:
+
+| What AI Can Do | Example |
+|----------------|---------|
+| 🔍 **Search & Discover** | *"Find all my notes about Docker deployment"* |
+| 📝 **Create & Edit** | *"Create a meeting notes template for tomorrow"* |
+| 📁 **Organize** | *"Move all project notes to the archive folder"* |
+| 🏷️ **Tag & Categorize** | *"List all notes tagged with #urgent"* |
+| 📊 **Explore Connections** | *"Show me the knowledge graph of my notes"* |
+| ✍️ **Append Ideas** | *"Add this thought to my daily journal"* |
+
+**One-line setup** for Cursor, Claude Desktop, and other MCP-compatible tools:
+
+```json
+{
+  "mcpServers": {
+    "notediscovery": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-e", "NOTEDISCOVERY_URL=http://host.docker.internal:8000", "ghcr.io/gamosoft/notediscovery:latest", "python", "-m", "mcp_server"]
+    }
+  }
+}
+```
+
+> 💡 **See [MCP.md](documentation/MCP.md)** for complete setup instructions and all available tools.
 
 ## 🚀 Quick Start
 
@@ -211,6 +246,7 @@ Want to learn more?
 - 📊 **[MERMAID.md](documentation/MERMAID.md)** - Diagram creation with Mermaid (flowcharts, sequence diagrams, and more)
 - 🔌 **[PLUGINS.md](documentation/PLUGINS.md)** - Plugin system and available plugins
 - 🌐 **[API.md](documentation/API.md)** - REST API documentation and examples
+- 🤖 **[MCP.md](documentation/MCP.md)** - AI assistant integration (Claude, Cursor, and more)
 - 🔐 **[AUTHENTICATION.md](documentation/AUTHENTICATION.md)** - Enable password protection for your instance
 - 🔧 **[ENVIRONMENT_VARIABLES.md](documentation/ENVIRONMENT_VARIABLES.md)** - Configure settings via environment variables
 

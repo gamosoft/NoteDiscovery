@@ -56,10 +56,13 @@ COPY --from=builder /install /usr/local
 # Copy minified frontend from minifier stage
 COPY --from=minifier /build/frontend ./frontend
 
-# Copy other application files
+# Copy application files
 COPY backend ./backend
+COPY mcp_server ./mcp_server
 COPY config.yaml .
 COPY VERSION .
+COPY run.py .
+COPY pyproject.toml .
 COPY plugins ./plugins
 COPY themes ./themes
 COPY locales ./locales

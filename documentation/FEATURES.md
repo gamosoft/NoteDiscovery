@@ -356,6 +356,32 @@ NoteDiscovery can be installed as a standalone app on your device:
 
 📄 **See [AUTHENTICATION.md](AUTHENTICATION.md)** for setup guide.
 
+## 🤖 AI Integration (MCP)
+
+Built-in **Model Context Protocol (MCP)** server for AI assistant integration:
+
+- **Search notes** - AI can search through your knowledge base
+- **Read content** - AI can read and understand your notes
+- **Browse tags** - AI understands your organization
+- **Create notes** - AI can save summaries and insights
+- **Knowledge graph** - AI can explore note relationships
+- **Zero setup** - Works with Docker or Python, just add config to Cursor/Claude
+
+### Quick Setup (Docker)
+```json
+{
+  "mcpServers": {
+    "notediscovery": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "ghcr.io/gamosoft/notediscovery:latest", "python", "-m", "mcp_server"],
+      "env": { "NOTEDISCOVERY_URL": "http://host.docker.internal:8000" }
+    }
+  }
+}
+```
+
+📄 **See [MCP.md](MCP.md)** for complete setup guide.
+
 ## 🚀 Performance
 
 - **Instant loading** - No lag, no loading spinners

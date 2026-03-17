@@ -1078,6 +1078,62 @@ async def create_or_update_note(request: Request, note_path: str, content: dict)
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to save note"))
 
 
+@api_router.patch("/notes/{note_path:path}", tags=["Notes"])
+@limiter.limit("60/minute")
+async def append_to_note(request: Request, note_path: str, data: dict):
+    """
+    Append content to an existing note without overwriting.
+    
+    Perfect for journals, logs, or collecting ideas incrementally.
+    
+    Args:
+        note_path: Path to the note
+        data: Dictionary with 'content' to append and optional 'add_timestamp' boolean
+    """
+    try:
+        content_to_append = data.get('content', '')
+        add_timestamp = data.get('add_timestamp', False)
+        
+        if not content_to_append:
+            raise HTTPException(status_code=400, detail="Content to append is required")
+        
+        # Get existing content
+        existing_content = get_note_content(config['storage']['notes_dir'], note_path)
+        
+        if existing_content is None:
+            raise HTTPException(status_code=404, detail="Note not found")
+        
+        # Build the appended content
+        if add_timestamp:
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+            content_to_append = f"\n\n---\n\n**{timestamp}**\n\n{content_to_append}"
+        else:
+            content_to_append = f"\n\n{content_to_append}"
+        
+        new_content = existing_content + content_to_append
+        
+        # Run on_note_save hook
+        transformed_content = plugin_manager.run_hook('on_note_save', note_path=note_path, content=new_content)
+        if transformed_content is None:
+            transformed_content = new_content
+        
+        success = save_note(config['storage']['notes_dir'], note_path, transformed_content)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to append to note")
+        
+        return {
+            "success": True,
+            "path": note_path,
+            "message": "Content appended successfully"
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to append to note"))
+
+
 @api_router.delete("/notes/{note_path:path}", tags=["Notes"])
 @limiter.limit("30/minute")
 async def remove_note(request: Request, note_path: str):

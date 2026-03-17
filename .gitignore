@@ -52,3 +52,5 @@ Thumbs.db
 # Environment
 .env
 
+# Video demo files
+video/

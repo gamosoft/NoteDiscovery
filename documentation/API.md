@@ -70,6 +70,56 @@ DELETE /api/notes/{note_path}
 curl -X DELETE http://localhost:8000/api/notes/test.md
 ```
 
+### Append to Note
+```http
+PATCH /api/notes/{note_path}
+Content-Type: application/json
+
+{
+  "content": "Content to append...",
+  "add_timestamp": true
+}
+```
+
+Append content to an existing note without overwriting. Perfect for journals, logs, or collecting ideas incrementally.
+
+**Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `content` | string | Yes | Content to append to the note |
+| `add_timestamp` | boolean | No | If `true`, prepends a timestamp header (default: `false`) |
+
+**Response:**
+```json
+{
+  "success": true,
+  "path": "daily-journal.md",
+  "message": "Content appended successfully"
+}
+```
+
+**Example with timestamp:**
+```bash
+curl -X PATCH http://localhost:8000/api/notes/daily-journal.md \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Had a productive meeting about the roadmap.", "add_timestamp": true}'
+```
+
+This will append:
+```markdown
+
+---
+
+**2024-03-13 14:30**
+
+Had a productive meeting about the roadmap.
+```
+
+**Windows PowerShell:**
+```powershell
+curl.exe -X PATCH http://localhost:8000/api/notes/daily-journal.md -H "Content-Type: application/json" -d "{\"content\": \"New entry here\", \"add_timestamp\": true}"
+```
+
 ### Move Note
 ```http
 POST /api/notes/move

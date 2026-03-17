@@ -7,8 +7,8 @@
     <!-- Primary Meta Tags -->
     <title>NoteDiscovery - Your Self-Hosted Knowledge Base</title>
     <meta name="title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
-    <meta name="description" content="A lightweight, privacy-focused Markdown note-taking application with wikilinks, graph view, LaTeX math, Mermaid diagrams, tags, templates, and code highlighting. Self-hosted, free, and open source.">
-    <meta name="keywords" content="note taking, markdown editor, self-hosted, knowledge base, open source, privacy, notes app, docker, second brain, obsidian alternative, notion, evernote, onenote, latex, mermaid, diagrams, math equations, templates, tags, yaml frontmatter">
+    <meta name="description" content="A lightweight, privacy-focused Markdown note-taking application with AI assistant integration (MCP), wikilinks, graph view, LaTeX math, Mermaid diagrams, tags, templates, and code highlighting. Works with Claude, Cursor, and other AI tools. Self-hosted, free, and open source.">
+    <meta name="keywords" content="note taking, markdown editor, self-hosted, knowledge base, open source, privacy, notes app, docker, second brain, obsidian alternative, notion, evernote, onenote, latex, mermaid, diagrams, math equations, templates, tags, yaml frontmatter, AI assistant, MCP, model context protocol, Claude, Cursor, AI notes, AI knowledge base, AI-powered notes">
     <meta name="author" content="Gamosoft">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://www.notediscovery.com">
@@ -17,7 +17,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.notediscovery.com">
     <meta property="og:title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
-    <meta property="og:description" content="A lightweight, privacy-focused Markdown note-taking application with wikilinks, LaTeX math, Mermaid diagrams, tags, templates, and code highlighting. Self-hosted, free, and open source.">
+    <meta property="og:description" content="AI-powered note-taking with MCP integration for Claude, Cursor & more. LaTeX math, Mermaid diagrams, graph view, wikilinks. Self-hosted, free, and open source.">
     <meta property="og:image" content="https://www.notediscovery.com/og-image.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -28,7 +28,7 @@
     <meta name="twitter:site" content="@gamosoft">
     <meta name="twitter:creator" content="@gamosoft">
     <meta name="twitter:title" content="NoteDiscovery - Your Self-Hosted Knowledge Base">
-    <meta name="twitter:description" content="A lightweight, privacy-focused note-taking application with LaTeX math, Mermaid diagrams, tags, templates, and code highlighting. Self-hosted, free, and open source.">
+    <meta name="twitter:description" content="AI-powered note-taking with MCP integration for Claude & Cursor. LaTeX, Mermaid diagrams, graph view. Self-hosted, free, open source.">
     <meta name="twitter:image" content="https://www.notediscovery.com/og-image.png">
     <meta name="twitter:image:alt" content="NoteDiscovery - Self-hosted note-taking application interface">
     
@@ -689,7 +689,7 @@
         <div class="hero animate-on-scroll">
             <div class="hero-content">
                 <h2>Take Control of Your Notes</h2>
-                <p>A lightweight, privacy-focused note-taking application with powerful features: LaTeX math equations, Mermaid diagrams, smart tags, custom templates, code highlighting, and more. Write, organize, and discover your notes with a beautiful, modern interface—all running on your own server.</p>
+                <p>A lightweight, privacy-focused note-taking application with powerful features: AI assistant integration (MCP), LaTeX math equations, Mermaid diagrams, smart tags, custom templates, code highlighting, and more. Write and organize your notes with a beautiful, modern interface all running on your own server.</p>
                 <div class="cta-buttons">
                     <a href="https://gamosoft-notediscovery-demo.hf.space" class="cta-button demo" target="_blank" rel="noopener">Try Live Demo</a>
                     <a href="https://github.com/gamosoft/NoteDiscovery" class="cta-button" target="_blank" rel="noopener">Get Started on GitHub →</a>
@@ -841,6 +841,12 @@
             </div>
 
             <div class="feature animate-on-scroll">
+                <div class="feature-icon">🤖</div>
+                <h3>AI Assistant Ready</h3>
+                <p>MCP integration lets Claude, Cursor & other AI tools search, create, and organize your notes.</p>
+            </div>
+
+            <div class="feature animate-on-scroll">
                 <div class="feature-icon">🧮</div>
                 <h3>LaTeX Math</h3>
                 <p>Beautiful equation rendering with MathJax. Perfect for scientific notes.</p>
@@ -912,11 +918,6 @@
                 <p>Progressive Web App (PWA) - install on desktop or mobile for a native experience.</p>
             </div>
 
-            <div class="feature animate-on-scroll">
-                <div class="feature-icon">🌍</div>
-                <h3>Multi-Language</h3>
-                <p>Built-in translations for English, Spanish, German, and French. Easy to add more.</p>
-            </div>
         </div>
 
         <div class="benefits animate-on-scroll">
@@ -1007,6 +1008,14 @@
                     <div class="text">
                         <strong>Wikilinks</strong>
                         [[Link notes]] Obsidian-style
+                    </div>
+                </div>
+
+                <div class="benefit-item">
+                    <span class="emoji">🌍</span>
+                    <div class="text">
+                        <strong>Multi-Language</strong>
+                        English, Spanish, German, French
                     </div>
                 </div>
             </div>
@@ -1182,11 +1191,11 @@
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": "NoteDiscovery",
-      "description": "A lightweight, Obsidian and Evernote alternative, privacy-focused Markdown note-taking application with LaTeX math, Mermaid diagrams, and code highlighting. Self-hosted, free, and open source.",
+      "description": "A lightweight, AI-powered Markdown note-taking application with MCP integration for Claude, Cursor and other AI assistants. Features LaTeX math, Mermaid diagrams, graph view, and code highlighting. Self-hosted Obsidian and Evernote alternative. Free and open source.",
       "url": "https://www.notediscovery.com",
       "applicationCategory": "ProductivityApplication",
       "operatingSystem": "Linux, Windows, macOS",
-      "featureList": "Markdown editor, Wikilinks, Graph view, LaTeX math equations, Mermaid diagrams, Code syntax highlighting, Dark mode, Plugin system, Internal links, Properties panel, HTML export, Full-text search, Self-hosted, Obsidian, Evernote, Notion, Onenote, Second brain",
+      "featureList": "AI assistant integration, MCP (Model Context Protocol), Claude integration, Cursor integration, Markdown editor, Wikilinks, Graph view, LaTeX math equations, Mermaid diagrams, Code syntax highlighting, Dark mode, Plugin system, Internal links, Properties panel, HTML export, Full-text search, Self-hosted, Obsidian alternative, Evernote alternative, Notion alternative, Second brain, AI-powered notes",
       "offers": {
         "@type": "Offer",
         "price": "0",
