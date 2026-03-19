@@ -1013,6 +1013,36 @@ async def list_notes():
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to list notes"))
 
 
+@api_router.get("/download-notes", tags=["Storage"])
+async def download_notes():
+    """Zip and download the whole notes directory"""
+    import shutil
+    import tempfile
+    
+    notes_dir = config['storage']['notes_dir']
+    
+    if not os.path.exists(notes_dir):
+        raise HTTPException(status_code=404, detail="Notes directory not found")
+    
+    try:
+        # Create a temporary file to store the zip
+        temp_dir = tempfile.gettempdir()
+        zip_filename = f"notes_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        zip_path = os.path.join(temp_dir, zip_filename)
+        
+        # Create zip archive
+        # shutil.make_archive adds .zip extension automatically
+        archive_path = shutil.make_archive(zip_path, 'zip', notes_dir)
+        
+        return FileResponse(
+            path=archive_path,
+            filename=f"notes_{datetime.now().strftime('%Y-%m-%d')}.zip",
+            media_type="application/zip"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to zip notes directory"))
+
+
 @api_router.get("/notes/{note_path:path}", tags=["Notes"])
 async def get_note(note_path: str):
     """Get a specific note's content"""
