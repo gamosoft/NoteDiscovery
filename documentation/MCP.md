@@ -114,8 +114,8 @@ The MCP server provides these tools to AI assistants:
 
 | Tool | Description |
 |------|-------------|
-| `search_notes` | Full-text search across all notes (supports `max_results`) |
-| `list_notes` | List all notes with metadata (supports `max_results`) |
+| `search_notes` | Full-text search across all notes (supports pagination) |
+| `list_notes` | List all notes with metadata (supports pagination) |
 | `get_note` | Read a specific note's content |
 | `get_recent_notes` | Get recently modified notes (last N days) |
 
@@ -124,7 +124,7 @@ The MCP server provides these tools to AI assistants:
 | Tool | Description |
 |------|-------------|
 | `list_tags` | List all tags with note counts |
-| `get_notes_by_tag` | Find notes with a specific tag (supports `max_results`) |
+| `get_notes_by_tag` | Find notes with a specific tag (supports pagination) |
 | `get_graph` | Get knowledge graph data |
 
 ### Note Management
