@@ -3,16 +3,18 @@ Share Token Management for NoteDiscovery
 Handles creating, storing, and revoking share tokens for public note access.
 """
 
+import asyncio
 import json
 import secrets
 import string
 from pathlib import Path
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
-import threading
 
-# Thread lock for safe concurrent access
-_lock = threading.Lock()
+import aiofiles
+
+# Async lock for safe concurrent access
+_lock = asyncio.Lock()
 
 
 def generate_token(length: int = 16) -> str:
@@ -27,7 +29,7 @@ def get_tokens_file_path(data_dir: str) -> Path:
     return Path(data_dir) / '.share-tokens.json'
 
 
-def load_tokens(data_dir: str) -> Dict[str, Dict[str, Any]]:
+async def load_tokens(data_dir: str) -> Dict[str, Dict[str, Any]]:
     """Load share tokens from file."""
     tokens_file = get_tokens_file_path(data_dir)
     
@@ -35,13 +37,14 @@ def load_tokens(data_dir: str) -> Dict[str, Dict[str, Any]]:
         return {}
     
     try:
-        with open(tokens_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        async with aiofiles.open(tokens_file, 'r', encoding='utf-8') as f:
+            content = await f.read()
+            return json.loads(content)
     except (json.JSONDecodeError, IOError):
         return {}
 
 
-def save_tokens(data_dir: str, tokens: Dict[str, Dict[str, Any]]) -> bool:
+async def save_tokens(data_dir: str, tokens: Dict[str, Dict[str, Any]]) -> bool:
     """Save share tokens to file."""
     tokens_file = get_tokens_file_path(data_dir)
     
@@ -49,15 +52,15 @@ def save_tokens(data_dir: str, tokens: Dict[str, Dict[str, Any]]) -> bool:
         # Ensure parent directory exists
         tokens_file.parent.mkdir(parents=True, exist_ok=True)
         
-        with open(tokens_file, 'w', encoding='utf-8') as f:
-            json.dump(tokens, f, indent=2, ensure_ascii=False)
+        async with aiofiles.open(tokens_file, 'w', encoding='utf-8') as f:
+            await f.write(json.dumps(tokens, indent=2, ensure_ascii=False))
         return True
     except IOError as e:
         print(f"Failed to save share tokens: {e}")
         return False
 
 
-def create_share_token(data_dir: str, note_path: str, theme: str = "light") -> Optional[str]:
+async def create_share_token(data_dir: str, note_path: str, theme: str = "light") -> Optional[str]:
     """
     Create a share token for a note.
     If the note already has a token, returns the existing one.
@@ -70,8 +73,8 @@ def create_share_token(data_dir: str, note_path: str, theme: str = "light") -> O
     Returns:
         The share token, or None on error
     """
-    with _lock:
-        tokens = load_tokens(data_dir)
+    async with _lock:
+        tokens = await load_tokens(data_dir)
         
         # Check if note already has a token
         for token, info in tokens.items():
@@ -92,12 +95,12 @@ def create_share_token(data_dir: str, note_path: str, theme: str = "light") -> O
             'created': datetime.now(timezone.utc).isoformat()
         }
         
-        if save_tokens(data_dir, tokens):
+        if await save_tokens(data_dir, tokens):
             return token
         return None
 
 
-def get_share_token(data_dir: str, note_path: str) -> Optional[str]:
+async def get_share_token(data_dir: str, note_path: str) -> Optional[str]:
     """
     Get the share token for a note, if it exists.
     
@@ -108,7 +111,7 @@ def get_share_token(data_dir: str, note_path: str) -> Optional[str]:
     Returns:
         The share token, or None if not shared
     """
-    tokens = load_tokens(data_dir)
+    tokens = await load_tokens(data_dir)
     
     for token, info in tokens.items():
         if info.get('path') == note_path:
@@ -117,7 +120,7 @@ def get_share_token(data_dir: str, note_path: str) -> Optional[str]:
     return None
 
 
-def get_note_by_token(data_dir: str, token: str) -> Optional[Dict[str, Any]]:
+async def get_note_by_token(data_dir: str, token: str) -> Optional[Dict[str, Any]]:
     """
     Get the note info for a share token.
     
@@ -128,7 +131,7 @@ def get_note_by_token(data_dir: str, token: str) -> Optional[Dict[str, Any]]:
     Returns:
         Dict with 'path' and 'theme', or None if token not found
     """
-    tokens = load_tokens(data_dir)
+    tokens = await load_tokens(data_dir)
     
     if token in tokens:
         return {
@@ -139,7 +142,7 @@ def get_note_by_token(data_dir: str, token: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def get_all_shared_paths(data_dir: str) -> list:
+async def get_all_shared_paths(data_dir: str) -> list:
     """
     Get a list of all currently shared note paths.
     Used for displaying share indicators in the UI.
@@ -150,11 +153,11 @@ def get_all_shared_paths(data_dir: str) -> list:
     Returns:
         List of note paths that are currently shared
     """
-    tokens = load_tokens(data_dir)
+    tokens = await load_tokens(data_dir)
     return [info.get('path') for info in tokens.values() if info.get('path')]
 
 
-def revoke_share_token(data_dir: str, note_path: str) -> bool:
+async def revoke_share_token(data_dir: str, note_path: str) -> bool:
     """
     Revoke (delete) the share token for a note.
     
@@ -165,8 +168,8 @@ def revoke_share_token(data_dir: str, note_path: str) -> bool:
     Returns:
         True if token was revoked, False if not found or error
     """
-    with _lock:
-        tokens = load_tokens(data_dir)
+    async with _lock:
+        tokens = await load_tokens(data_dir)
         
         # Find and remove token for this note
         token_to_remove = None
@@ -177,12 +180,12 @@ def revoke_share_token(data_dir: str, note_path: str) -> bool:
         
         if token_to_remove:
             del tokens[token_to_remove]
-            return save_tokens(data_dir, tokens)
+            return await save_tokens(data_dir, tokens)
         
         return False
 
 
-def get_share_info(data_dir: str, note_path: str) -> Optional[Dict[str, Any]]:
+async def get_share_info(data_dir: str, note_path: str) -> Optional[Dict[str, Any]]:
     """
     Get share information for a note.
     
@@ -193,7 +196,7 @@ def get_share_info(data_dir: str, note_path: str) -> Optional[Dict[str, Any]]:
     Returns:
         Dict with token, theme, and created date, or None if not shared
     """
-    tokens = load_tokens(data_dir)
+    tokens = await load_tokens(data_dir)
     
     for token, info in tokens.items():
         if info.get('path') == note_path:
@@ -207,7 +210,7 @@ def get_share_info(data_dir: str, note_path: str) -> Optional[Dict[str, Any]]:
     return {'shared': False}
 
 
-def update_token_path(data_dir: str, old_path: str, new_path: str) -> bool:
+async def update_token_path(data_dir: str, old_path: str, new_path: str) -> bool:
     """
     Update the path for a token when a note is moved/renamed.
     
@@ -219,20 +222,20 @@ def update_token_path(data_dir: str, old_path: str, new_path: str) -> bool:
     Returns:
         True if updated, False if not found or error
     """
-    with _lock:
-        tokens = load_tokens(data_dir)
+    async with _lock:
+        tokens = await load_tokens(data_dir)
         
         for token, info in tokens.items():
             if info.get('path') == old_path:
                 info['path'] = new_path
-                return save_tokens(data_dir, tokens)
+                return await save_tokens(data_dir, tokens)
         
         return False
 
 
-def delete_token_for_note(data_dir: str, note_path: str) -> bool:
+async def delete_token_for_note(data_dir: str, note_path: str) -> bool:
     """
     Delete the share token when a note is deleted.
     Alias for revoke_share_token for clarity.
     """
-    return revoke_share_token(data_dir, note_path)
+    return await revoke_share_token(data_dir, note_path)

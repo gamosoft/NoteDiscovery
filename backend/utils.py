@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any, TypeVar, Callable
 from datetime import datetime, timezone
 
+import aiofiles
+
 
 # ============================================================================
 # Pagination Support
@@ -394,7 +396,7 @@ def delete_folder(notes_dir: str, folder_path: str) -> bool:
 
 
 
-def get_note_content(notes_dir: str, note_path: str) -> Optional[str]:
+async def get_note_content(notes_dir: str, note_path: str) -> Optional[str]:
     """Get the content of a specific note"""
     full_path = Path(notes_dir) / note_path
     
@@ -405,11 +407,11 @@ def get_note_content(notes_dir: str, note_path: str) -> Optional[str]:
     if not validate_path_security(notes_dir, full_path):
         return None
     
-    with open(full_path, 'r', encoding='utf-8') as f:
-        return f.read()
+    async with aiofiles.open(full_path, 'r', encoding='utf-8') as f:
+        return await f.read()
 
 
-def save_note(notes_dir: str, note_path: str, content: str) -> bool:
+async def save_note(notes_dir: str, note_path: str, content: str) -> bool:
     """Save or update a note"""
     full_path = Path(notes_dir) / note_path
     
@@ -424,8 +426,8 @@ def save_note(notes_dir: str, note_path: str, content: str) -> bool:
     # Create parent directories if needed
     full_path.parent.mkdir(parents=True, exist_ok=True)
     
-    with open(full_path, 'w', encoding='utf-8') as f:
-        f.write(content)
+    async with aiofiles.open(full_path, 'w', encoding='utf-8') as f:
+        await f.write(content)
     
     return True
 
@@ -599,7 +601,7 @@ def get_attachment_dir(notes_dir: str, note_path: str) -> Path:
         return Path(notes_dir) / folder / "_attachments"
 
 
-def save_uploaded_image(notes_dir: str, note_path: str, filename: str, file_data: bytes) -> Optional[str]:
+async def save_uploaded_image(notes_dir: str, note_path: str, filename: str, file_data: bytes) -> Optional[str]:
     """
     Save an uploaded image to the appropriate attachments directory.
     Returns the relative path to the image if successful, None otherwise.
@@ -640,8 +642,8 @@ def save_uploaded_image(notes_dir: str, note_path: str, filename: str, file_data
     
     try:
         # Write the file
-        with open(full_path, 'wb') as f:
-            f.write(file_data)
+        async with aiofiles.open(full_path, 'wb') as f:
+            await f.write(file_data)
         
         # Return relative path from notes_dir
         relative_path = full_path.relative_to(Path(notes_dir))
@@ -912,7 +914,7 @@ def get_templates(notes_dir: str) -> List[Dict]:
     return sorted(templates, key=lambda x: x['name'])
 
 
-def get_template_content(notes_dir: str, template_name: str) -> Optional[str]:
+async def get_template_content(notes_dir: str, template_name: str) -> Optional[str]:
     """
     Get the content of a specific template.
     
@@ -934,8 +936,8 @@ def get_template_content(notes_dir: str, template_name: str) -> Optional[str]:
         return None
     
     try:
-        with open(template_path, 'r', encoding='utf-8') as f:
-            return f.read()
+        async with aiofiles.open(template_path, 'r', encoding='utf-8') as f:
+            return await f.read()
     except Exception as e:
         print(f"Error reading template {template_name}: {e}")
         return None

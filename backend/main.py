@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, FileResponse, Redirect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials, APIKeyHeader
 from starlette.middleware.sessions import SessionMiddleware
+import asyncio
 import os
 import yaml
 import json
@@ -491,7 +492,7 @@ async def get_config():
 async def list_themes():
     """Get all available themes"""
     themes_dir = Path(__file__).parent.parent / "themes"
-    themes = get_available_themes(str(themes_dir))
+    themes = await asyncio.to_thread(get_available_themes, str(themes_dir))
     return {"themes": themes}
 
 
@@ -499,7 +500,7 @@ async def list_themes():
 async def get_theme(theme_id: str):
     """Get CSS for a specific theme"""
     themes_dir = Path(__file__).parent.parent / "themes"
-    css = get_theme_css(str(themes_dir), theme_id)
+    css = await asyncio.to_thread(get_theme_css, str(themes_dir), theme_id)
     
     if not css:
         raise HTTPException(status_code=404, detail="Theme not found")
@@ -518,8 +519,8 @@ async def get_available_locales():
     if locales_dir.exists():
         for file in sorted(locales_dir.glob("*.json")):
             try:
-                with open(file, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
+                async with aiofiles.open(file, 'r', encoding='utf-8') as f:
+                    data = json.loads(await f.read())
                     meta = data.get('_meta', {})
                     locales.append({
                         "code": meta.get('code', file.stem),
@@ -555,8 +556,8 @@ async def get_locale(locale_code: str):
         raise HTTPException(status_code=404, detail="Locale not found")
     
     try:
-        with open(locale_file, 'r', encoding='utf-8') as f:
-            translations = json.load(f)
+        async with aiofiles.open(locale_file, 'r', encoding='utf-8') as f:
+            translations = json.loads(await f.read())
         return translations
     except (json.JSONDecodeError, IOError) as e:
         raise HTTPException(status_code=500, detail=f"Failed to load locale: {str(e)}")
@@ -571,7 +572,7 @@ async def create_new_folder(request: Request, data: dict):
         if not folder_path:
             raise HTTPException(status_code=400, detail="Folder path required")
         
-        success = create_folder(config['storage']['notes_dir'], folder_path)
+        success = await asyncio.to_thread(create_folder, config['storage']['notes_dir'], folder_path)
         
         if not success:
             raise HTTPException(status_code=500, detail="Failed to create folder")
@@ -671,7 +672,7 @@ async def upload_media(request: Request, file: UploadFile = File(...), note_path
             )
         
         # Save the file (reusing image save function - it works for any file)
-        file_path = save_uploaded_image(
+        file_path = await save_uploaded_image(
             config['storage']['notes_dir'],
             note_path,
             file.filename,
@@ -756,13 +757,13 @@ async def move_note_endpoint(request: Request, data: dict):
         if not old_path or not new_path:
             raise HTTPException(status_code=400, detail="Both oldPath and newPath required")
         
-        success, error_msg = move_note(config['storage']['notes_dir'], old_path, new_path)
+        success, error_msg = await asyncio.to_thread(move_note, config['storage']['notes_dir'], old_path, new_path)
         
         if not success:
             raise HTTPException(status_code=400, detail=error_msg or "Failed to move note")
         
         # Update share token path if note was shared
-        update_token_path(config['storage']['notes_dir'], old_path, new_path)
+        await update_token_path(config['storage']['notes_dir'], old_path, new_path)
         
         # Run plugin hooks
         plugin_manager.run_hook('on_note_save', note_path=new_path, content='')
@@ -790,7 +791,7 @@ async def move_folder_endpoint(request: Request, data: dict):
         if not old_path or not new_path:
             raise HTTPException(status_code=400, detail="Both oldPath and newPath required")
         
-        success, error_msg = move_folder(config['storage']['notes_dir'], old_path, new_path)
+        success, error_msg = await asyncio.to_thread(move_folder, config['storage']['notes_dir'], old_path, new_path)
         
         if not success:
             raise HTTPException(status_code=400, detail=error_msg or "Failed to move folder")
@@ -818,7 +819,7 @@ async def rename_folder_endpoint(request: Request, data: dict):
         if not old_path or not new_path:
             raise HTTPException(status_code=400, detail="Both oldPath and newPath required")
         
-        success, error_msg = rename_folder(config['storage']['notes_dir'], old_path, new_path)
+        success, error_msg = await asyncio.to_thread(rename_folder, config['storage']['notes_dir'], old_path, new_path)
         
         if not success:
             raise HTTPException(status_code=400, detail=error_msg or "Failed to rename folder")
@@ -843,7 +844,7 @@ async def delete_folder_endpoint(request: Request, folder_path: str):
         if not folder_path:
             raise HTTPException(status_code=400, detail="Folder path required")
         
-        success = delete_folder(config['storage']['notes_dir'], folder_path)
+        success = await asyncio.to_thread(delete_folder, config['storage']['notes_dir'], folder_path)
         
         if not success:
             raise HTTPException(status_code=500, detail="Failed to delete folder")
@@ -870,7 +871,7 @@ async def list_tags():
         Dictionary mapping tag names to note counts
     """
     try:
-        tags = get_all_tags(config['storage']['notes_dir'])
+        tags = await asyncio.to_thread(get_all_tags, config['storage']['notes_dir'])
         return {"tags": tags}
     except Exception as e:
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to load tags"))
@@ -898,7 +899,7 @@ async def get_notes_by_tag_endpoint(
         GET /api/tags/docker?limit=10     -> First 10 notes with #docker tag
     """
     try:
-        notes = get_notes_by_tag(config['storage']['notes_dir'], tag_name)
+        notes = await asyncio.to_thread(get_notes_by_tag, config['storage']['notes_dir'], tag_name)
         
         # Apply pagination with consistent sorting by path
         paginated = paginate(
@@ -935,7 +936,7 @@ async def list_templates(request: Request):
         List of template metadata
     """
     try:
-        templates = get_templates(config['storage']['notes_dir'])
+        templates = await asyncio.to_thread(get_templates, config['storage']['notes_dir'])
         return {"templates": templates}
     except Exception as e:
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to list templates"))
@@ -954,7 +955,7 @@ async def get_template(request: Request, template_name: str):
         Template name and content
     """
     try:
-        content = get_template_content(config['storage']['notes_dir'], template_name)
+        content = await get_template_content(config['storage']['notes_dir'], template_name)
         
         if content is None:
             raise HTTPException(status_code=404, detail="Template not found")
@@ -989,7 +990,7 @@ async def create_note_from_template(request: Request, data: dict):
             raise HTTPException(status_code=400, detail="Template name and note path required")
         
         # Get template content
-        template_content = get_template_content(config['storage']['notes_dir'], template_name)
+        template_content = await get_template_content(config['storage']['notes_dir'], template_name)
         
         if template_content is None:
             raise HTTPException(status_code=404, detail="Template not found")
@@ -1010,7 +1011,7 @@ async def create_note_from_template(request: Request, data: dict):
             transformed_content = final_content
         
         # Save the note with the (potentially modified/transformed) content
-        success = save_note(config['storage']['notes_dir'], note_path, transformed_content)
+        success = await save_note(config['storage']['notes_dir'], note_path, transformed_content)
         
         if not success:
             raise HTTPException(status_code=500, detail="Failed to create note from template")
@@ -1051,7 +1052,7 @@ async def list_notes(
         GET /api/notes?limit=20&offset=20 -> Notes 21-40
     """
     try:
-        notes, folders = scan_notes_fast_walk(config['storage']['notes_dir'], include_media=True)
+        notes, folders = await asyncio.to_thread(scan_notes_fast_walk, config['storage']['notes_dir'], True)
         
         # Apply pagination with consistent sorting by path for stable results
         result = paginate(
@@ -1079,7 +1080,8 @@ async def list_notes(
 async def get_note(note_path: str):
     """Get a specific note's content"""
     try:
-        content = get_note_content(config['storage']['notes_dir'], note_path)
+        content = await get_note_content(config['storage']['notes_dir'], note_path)
+        
         if content is None:
             raise HTTPException(status_code=404, detail="Note not found")
         
@@ -1091,7 +1093,7 @@ async def get_note(note_path: str):
         return {
             "path": note_path,
             "content": content,
-            "metadata": create_note_metadata(config['storage']['notes_dir'], note_path)
+            "metadata": await asyncio.to_thread(create_note_metadata, config['storage']['notes_dir'], note_path)
         }
     except HTTPException:
         raise
@@ -1107,7 +1109,7 @@ async def create_or_update_note(request: Request, note_path: str, content: dict)
         note_content = content.get('content', '')
         
         # Check if this is a new note (doesn't exist yet)
-        existing_content = get_note_content(config['storage']['notes_dir'], note_path)
+        existing_content = await get_note_content(config['storage']['notes_dir'], note_path)
         is_new_note = existing_content is None
         
         # If creating a new note, run on_note_create hook to allow plugins to modify initial content
@@ -1123,17 +1125,12 @@ async def create_or_update_note(request: Request, note_path: str, content: dict)
         if transformed_content is None:
             transformed_content = note_content
         
-        success = save_note(config['storage']['notes_dir'], note_path, transformed_content)
+        success = await save_note(config['storage']['notes_dir'], note_path, transformed_content)
         
         if not success:
             raise HTTPException(status_code=500, detail="Failed to save note")
         
-        return {
-            "success": True,
-            "path": note_path,
-            "message": "Note created successfully" if is_new_note else "Note saved successfully",
-            "content": note_content  # Return the (potentially modified) content
-        }
+        return {"status": "ok"}
     except HTTPException:
         raise
     except Exception as e:
@@ -1160,7 +1157,7 @@ async def append_to_note(request: Request, note_path: str, data: dict):
             raise HTTPException(status_code=400, detail="Content to append is required")
         
         # Get existing content
-        existing_content = get_note_content(config['storage']['notes_dir'], note_path)
+        existing_content = await get_note_content(config['storage']['notes_dir'], note_path)
         
         if existing_content is None:
             raise HTTPException(status_code=404, detail="Note not found")
@@ -1180,7 +1177,7 @@ async def append_to_note(request: Request, note_path: str, data: dict):
         if transformed_content is None:
             transformed_content = new_content
         
-        success = save_note(config['storage']['notes_dir'], note_path, transformed_content)
+        success = await save_note(config['storage']['notes_dir'], note_path, transformed_content)
         
         if not success:
             raise HTTPException(status_code=500, detail="Failed to append to note")
@@ -1201,13 +1198,13 @@ async def append_to_note(request: Request, note_path: str, data: dict):
 async def remove_note(request: Request, note_path: str):
     """Delete a note"""
     try:
-        success = delete_note(config['storage']['notes_dir'], note_path)
+        success = await asyncio.to_thread(delete_note, config['storage']['notes_dir'], note_path)
         
         if not success:
             raise HTTPException(status_code=404, detail="Note not found")
         
         # Clean up any share token for this note
-        delete_token_for_note(config['storage']['notes_dir'], note_path)
+        await delete_token_for_note(config['storage']['notes_dir'], note_path)
         
         # Run plugin hooks
         plugin_manager.run_hook('on_note_delete', note_path=note_path)
@@ -1253,7 +1250,7 @@ async def search(
                 "message": "No search term provided"
             }
 
-        results = search_notes(config['storage']['notes_dir'], q)
+        results = await asyncio.to_thread(search_notes, config['storage']['notes_dir'], q)
 
         # Run plugin hooks
         plugin_manager.run_hook('on_search', query=q, results=results)
@@ -1288,7 +1285,7 @@ async def get_graph():
     try:
         import re
         import urllib.parse
-        notes, _folders = scan_notes_fast_walk(config['storage']['notes_dir'], include_media=False)
+        notes, _folders = await asyncio.to_thread(scan_notes_fast_walk, config['storage']['notes_dir'], False)
         nodes = []
         edges = []
         
@@ -1318,7 +1315,7 @@ async def get_graph():
                 })
                 
                 # Read note content to find links
-                content = get_note_content(config['storage']['notes_dir'], note['path'])
+                content = await get_note_content(config['storage']['notes_dir'], note['path'])
                 if content:
                     # Find wikilinks: [[target]] or [[target|display]]
                     wikilinks = re.findall(r'\[\[([^\]|]+)(?:\|[^\]]+)?\]\]', content)
@@ -1490,12 +1487,12 @@ async def create_share(request: Request, note_path: str, data: dict = None):
             note_path = f"{note_path}.md"
         
         # Check if note exists
-        content = get_note_content(notes_dir, note_path)
+        content = await get_note_content(notes_dir, note_path)
         if content is None:
             raise HTTPException(status_code=404, detail="Note not found")
         
         # Create or get existing token (with theme)
-        token = create_share_token(notes_dir, note_path, theme)
+        token = await create_share_token(notes_dir, note_path, theme)
         if not token:
             raise HTTPException(status_code=500, detail="Failed to create share token")
         
@@ -1531,7 +1528,7 @@ async def get_share_status(request: Request, note_path: str):
             note_path = f"{note_path}.md"
         
         # Get share info
-        info = get_share_info(notes_dir, note_path)
+        info = await get_share_info(notes_dir, note_path)
         
         if info.get('shared'):
             base_url = str(request.base_url).rstrip('/')
@@ -1551,7 +1548,7 @@ async def list_shared_notes(request: Request):
     """
     try:
         notes_dir = config['storage']['notes_dir']
-        shared_paths = get_all_shared_paths(notes_dir)
+        shared_paths = await get_all_shared_paths(notes_dir)
         return {"paths": shared_paths}
     except Exception as e:
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get shared notes"))
@@ -1571,7 +1568,7 @@ async def delete_share(request: Request, note_path: str):
             note_path = f"{note_path}.md"
         
         # Revoke token
-        success = revoke_share_token(notes_dir, note_path)
+        success = await revoke_share_token(notes_dir, note_path)
         
         return {
             "success": success,
@@ -1596,7 +1593,7 @@ async def view_shared_note(request: Request, token: str):
         notes_dir = Path(config['storage']['notes_dir'])
         
         # Look up note by token (returns dict with path and theme)
-        share_info = get_note_by_token(str(notes_dir), token)
+        share_info = await get_note_by_token(str(notes_dir), token)
         if not share_info:
             raise HTTPException(status_code=404, detail="Shared note not found or link expired")
         
@@ -1604,10 +1601,10 @@ async def view_shared_note(request: Request, token: str):
         theme = share_info.get('theme', 'light')
         
         # Read note content
-        content = get_note_content(str(notes_dir), note_path)
+        content = await get_note_content(str(notes_dir), note_path)
         if content is None:
             # Note was deleted but token still exists - clean up
-            delete_token_for_note(str(notes_dir), note_path)
+            await delete_token_for_note(str(notes_dir), note_path)
             raise HTTPException(status_code=404, detail="Note no longer exists")
         
         # Strip YAML frontmatter (like the preview does)
@@ -1625,9 +1622,9 @@ async def view_shared_note(request: Request, token: str):
         
         # Use the theme that was set when sharing
         themes_dir = Path(__file__).parent.parent / "themes"
-        theme_css = get_theme_css(str(themes_dir), theme)
+        theme_css = await asyncio.to_thread(get_theme_css, str(themes_dir), theme)
         if not theme_css:
-            theme_css = get_theme_css(str(themes_dir), "light")
+            theme_css = await asyncio.to_thread(get_theme_css, str(themes_dir), "light")
             theme = "light"
         
         # Strip data-theme selector
