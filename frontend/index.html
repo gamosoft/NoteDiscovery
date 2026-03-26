@@ -1426,7 +1426,8 @@
                     <!-- Header with + New -->
                     <div class="flex-shrink-0 px-2 py-2 border-b flex items-center justify-between" style="border-color: var(--border-primary);">
                         <span class="text-xs font-semibold uppercase tracking-wide" style="color: var(--text-tertiary);" x-text="t('sidebar.files')"></span>
-                <button 
+                <button
+                    x-show="!readOnly"
                     @click="dropdownTargetFolder = ''; toggleNewDropdown($event)"
                             class="px-2 py-1 text-xs font-medium text-white rounded focus:outline-none flex items-center gap-1"
                     style="background-color: var(--accent-primary);"
@@ -2005,7 +2006,8 @@
                         </svg>
                             <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);" x-text="t('homepage.no_notes_title')"></h2>
                             <p class="mb-6" style="color: var(--text-secondary);" x-text="t('homepage.no_notes_desc')"></p>
-                        <button 
+                        <button
+                                x-show="!readOnly"
                                 @click="dropdownTargetFolder = selectedHomepageFolder; toggleNewDropdown($event)"
                                 class="px-6 py-3 text-sm font-medium text-white rounded-lg transition-colors"
                             style="background-color: var(--accent-primary);"
@@ -2066,7 +2068,8 @@
                                             <span x-text="homepageFolders().length"></span> 
                                             <span x-text="homepageFolders().length === 1 ? t('homepage.folder_singular') : t('homepage.folder_plural')"></span>
                                         </span>
-                                        <button 
+                                        <button
+                                            x-show="!readOnly"
                                             @click="dropdownTargetFolder = selectedHomepageFolder; toggleNewDropdown($event)"
                                             class="ml-auto px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors"
                                             style="background-color: var(--accent-primary);"
@@ -2087,7 +2090,8 @@
                                     </svg>
                                     <h2 class="text-2xl font-bold mb-2" style="color: var(--text-primary);" x-text="selectedHomepageFolder ? t('homepage.folder_empty') : t('homepage.no_notes_title')"></h2>
                                     <p class="mb-6" style="color: var(--text-secondary);" x-text="selectedHomepageFolder ? t('homepage.get_started') : t('homepage.no_notes_desc')"></p>
-                                    <button 
+                                    <button
+                                        x-show="!readOnly"
                                         @click="dropdownTargetFolder = selectedHomepageFolder; toggleNewDropdown($event)"
                                         class="px-6 py-3 text-sm font-medium text-white rounded-lg transition-colors"
                                         style="background-color: var(--accent-primary);"
@@ -2112,7 +2116,8 @@
                                             onmouseout="this.style.borderColor='var(--accent-primary)'; this.style.transform='translateY(0)'; this.querySelector('.card-delete-btn').style.opacity='0';"
                                         >
                                             <!-- Delete Button -->
-                                            <button 
+                                            <button
+                                                x-show="!readOnly"
                                                 @click.stop="deleteFolder(folder.path, folder.name)"
                                                 class="card-delete-btn hidden sm:block"
                                                 style="position: absolute; top: 8px; right: 8px; opacity: 0; transition: opacity 0.2s; color: var(--error); padding: 4px; border-radius: 4px; background-color: var(--bg-secondary);"
@@ -2153,7 +2158,8 @@
                                             onmouseout="this.style.borderColor='var(--border-primary)'; this.style.transform='translateY(0)'; this.querySelector('.card-delete-btn').style.opacity='0';"
                                         >
                                             <!-- Delete Button -->
-                                            <button 
+                                            <button
+                                                x-show="!readOnly"
                                                 @click.stop="note.type !== 'note' ? deleteMedia(note.path) : deleteNote(note.path, note.name)"
                                                 class="card-delete-btn hidden sm:block"
                                                 style="position: absolute; top: 8px; right: 8px; opacity: 0; transition: opacity 0.2s; color: var(--error); padding: 4px; border-radius: 4px; background-color: var(--bg-secondary);"
@@ -2249,7 +2255,8 @@
                             </button>
                             
                             <!-- Delete Button -->
-                            <button 
+                            <button
+                                x-show="!readOnly"
                                 @click="currentMedia ? deleteMedia(currentMedia) : deleteCurrentNote()"
                                 class="p-2 rounded-lg"
                                 style="color: var(--error);"
@@ -2277,7 +2284,8 @@
                         <div class="flex items-center space-x-2" x-show="currentNote">
                             <!-- View Toggle (only for notes) -->
                             <div class="flex rounded-lg p-1" style="background-color: var(--bg-tertiary);">
-                                <button 
+                                <button
+                                    x-show="!readOnly"
                                     @click="viewMode = 'edit'"
                                     class="px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'edit' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
@@ -2286,7 +2294,8 @@
                                     x-text="t('editor.mode_edit')"
                                 >
                                 </button>
-                                <button 
+                                <button
+                                    x-show="!readOnly"
                                     @click="viewMode = 'split'"
                                     class="mobile-hide-split px-2 md:px-3 py-1 text-xs md:text-sm rounded transition"
                                     :style="viewMode === 'split' ? 'background-color: var(--accent-primary); color: white;' : 'color: var(--text-secondary);'"
@@ -2376,7 +2385,8 @@
                                     </svg>
                                 </button>
                                 <div style="width: 1px; height: 20px; background-color: var(--border-primary);"></div>
-                                <button 
+                                <button
+                                    x-show="!readOnly"
                                     @click="toggleZenMode()"
                                     class="p-2 transition"
                                     style="color: var(--text-secondary);"

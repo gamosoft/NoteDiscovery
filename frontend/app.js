@@ -145,6 +145,7 @@ function noteApp() {
         appVersion: '0.0.0',
         authEnabled: false,
         demoMode: false,
+        readOnly: false,
         alreadyDonated: false,
         notes: [],
         currentNote: '',
@@ -711,7 +712,11 @@ function noteApp() {
                 this.appVersion = config.version || '0.0.0';
                 this.authEnabled = config.authentication?.enabled || false;
                 this.demoMode = config.demoMode || false;
+                this.readOnly = config.readOnly || false;
                 this.alreadyDonated = config.alreadyDonated || false;
+                if (this.readOnly) {
+                    this.viewMode = 'preview';
+                }
             } catch (error) {
                 console.error('Failed to load config:', error);
             }
@@ -2173,7 +2178,8 @@ function noteApp() {
         async onEditorDrop(event) {
             event.preventDefault();
             this.dropTarget = null;
-            
+            if (this.readOnly) return;
+
             // Check if files are being dropped (media from file system)
             if (event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files.length > 0) {
                 await this.handleMediaDrop(event);
@@ -2320,6 +2326,7 @@ function noteApp() {
         // Handle paste event for clipboard media (images)
         async handlePaste(event) {
             if (!this.currentNote) return;
+            if (this.readOnly) return;
             
             const items = event.clipboardData?.items;
             if (!items) return;
@@ -5519,6 +5526,7 @@ function noteApp() {
         
         // Toggle Zen Mode (full immersive writing experience)
         async toggleZenMode() {
+            if (this.readOnly) return;
             if (!this.zenMode) {
                 // Entering Zen Mode
                 this.previousViewMode = this.viewMode;

@@ -23,6 +23,11 @@ storage:
 search:
   enabled: true
   
+read_only:
+  # Read-only mode - prevents all write operations (create, edit, delete, upload)
+  # Can also be set via READ_ONLY environment variable
+  enabled: false
+
 authentication:
   # Authentication settings
   # Set enabled to true to require login

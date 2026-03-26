@@ -9,3 +9,5 @@ bcrypt==4.1.2
 itsdangerous==2.1.2
 slowapi==0.1.9
 colorama==0.4.6
+pywin32==306
+psutil==5.9.8

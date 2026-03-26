@@ -195,6 +195,17 @@ app.add_middleware(
 DEMO_MODE = os.getenv('DEMO_MODE', 'false').lower() in ('true', '1', 'yes')
 ALREADY_DONATED = os.getenv('ALREADY_DONATED', 'false').lower() in ('true', '1', 'yes')
 
+# Read-only mode - blocks all write operations when enabled
+# Set READ_ONLY=true env var or read_only.enabled: true in config.yaml
+_read_only_config = os.getenv('READ_ONLY', '').lower()
+if _read_only_config in ('true', '1', 'yes'):
+    READ_ONLY = True
+elif _read_only_config in ('false', '0', 'no'):
+    READ_ONLY = False
+else:
+    READ_ONLY = config.get('read_only', {}).get('enabled', False)
+print(f"📖 Read-only mode {'ENABLED' if READ_ONLY else 'DISABLED'} ({'READ_ONLY env var' if _read_only_config else 'config.yaml'})")
+
 if DEMO_MODE:
     # Enable rate limiting for demo deployments
     limiter = Limiter(key_func=get_remote_address, default_limits=["200/hour"])
@@ -284,10 +295,16 @@ async def require_auth(request: Request):
     """Dependency to require authentication on protected routes"""
     if not auth_enabled():
         return  # Auth disabled, allow all
-    
+
     if not request.session.get('authenticated'):
         # Always raise exception - route handlers will catch and redirect as needed
         raise HTTPException(status_code=401, detail="Not authenticated")
+
+
+async def require_write_access():
+    """Dependency to block write operations in read-only mode"""
+    if READ_ONLY:
+        raise HTTPException(status_code=403, detail="Read-only mode is enabled")
 
 
 def verify_password(password: str) -> bool:
@@ -365,6 +382,12 @@ api_router = APIRouter(
     dependencies=[Depends(require_auth)]  # Apply auth to ALL routes in this router
 )
 
+# Create write router - requires auth AND blocks requests in read-only mode
+write_router = APIRouter(
+    prefix="/api",
+    dependencies=[Depends(require_auth), Depends(require_write_access)]
+)
+
 # Create pages router with authentication dependency applied globally
 pages_router = APIRouter(
     dependencies=[Depends(require_auth)]  # Apply auth to ALL routes in this router
@@ -384,6 +407,7 @@ async def get_config():
         "searchEnabled": config['search']['enabled'],
         "demoMode": DEMO_MODE,  # Expose demo mode flag to frontend
         "alreadyDonated": ALREADY_DONATED,  # Hide support buttons if true
+        "readOnly": READ_ONLY,  # Expose read-only mode flag to frontend
         "authentication": {
             "enabled": config.get('authentication', {}).get('enabled', False)
         }
@@ -454,7 +478,7 @@ async def get_locale(locale_code: str):
         raise HTTPException(status_code=500, detail=f"Failed to load locale: {str(e)}")
 
 
-@api_router.post("/folders", tags=["Folders"])
+@write_router.post("/folders", tags=["Folders"])
 @limiter.limit("30/minute")
 async def create_new_folder(request: Request, data: dict):
     """Create a new folder"""
@@ -510,7 +534,7 @@ async def get_media(media_path: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to load media file"))
 
 
-@api_router.post("/upload-media", tags=["Media"])
+@write_router.post("/upload-media", tags=["Media"])
 @limiter.limit("20/minute")
 async def upload_media(request: Request, file: UploadFile = File(...), note_path: str = Form(...)):
     """
@@ -587,7 +611,7 @@ async def upload_media(request: Request, file: UploadFile = File(...), note_path
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to upload file"))
 
 
-@api_router.post("/media/move", tags=["Media"])
+@write_router.post("/media/move", tags=["Media"])
 @limiter.limit("30/minute")
 async def move_media_endpoint(request: Request, data: dict):
     """Move a media file to a different folder"""
@@ -637,7 +661,7 @@ async def move_media_endpoint(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to move media file"))
 
 
-@api_router.post("/notes/move", tags=["Notes"])
+@write_router.post("/notes/move", tags=["Notes"])
 @limiter.limit("30/minute")
 async def move_note_endpoint(request: Request, data: dict):
     """Move a note to a different folder"""
@@ -671,7 +695,7 @@ async def move_note_endpoint(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to move note"))
 
 
-@api_router.post("/folders/move", tags=["Folders"])
+@write_router.post("/folders/move", tags=["Folders"])
 @limiter.limit("20/minute")
 async def move_folder_endpoint(request: Request, data: dict):
     """Move a folder to a different location"""
@@ -699,7 +723,7 @@ async def move_folder_endpoint(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to move folder"))
 
 
-@api_router.post("/folders/rename", tags=["Folders"])
+@write_router.post("/folders/rename", tags=["Folders"])
 @limiter.limit("30/minute")
 async def rename_folder_endpoint(request: Request, data: dict):
     """Rename a folder"""
@@ -727,7 +751,7 @@ async def rename_folder_endpoint(request: Request, data: dict):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to rename folder"))
 
 
-@api_router.delete("/folders/{folder_path:path}", tags=["Folders"])
+@write_router.delete("/folders/{folder_path:path}", tags=["Folders"])
 @limiter.limit("20/minute")
 async def delete_folder_endpoint(request: Request, folder_path: str):
     """Delete a folder and all its contents"""
@@ -836,7 +860,7 @@ async def get_template(request: Request, template_name: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get template"))
 
 
-@api_router.post("/templates/create-note", tags=["Templates"])
+@write_router.post("/templates/create-note", tags=["Templates"])
 @limiter.limit("60/minute")
 async def create_note_from_template(request: Request, data: dict):
     """
@@ -931,7 +955,7 @@ async def get_note(note_path: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to load note"))
 
 
-@api_router.post("/notes/{note_path:path}", tags=["Notes"])
+@write_router.post("/notes/{note_path:path}", tags=["Notes"])
 @limiter.limit("60/minute")
 async def create_or_update_note(request: Request, note_path: str, content: dict):
     """Create or update a note"""
@@ -972,7 +996,7 @@ async def create_or_update_note(request: Request, note_path: str, content: dict)
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to save note"))
 
 
-@api_router.delete("/notes/{note_path:path}", tags=["Notes"])
+@write_router.delete("/notes/{note_path:path}", tags=["Notes"])
 @limiter.limit("30/minute")
 async def remove_note(request: Request, note_path: str):
     """Delete a note"""
@@ -1180,7 +1204,7 @@ async def calculate_note_stats(content: str):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to calculate note statistics"))
 
 
-@api_router.post("/plugins/{plugin_name}/toggle", tags=["Plugins"])
+@write_router.post("/plugins/{plugin_name}/toggle", tags=["Plugins"])
 @limiter.limit("10/minute")
 async def toggle_plugin(request: Request, plugin_name: str, enabled: dict):
     """Enable or disable a plugin"""
@@ -1204,7 +1228,7 @@ async def toggle_plugin(request: Request, plugin_name: str, enabled: dict):
 # Share Token Endpoints (authenticated)
 # ============================================================================
 
-@api_router.post("/share/{note_path:path}", tags=["Sharing"])
+@write_router.post("/share/{note_path:path}", tags=["Sharing"])
 @limiter.limit("30/minute")
 async def create_share(request: Request, note_path: str, data: dict = None):
     """
@@ -1292,7 +1316,7 @@ async def list_shared_notes(request: Request):
         raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get shared notes"))
 
 
-@api_router.delete("/share/{note_path:path}", tags=["Sharing"])
+@write_router.delete("/share/{note_path:path}", tags=["Sharing"])
 @limiter.limit("30/minute")
 async def delete_share(request: Request, note_path: str):
     """
@@ -1429,6 +1453,7 @@ async def catch_all(full_path: str, request: Request):
 # Register routers with the main app
 # Authentication is applied via router dependencies
 app.include_router(api_router)
+app.include_router(write_router)
 app.include_router(pages_router)
 
 
