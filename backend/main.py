@@ -1500,6 +1500,67 @@ async def toggle_plugin(request: Request, plugin_name: str, enabled: dict):
 
 
 # ============================================================================
+# Stats Endpoint (for dashboards)
+# ============================================================================
+
+@api_router.get("/stats", tags=["Stats"])
+@limiter.limit("30/minute")
+async def get_stats(request: Request):
+    """
+    Get application statistics at a glance.
+
+    Designed for dashboard widgets (e.g., Homepage) - lightweight and cached.
+    Returns counts of notes, folders, tags, templates, media, and other metadata.
+    """
+    try:
+        notes_dir = config['storage']['notes_dir']
+        
+        # Get notes and folders (cached)
+        notes, folders = scan_notes_fast_walk(notes_dir, include_media=True)
+        
+        # Separate notes from media
+        note_items = [n for n in notes if n.get('type') == 'note']
+        media_items = [n for n in notes if n.get('type') != 'note']
+        
+        # Count unique tags
+        all_tags = set()
+        for note in note_items:
+            all_tags.update(note.get('tags', []))
+        
+        # Get templates count
+        templates = get_templates(notes_dir)
+        
+        # Calculate total size
+        total_size = sum(n.get('size', 0) for n in notes)
+        
+        # Get last modified (notes are already sorted by modified desc)
+        last_modified = note_items[0].get('modified') if note_items else None
+        
+        # Count enabled plugins
+        enabled_plugins = sum(1 for p in plugin_manager.plugins.values() if p.enabled)
+        
+        # Read version
+        version = "unknown"
+        version_file = Path(__file__).parent.parent / "VERSION"
+        if version_file.exists():
+            version = version_file.read_text().strip()
+        
+        return {
+            "notes_count": len(note_items),
+            "folders_count": len(folders),
+            "tags_count": len(all_tags),
+            "templates_count": len(templates),
+            "media_count": len(media_items),
+            "total_size_bytes": total_size,
+            "last_modified": last_modified,
+            "plugins_enabled": enabled_plugins,
+            "version": version
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=safe_error_message(e, "Failed to get stats"))
+
+
+# ============================================================================
 # Share Token Endpoints (authenticated)
 # ============================================================================
 

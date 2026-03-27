@@ -452,6 +452,60 @@ GET /api/config
 ```
 Returns application configuration.
 
+### Get Stats
+```http
+GET /api/stats
+```
+Returns application statistics at a glance. Designed for dashboard widgets (e.g., Homepage) - lightweight and uses cached data.
+
+**Response:**
+```json
+{
+  "notes_count": 142,
+  "folders_count": 12,
+  "tags_count": 37,
+  "templates_count": 5,
+  "media_count": 23,
+  "total_size_bytes": 2458624,
+  "last_modified": "2026-03-17T14:32:00Z",
+  "plugins_enabled": 3,
+  "version": "0.19.1"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `notes_count` | Total number of markdown notes |
+| `folders_count` | Total number of folders |
+| `tags_count` | Number of unique tags across all notes |
+| `templates_count` | Number of templates in `_templates` folder |
+| `media_count` | Number of media files (images, etc.) |
+| `total_size_bytes` | Total size of all files in bytes |
+| `last_modified` | ISO timestamp of most recently modified note |
+| `plugins_enabled` | Number of enabled plugins |
+| `version` | Application version |
+
+**Example ([Homepage](https://gethomepage.dev/) dashboard widget):**
+```yaml
+- NoteDiscovery:
+    href: https://notediscovery.homelab.local
+    icon: notediscovery
+    container: homelab-notediscovery
+    widget:
+      type: customapi
+      url: http://notediscovery:8000/api/stats
+      refreshInterval: 60000
+      mappings:
+        - field: notes_count
+          label: Notes
+        - field: tags_count
+          label: Tags
+        - field: folders_count
+          label: Folders
+        - field: version
+          label: Version
+```
+
 ### Health Check
 ```http
 GET /health
