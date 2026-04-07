@@ -469,9 +469,18 @@ function noteApp() {
                 this.authenticated = true;
                 return;
             }
+
             try {
-                const res = await fetch('/api/config');
-                this.authenticated = res.ok;   // 200 = logged in, 401 = not logged in
+                // Test a real protected write route (always requires login)
+                const res = await fetch('/api/notes/__auth_test_dummy_note__.md', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: '' })
+                });
+
+                // 401 = not logged in
+                // Any other status = logged in (even if the dummy note creation fails)
+                this.authenticated = res.status !== 401;
             } catch (e) {
                 this.authenticated = false;
             }
