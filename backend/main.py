@@ -80,7 +80,13 @@ if 'AUTHENTICATION_ENABLED' in os.environ:
     print(f"🔐 Authentication {'ENABLED' if auth_enabled else 'DISABLED'} (from AUTHENTICATION_ENABLED env var)")
 else:
     print(f"🔐 Authentication {'ENABLED' if config.get('authentication', {}).get('enabled', False) else 'DISABLED'} (from config.yaml)")
-
+# Read-only public mode (new)
+if 'READ_ONLY_ENABLED' in os.environ:
+    ro_enabled = os.getenv('READ_ONLY_ENABLED', 'false').lower() in ('true', '1', 'yes')
+    config.setdefault('read_only', {})['enabled'] = ro_enabled
+    print(f"🔓 Read-only public access: {'ENABLED' if ro_enabled else 'DISABLED'} (from READ_ONLY_ENABLED env var)")
+else:
+    print(f"🔓 Read-only public access: {'ENABLED' if config.get('read_only', {}).get('enabled', False) else 'DISABLED'} (from config.yaml)")
 # Password configuration priority:
 # 1. AUTHENTICATION_PASSWORD env var (hashed at startup)
 # 2. authentication.password in config.yaml (hashed at startup)
@@ -314,6 +320,9 @@ def auth_enabled() -> bool:
     """Check if authentication is enabled in config"""
     return config.get('authentication', {}).get('enabled', False)
 
+def read_only_enabled() -> bool:
+    """Check if public read-only mode is active"""
+    return config.get('read_only', {}).get('enabled', False)
 
 def get_api_key() -> str:
     """Get the configured API key (empty string if not set)"""
@@ -371,6 +380,10 @@ async def require_auth(
     """
     if not auth_enabled():
         return  # Auth disabled, allow all
+    
+    # Public read-only mode: anyone can read (GET/HEAD/OPTIONS), writes still need auth
+    if read_only_enabled() and request.method.upper() in ("GET", "HEAD", "OPTIONS"):
+        return  # public read access granted
     
     # Method 1: Check Bearer token (parsed by FastAPI's HTTPBearer)
     if bearer_credentials and verify_api_key(bearer_credentials.credentials):
