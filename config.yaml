@@ -26,7 +26,7 @@ search:
 authentication:
   # Authentication settings
   # Set enabled to true to require login
-  enabled: false
+  enabled: true
   
   # ⚠️ SECURITY WARNING: Change these values before exposing to the internet!
   # Default values below are for LOCAL TESTING ONLY
@@ -53,3 +53,8 @@ authentication:
   # Leave empty to disable API key authentication (only session auth works)
   api_key: ""
 
+# Public read-only access (new feature)
+# When true: anyone can read notes (GET requests are public)
+# Writes (save, delete, upload, etc.) still require valid API key or login
+read_only:
+  enabled: true

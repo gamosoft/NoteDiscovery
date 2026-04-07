@@ -53,7 +53,21 @@ def main():
     
     # Get port from config or environment
     port = get_port()
-    
+    # Load read_only flag (new)
+    read_only_enabled = "false"
+    config_path = Path("config.yaml")
+    if config_path.exists():
+        try:
+            import yaml
+            with open(config_path, 'r', encoding='utf-8') as f:
+                config = yaml.safe_load(f)
+                ro = config.get('read_only', {})
+                if ro.get('enabled') is True:
+                    read_only_enabled = "true"
+        except Exception:
+            pass
+    os.environ["READ_ONLY_ENABLED"] = read_only_enabled
+    print(f"🔓 Read-only public access: {'ENABLED' if read_only_enabled == 'true' else 'disabled'}")    
     print("✓ Dependencies installed")
     print("✓ Directories created")
     print("\n" + "="*50)
