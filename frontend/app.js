@@ -32,22 +32,17 @@ const LOCAL_SETTINGS = {
 
 // Centralized error handling
 const ErrorHandler = {
-    /**
-     * Handle errors consistently across the app
-     * @param {string} operation - The operation that failed (e.g., "load notes", "save note")
-     * @param {Error} error - The error object
-     * @param {boolean} showAlert - Whether to show an alert to the user
-     */
     handle(operation, error, showAlert = true) {
-        // Always log to console for debugging
         console.error(`Failed to ${operation}:`, error);
         
-        // Show user-friendly alert if requested
-        if (showAlert) {
-            // Note: ErrorHandler doesn't have access to Alpine's t() function
-            // This message remains in English as a fallback
-            alert(`Failed to ${operation}. Please try again.`);
+        if (!showAlert) return;
+
+        if (error?.status === 401) {
+            alert("🔒 Read-only mode: You need to log in to edit or save notes.");
+            return;
         }
+
+        alert(`Failed to ${operation}. Please try again.`);
     }
 };
 
@@ -147,6 +142,7 @@ function noteApp() {
         appName: 'NoteDiscovery',
         appVersion: '0.0.0',
         authEnabled: false,
+		authenticated: false,
         demoMode: false,
         alreadyDonated: false,
         notes: [],
@@ -468,6 +464,18 @@ function noteApp() {
             previewContainer: null,
             previewContent: null
         },
+        async checkAuthStatus() {
+            if (!this.authEnabled) {
+                this.authenticated = true;
+                return;
+            }
+            try {
+                const res = await fetch('/api/config');
+                this.authenticated = res.ok;   // 200 = logged in, 401 = not logged in
+            } catch (e) {
+                this.authenticated = false;
+            }
+        },
         
         // Initialize app
         async init() {
@@ -492,6 +500,7 @@ function noteApp() {
             // Note: Translations are preloaded synchronously before Alpine init (see index.html)
             // loadLocale() is only called when user changes language from settings
             await this.loadNotes();
+			await this.checkAuthStatus();
             await this.loadSharedNotePaths();
             await this.loadTemplates();
             await this.checkStatsPlugin();
@@ -3769,7 +3778,9 @@ function noteApp() {
                         this.lastSaved = false;
                     }, CONFIG.SAVE_INDICATOR_DURATION);
                 } else {
-                    ErrorHandler.handle('save note', new Error('Server returned error'));
+                    const err = new Error('Server returned error');
+                    err.status = response.status;
+                    ErrorHandler.handle('save note', err);
                 }
             } catch (error) {
                 ErrorHandler.handle('save note', error);
