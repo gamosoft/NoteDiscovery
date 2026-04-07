@@ -47,6 +47,26 @@ AUTHENTICATION_PASSWORD=mysecretpassword
 >
 > Haven't donated yet? [☕ Buy me a coffee](https://ko-fi.com/gamosoft) - it takes 30 seconds and makes my day!
 
+### Upload Limits
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `UPLOAD_MAX_IMAGE_MB` | integer | `10` | Maximum image upload size in MB |
+| `UPLOAD_MAX_AUDIO_MB` | integer | `50` | Maximum audio upload size in MB |
+| `UPLOAD_MAX_VIDEO_MB` | integer | `100` | Maximum video upload size in MB |
+| `UPLOAD_MAX_PDF_MB` | integer | `20` | Maximum PDF upload size in MB |
+
+#### Example: Allowing larger video uploads
+
+```bash
+# Docker
+docker run -e UPLOAD_MAX_VIDEO_MB=500 ...
+
+# Docker Compose
+environment:
+  - UPLOAD_MAX_VIDEO_MB=500
+```
+
 ## 🎯 Configuration Priority
 
 Configuration is loaded in this order (later overrides earlier):

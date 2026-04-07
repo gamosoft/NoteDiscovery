@@ -21,6 +21,8 @@ const LOCAL_SETTINGS = {
     tagsExpanded: { key: 'tagsExpanded', type: 'boolean', default: false },
     hideUnderscoreFolders: { key: 'hideUnderscoreFolders', type: 'boolean', default: false },
     tabInsertsTab: { key: 'tabInsertsTab', type: 'boolean', default: false },
+    // String settings
+    sortMode: { key: 'sortMode', type: 'string', default: 'a-z' },
     // Number settings with validation
     sidebarWidth: { key: 'sidebarWidth', type: 'number', default: CONFIG.DEFAULT_SIDEBAR_WIDTH, min: 200, max: 600 },
     editorWidth: { key: 'editorWidth', type: 'number', default: 50, min: 20, max: 80 },
@@ -218,6 +220,9 @@ function noteApp() {
 
         // Tab key inserts tab character instead of changing focus
         tabInsertsTab: localStorage.getItem('tabInsertsTab') === 'true',
+
+        // Note sorting mode (a-z, z-a, newest, oldest, largest, smallest)
+        sortMode: localStorage.getItem('sortMode') || 'a-z',
 
         // Icon rail / panel state
         activePanel: 'files', // 'files', 'search', 'tags', 'settings'
@@ -850,6 +855,60 @@ function noteApp() {
                 textarea.selectionStart = textarea.selectionEnd = start + 1;
             });
             this.autoSave();
+        },
+
+        // Sort mode configuration
+        sortModes: ['a-z', 'z-a', 'newest', 'oldest', 'largest', 'smallest'],
+        sortModeIcons: {
+            'a-z': 'A↓',
+            'z-a': 'Z↓',
+            'newest': '🕐↓',
+            'oldest': '🕐↑',
+            'largest': '📄↓',
+            'smallest': '📄↑'
+        },
+
+        // Cycle through sort modes
+        cycleSortMode() {
+            const currentIndex = this.sortModes.indexOf(this.sortMode);
+            const nextIndex = (currentIndex + 1) % this.sortModes.length;
+            this.sortMode = this.sortModes[nextIndex];
+            localStorage.setItem('sortMode', this.sortMode);
+            // Rebuild tree to apply new sort order
+            this.buildFolderTree();
+        },
+
+        // Get current sort icon
+        getSortIcon() {
+            return this.sortModeIcons[this.sortMode] || 'A↓';
+        },
+
+        // Get sort comparator based on current mode (for notes)
+        getSortComparator() {
+            switch (this.sortMode) {
+                case 'z-a':
+                    return (a, b) => b.name.toLowerCase().localeCompare(a.name.toLowerCase());
+                case 'newest':
+                    return (a, b) => (b.modified || '').localeCompare(a.modified || '');
+                case 'oldest':
+                    return (a, b) => (a.modified || '').localeCompare(b.modified || '');
+                case 'largest':
+                    return (a, b) => (b.size || 0) - (a.size || 0);
+                case 'smallest':
+                    return (a, b) => (a.size || 0) - (b.size || 0);
+                case 'a-z':
+                default:
+                    return (a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+            }
+        },
+
+        // Get sort comparator for folders (only A-Z/Z-A, others default to A-Z)
+        getFolderSortComparator() {
+            if (this.sortMode === 'z-a') {
+                return (a, b) => b.name.toLowerCase().localeCompare(a.name.toLowerCase());
+            }
+            // Default: A-Z for all other modes
+            return (a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase());
         },
 
         // Update syntax highlight overlay (debounced, called on input)
@@ -1757,7 +1816,7 @@ function noteApp() {
             const sortNotes = (obj) => {
                 if (obj.notes && obj.notes.length > 0) {
                     // Create a new sorted array instead of mutating for Alpine reactivity
-                    obj.notes = [...obj.notes].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+                    obj.notes = [...obj.notes].sort(this.getSortComparator());
                 }
                 if (obj.children && Object.keys(obj.children).length > 0) {
                     Object.values(obj.children).forEach(child => sortNotes(child));
@@ -1766,7 +1825,7 @@ function noteApp() {
             
             // Sort notes in root (create new array for reactivity)
             if (tree['__root__'] && tree['__root__'].notes) {
-                tree['__root__'].notes = [...tree['__root__'].notes].sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+                tree['__root__'].notes = [...tree['__root__'].notes].sort(this.getSortComparator());
             }
             
             // Sort notes in all folders
@@ -1966,8 +2025,8 @@ function noteApp() {
                 if (folder.children && Object.keys(folder.children).length > 0) {
                     const children = Object.entries(folder.children)
                         .filter(([k, v]) => !this.hideUnderscoreFolders || !v.name.startsWith('_'))
-                        .sort((a, b) => a[1].name.toLowerCase().localeCompare(b[1].name.toLowerCase()));
-                    
+                        .sort((a, b) => this.getFolderSortComparator()(a[1], b[1]));
+
                     children.forEach(([childKey, childFolder]) => {
                         html += this.renderFolderRecursive(childFolder, 0, false);
                     });
@@ -2521,7 +2580,9 @@ function noteApp() {
             if (!href) return;
             
             // Check if it's an external link or API path (media files, etc.)
-            if (href.startsWith('http://') || href.startsWith('https://') || href.startsWith('//') || href.startsWith('mailto:') || href.startsWith('/api/')) {
+            // Safe external protocols: http, https, mailto, tel, ssh, ftp, sftp, and app deep links
+            const externalProtocols = ['http://', 'https://', '//', 'mailto:', 'tel:', 'ssh:', 'ftp:', 'sftp:', 'slack:', 'discord:', 'teams:', 'vscode:', 'zoom:', 'whatsapp:', 'telegram:', 'signal:', 'spotify:', 'steam:', 'magnet:', '/api/'];
+            if (externalProtocols.some(p => href.startsWith(p))) {
                 return; // Let external links and API paths work normally
             }
             

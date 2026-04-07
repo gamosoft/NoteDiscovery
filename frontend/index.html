@@ -1591,7 +1591,15 @@
                             <div class="flex items-center justify-between mb-1">
                                 <span x-text="t('sidebar.folders_and_notes')"></span>
                                 <div class="flex gap-0.5">
-                                    <button 
+                                    <button
+                                        @click="cycleSortMode()"
+                                        class="text-xs px-1.5 py-0.5 rounded transition-all hover:scale-110"
+                                        :title="t('sidebar.sort_' + sortMode)"
+                                        style="opacity: 0.7;"
+                                        onmouseover="this.style.opacity='1'"
+                                        onmouseout="this.style.opacity='0.7'"
+                                    ><span x-text="getSortIcon()"></span></button>
+                                    <button
                                         @click="expandAllFolders()"
                                         class="text-xs px-1.5 py-0.5 rounded transition-all hover:scale-110"
                                         :title="t('sidebar.expand_all')"
@@ -1635,11 +1643,11 @@
                         </div>
                         
                         <!-- Folders (rendered recursively for unlimited nesting) -->
-                        <template x-for="[folderKey, folder] in Object.entries(folderTree).filter(([k, v]) => k !== '__root__' && (!hideUnderscoreFolders || !v.name.startsWith('_'))).sort((a, b) => a[1].name.toLowerCase().localeCompare(b[1].name.toLowerCase()))" :key="folderKey">
+                        <template x-for="[folderKey, folder] in Object.entries(folderTree).filter(([k, v]) => k !== '__root__' && (!hideUnderscoreFolders || !v.name.startsWith('_'))).sort((a, b) => getFolderSortComparator()(a[1], b[1]))" :key="folderKey">
                             <div x-html="renderFolderRecursive(folder, 0, true)"></div>
                         </template>
                         
-                        <!-- Root notes and images (no folder) - rendered via JS for consistency -->
+                        <!-- Root notes and images (no folder) -->
                         <div x-html="renderRootItems()"></div>
                         
                         <!-- Empty state -->

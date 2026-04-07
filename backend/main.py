@@ -224,6 +224,12 @@ app.add_middleware(
 DEMO_MODE = os.getenv('DEMO_MODE', 'false').lower() in ('true', '1', 'yes')
 ALREADY_DONATED = os.getenv('ALREADY_DONATED', 'false').lower() in ('true', '1', 'yes')
 
+# Upload size limits (in MB) - configurable via environment variables
+UPLOAD_MAX_IMAGE_MB = int(os.getenv('UPLOAD_MAX_IMAGE_MB', '10'))
+UPLOAD_MAX_AUDIO_MB = int(os.getenv('UPLOAD_MAX_AUDIO_MB', '50'))
+UPLOAD_MAX_VIDEO_MB = int(os.getenv('UPLOAD_MAX_VIDEO_MB', '100'))
+UPLOAD_MAX_PDF_MB = int(os.getenv('UPLOAD_MAX_PDF_MB', '20'))
+
 if DEMO_MODE:
     # Enable rate limiting for demo deployments
     limiter = Limiter(key_func=get_remote_address, default_limits=["200/hour"])
@@ -656,14 +662,14 @@ async def upload_media(request: Request, file: UploadFile = File(...), note_path
         # Validate file size - different limits for different types
         media_type = get_media_type(file.filename) if file.filename else None
         
-        # Size limits: images 10MB, audio 50MB, video 100MB, PDF 20MB
+        # Size limits (configurable via UPLOAD_MAX_*_MB environment variables)
         size_limits = {
-            'image': 10 * 1024 * 1024,
-            'audio': 50 * 1024 * 1024,
-            'video': 100 * 1024 * 1024,
-            'document': 20 * 1024 * 1024,
+            'image': UPLOAD_MAX_IMAGE_MB * 1024 * 1024,
+            'audio': UPLOAD_MAX_AUDIO_MB * 1024 * 1024,
+            'video': UPLOAD_MAX_VIDEO_MB * 1024 * 1024,
+            'document': UPLOAD_MAX_PDF_MB * 1024 * 1024,
         }
-        max_size = size_limits.get(media_type, 10 * 1024 * 1024)
+        max_size = size_limits.get(media_type, UPLOAD_MAX_IMAGE_MB * 1024 * 1024)
         
         if len(file_data) > max_size:
             raise HTTPException(
