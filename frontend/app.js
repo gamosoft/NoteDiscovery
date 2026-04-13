@@ -859,7 +859,7 @@ function noteApp() {
         },
 
         /**
-         * Enter: continue blockquote / bullet / task list; second Enter on empty item exits (see editor-markdown-continue.js).
+         * Enter: continue blockquote / bullet / ordered list / task list; second Enter on empty item exits (see editor-markdown-continue.js).
          */
         handleEditorEnterKey(event) {
             if (typeof EditorMarkdownContinue === 'undefined') return;

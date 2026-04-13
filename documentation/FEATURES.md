@@ -33,7 +33,7 @@
 - **Visual tree view** - Expandable/collapsible navigation
 - **Hide system folders** - Toggle to hide `_attachments`, `_templates` and other underscore-prefixed folders from sidebar
 - **Tab inserts tab** - Toggle to make Tab key insert a tab character in the editor instead of changing focus
-- **List & quote continuation (Enter)** - At the end of a line, Enter continues blockquotes (`>`), bullets (`-` / `*` / `+`), and task lists (`- [ ]` / `- [x]`); pressing Enter again on an empty continued line exits the list or quote. Disabled inside fenced code blocks and when using Shift+Enter (plain newline)
+- **List & quote continuation (Enter)** - At the end of a line, Enter continues blockquotes (`>`), bullets (`-` / `*` / `+`), ordered lists (`1.` / `1)`), and task lists (`- [ ]` / `- [x]`); pressing Enter again on an empty continued line exits the list or quote. Disabled inside fenced code blocks and when using Shift+Enter (plain newline)
 
 ### Export & Print
 - **HTML Export** - Download notes as standalone HTML files with all styling, images, diagrams, and math embedded

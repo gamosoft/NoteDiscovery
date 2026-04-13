@@ -1,5 +1,5 @@
 /**
- * Markdown editor helpers: Enter continues blockquotes, bullets, and task lists.
+ * Markdown editor helpers: Enter continues blockquotes, bullets, ordered lists, and task lists.
  * Plain functions only; no DOM. Used by app.js handleEditorEnterKey.
  */
 (function (global) {
@@ -66,6 +66,17 @@
             const ch = bulletMatch[2];
             const cont = bulletMatch[3];
             const marker = ch + ' ';
+            const isEmpty = cont.trim() === '';
+            return { continuePrefix: quoteFull + inner + marker, isEmpty };
+        }
+
+        const orderedMatch = rest.match(/^(\s*)(\d+)([.)])\s+(.*)$/);
+        if (orderedMatch) {
+            const inner = orderedMatch[1];
+            const num = parseInt(orderedMatch[2], 10);
+            const sep = orderedMatch[3];
+            const cont = orderedMatch[4];
+            const marker = (num + 1) + sep + ' ';
             const isEmpty = cont.trim() === '';
             return { continuePrefix: quoteFull + inner + marker, isEmpty };
         }
