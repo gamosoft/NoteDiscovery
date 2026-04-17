@@ -104,6 +104,9 @@
     "prompt_name_in_folder": "Ustvari podmapo v \"{{folder}}\".\nVnesite ime mape:",
     "prompt_name_with_path": "Ustvari novo mapo.\nVnesite pot mape (npr. \"Projekti\" ali \"Delo/2025\"):",
     "prompt_rename": "Preimenuj mapo \"{{name}}\" v:",
+    "rename_modal_title": "Preimenuj mapo",
+    "rename_modal_description": "Vnesite novo ime za mapo \"{{name}}\".",
+    "rename_modal_label": "Novo ime",
     "invalid_name": "Neveljavno ime mape.",
     "cannot_move_into_self": "Mape ni mogoče premakniti vase ali v njeno podmapo.",
     "empty": "prazno"

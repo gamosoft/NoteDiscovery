@@ -104,6 +104,9 @@
     "prompt_name_in_folder": "Crea sottocartella in \"{{folder}}\".\nInserisci nome cartella:",
     "prompt_name_with_path": "Crea nuova cartella.\nInserisci percorso cartella (es. \"Progetti\" o \"Lavoro/2025\"):",
     "prompt_rename": "Rinomina cartella \"{{name}}\" in:",
+    "rename_modal_title": "Rinomina cartella",
+    "rename_modal_description": "Inserisci il nuovo nome per la cartella \"{{name}}\".",
+    "rename_modal_label": "Nuovo nome",
     "invalid_name": "Nome cartella non valido.",
     "cannot_move_into_self": "Impossibile spostare la cartella in se stessa o in una sottocartella.",
     "empty": "vuota"

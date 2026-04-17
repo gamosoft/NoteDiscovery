@@ -104,6 +104,9 @@
     "prompt_name_in_folder": "Создать подпапку в «{{folder}}».\nВведите название:",
     "prompt_name_with_path": "Создать новую папку.\nВведите путь (например, «Проекты» или «Работа/2025»):",
     "prompt_rename": "Переименовать папку «{{name}}» в:",
+    "rename_modal_title": "Переименовать папку",
+    "rename_modal_description": "Введите новое имя для папки «{{name}}».",
+    "rename_modal_label": "Новое имя",
     "invalid_name": "Недопустимое название папки.",
     "cannot_move_into_self": "Нельзя переместить папку в себя или в подпапку.",
     "empty": "пусто"

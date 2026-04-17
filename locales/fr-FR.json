@@ -105,6 +105,9 @@
     "prompt_name_in_folder": "Créer un sous-dossier dans \"{{folder}}\".\nEntrez le nom du dossier :",
     "prompt_name_with_path": "Créer un nouveau dossier.\nEntrez le chemin du dossier (ex. \"Projets\" ou \"Travail/2025\") :",
     "prompt_rename": "Renommer le dossier \"{{name}}\" en :",
+    "rename_modal_title": "Renommer le dossier",
+    "rename_modal_description": "Saisissez le nouveau nom du dossier « {{name}} ».",
+    "rename_modal_label": "Nouveau nom",
     "invalid_name": "Nom de dossier invalide.",
     "cannot_move_into_self": "Impossible de déplacer un dossier dans lui-même ou dans un sous-dossier.",
     "empty": "vide"

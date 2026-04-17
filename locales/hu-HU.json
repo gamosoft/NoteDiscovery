@@ -105,6 +105,9 @@
     "prompt_name_in_folder": "Almappa létrehozása a \"{{folder}}\" mappában.\nAdd meg a mappa nevét:",
     "prompt_name_with_path": "Új mappa létrehozása.\nAdd meg a mappa elérési útját (pl. \"Projektek\" vagy \"Munka/2026\"):",
     "prompt_rename": "Nevezd át a(z) \"{{name}}\" mappát:",
+    "rename_modal_title": "Mappa átnevezése",
+    "rename_modal_description": "Add meg a(z) „{{name}}” mappa új nevét.",
+    "rename_modal_label": "Új név",
     "invalid_name": "Érvénytelen mappanév.",
     "cannot_move_into_self": "A mappa nem mozgatható saját magába vagy bármelyik almappájába.",
     "empty": "üres"

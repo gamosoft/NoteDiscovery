@@ -299,6 +299,18 @@ function noteApp() {
         selectedTemplate: '',
         newTemplateNoteName: '',
         
+        // New note / folder name modal (replaces window.prompt)
+        showCreateNameModal: false,
+        createNameModalKind: 'note',
+        createNameModalTargetFolder: '',
+        createNameModalInput: '',
+        
+        // Rename folder modal (replaces window.prompt)
+        showRenameFolderModal: false,
+        renameFolderPath: '',
+        renameFolderOldName: '',
+        renameFolderInput: '',
+        
         // Share state
         showShareModal: false,
         shareInfo: null,
@@ -3342,57 +3354,131 @@ function noteApp() {
         },
         
         async createNote(folderPath = null, directPath = null) {
-            let notePath;
-            
             if (directPath) {
-                // Direct path provided (e.g., from wiki link) - skip prompting
-                notePath = directPath.endsWith('.md') ? directPath : `${directPath}.md`;
-            } else {
-                // Use provided folder path, or dropdown target folder context, or homepage folder
-                // Note: Check dropdownTargetFolder !== null to distinguish between '' (root) and not set
-                let targetFolder;
-                if (folderPath !== null) {
-                    targetFolder = folderPath;
-                } else if (this.dropdownTargetFolder !== null && this.dropdownTargetFolder !== undefined) {
-                    targetFolder = this.dropdownTargetFolder; // Can be '' for root or a folder path
-                } else {
-                    targetFolder = this.selectedHomepageFolder || '';
+                const notePath = directPath.endsWith('.md') ? directPath : `${directPath}.md`;
+                const existingNote = this.notes.find(note => note.path === notePath);
+                if (existingNote) {
+                    this.toast(this.t('notes.already_exists', { name: notePath }), { type: 'warning' });
+                    return;
                 }
-                this.closeDropdown();
-                
-                const promptText = targetFolder 
-                    ? this.t('notes.prompt_name_in_folder', { folder: targetFolder })
+                await this._finalizeCreateNote(notePath);
+                return;
+            }
+            const explicitTarget = folderPath !== null && folderPath !== undefined ? folderPath : undefined;
+            this.openCreateNameModal('note', explicitTarget);
+        },
+        
+        /**
+         * @param {'note'|'folder'} kind
+         * @param {string|undefined} explicitTargetFolder - if set, use as parent folder context ("" = root)
+         */
+        openCreateNameModal(kind, explicitTargetFolder = undefined) {
+            let targetFolder;
+            if (explicitTargetFolder !== undefined) {
+                targetFolder = explicitTargetFolder;
+            } else if (this.dropdownTargetFolder !== null && this.dropdownTargetFolder !== undefined) {
+                targetFolder = this.dropdownTargetFolder;
+            } else {
+                targetFolder = this.selectedHomepageFolder || '';
+            }
+            this.closeDropdown();
+            this.mobileSidebarOpen = false;
+            this.createNameModalKind = kind;
+            this.createNameModalTargetFolder = targetFolder;
+            this.createNameModalInput = '';
+            this.showCreateNameModal = true;
+            this.$nextTick(() => {
+                const el = document.getElementById('create-name-modal-input');
+                if (el) {
+                    el.focus();
+                    el.select();
+                }
+            });
+        },
+        
+        closeCreateNameModal() {
+            this.showCreateNameModal = false;
+            this.createNameModalInput = '';
+        },
+        
+        cancelCreateNameModal() {
+            this.closeCreateNameModal();
+        },
+        
+        createNameModalHelpText() {
+            const tf = this.createNameModalTargetFolder;
+            if (this.createNameModalKind === 'note') {
+                return tf
+                    ? this.t('notes.prompt_name_in_folder', { folder: tf })
                     : this.t('notes.prompt_name_with_path');
-                
-                const noteName = prompt(promptText);
-                if (!noteName) return;
-                
-                // Validate the name/path (may contain / for paths when no target folder)
-                const validation = targetFolder 
-                    ? FilenameValidator.validateFilename(noteName)
-                    : FilenameValidator.validatePath(noteName);
-                
+            }
+            return tf
+                ? this.t('folders.prompt_name_in_folder', { folder: tf })
+                : this.t('folders.prompt_name_with_path');
+        },
+        
+        createNameModalTitle() {
+            return this.createNameModalKind === 'note'
+                ? this.t('sidebar.new_note')
+                : this.t('sidebar.new_folder');
+        },
+        
+        createNameModalLabel() {
+            return this.createNameModalKind === 'note'
+                ? this.t('templates.note_name')
+                : this.t('folders.prompt_name');
+        },
+        
+        async submitCreateNameModal() {
+            const rawName = (this.createNameModalInput || '').trim();
+            if (!rawName) {
+                this.closeCreateNameModal();
+                return;
+            }
+            const targetFolder = this.createNameModalTargetFolder;
+            const kind = this.createNameModalKind;
+            
+            if (kind === 'note') {
+                const validation = targetFolder
+                    ? FilenameValidator.validateFilename(rawName)
+                    : FilenameValidator.validatePath(rawName);
                 if (!validation.valid) {
                     this.toast(this.getValidationErrorMessage(validation, 'note'), { type: 'warning' });
                     return;
                 }
-                
                 const validatedName = validation.sanitized;
-                
-                if (targetFolder) {
-                    notePath = `${targetFolder}/${validatedName}.md`;
-                } else {
-                    notePath = validatedName.endsWith('.md') ? validatedName : `${validatedName}.md`;
+                const notePath = targetFolder
+                    ? `${targetFolder}/${validatedName}.md`
+                    : (validatedName.endsWith('.md') ? validatedName : `${validatedName}.md`);
+                const existingNote = this.notes.find(note => note.path === notePath);
+                if (existingNote) {
+                    this.toast(this.t('notes.already_exists', { name: notePath }), { type: 'warning' });
+                    return;
                 }
-            }
-            
-            // CRITICAL: Check if note already exists (applies to both prompt and direct path)
-            const existingNote = this.notes.find(note => note.path === notePath);
-            if (existingNote) {
-                this.toast(this.t('notes.already_exists', { name: notePath }), { type: 'warning' });
+                const ok = await this._finalizeCreateNote(notePath);
+                if (ok) this.closeCreateNameModal();
                 return;
             }
             
+            const validation = targetFolder
+                ? FilenameValidator.validateFilename(rawName)
+                : FilenameValidator.validatePath(rawName);
+            if (!validation.valid) {
+                this.toast(this.getValidationErrorMessage(validation, 'folder'), { type: 'warning' });
+                return;
+            }
+            const validatedName = validation.sanitized;
+            const folderPath = targetFolder ? `${targetFolder}/${validatedName}` : validatedName;
+            const existingFolder = this.allFolders.find(folder => folder === folderPath);
+            if (existingFolder) {
+                this.toast(this.t('folders.already_exists', { name: validatedName }), { type: 'warning' });
+                return;
+            }
+            const ok = await this._finalizeCreateFolder(folderPath, targetFolder);
+            if (ok) this.closeCreateNameModal();
+        },
+        
+        async _finalizeCreateNote(notePath) {
             try {
                 const response = await fetch(`/api/notes/${notePath}`, {
                     method: 'POST',
@@ -3401,60 +3487,22 @@ function noteApp() {
                 });
                 
                 if (response.ok) {
-                    // Expand parent folder if note is in a subfolder
                     const folderPart = notePath.includes('/') ? notePath.substring(0, notePath.lastIndexOf('/')) : '';
                     if (folderPart) this.expandedFolders.add(folderPart);
                     await this.loadNotes();
                     await this.loadNote(notePath);
                     this.focusEditorForNewNote();
-                } else {
-                    ErrorHandler.handle('create note', new Error('Server returned error'));
+                    return true;
                 }
+                ErrorHandler.handle('create note', new Error('Server returned error'));
+                return false;
             } catch (error) {
                 ErrorHandler.handle('create note', error);
+                return false;
             }
         },
         
-        async createFolder(parentPath = null) {
-            // Use provided parent path, or dropdown target folder context, or homepage folder
-            // Note: Check dropdownTargetFolder !== null to distinguish between '' (root) and not set
-            let targetFolder;
-            if (parentPath !== null) {
-                targetFolder = parentPath;
-            } else if (this.dropdownTargetFolder !== null && this.dropdownTargetFolder !== undefined) {
-                targetFolder = this.dropdownTargetFolder; // Can be '' for root or a folder path
-            } else {
-                targetFolder = this.selectedHomepageFolder || '';
-            }
-            this.closeDropdown();
-            
-            const promptText = targetFolder 
-                ? this.t('folders.prompt_name_in_folder', { folder: targetFolder })
-                : this.t('folders.prompt_name_with_path');
-            
-            const folderName = prompt(promptText);
-            if (!folderName) return;
-            
-            // Validate the name/path (may contain / for paths when no target folder)
-            const validation = targetFolder 
-                ? FilenameValidator.validateFilename(folderName)
-                : FilenameValidator.validatePath(folderName);
-            
-            if (!validation.valid) {
-                this.toast(this.getValidationErrorMessage(validation, 'folder'), { type: 'warning' });
-                return;
-            }
-            
-            const validatedName = validation.sanitized;
-            const folderPath = targetFolder ? `${targetFolder}/${validatedName}` : validatedName;
-            
-            // Check if folder already exists
-            const existingFolder = this.allFolders.find(folder => folder === folderPath);
-            if (existingFolder) {
-                this.toast(this.t('folders.already_exists', { name: validatedName }), { type: 'warning' });
-                return;
-            }
-            
+        async _finalizeCreateFolder(folderPath, targetFolder) {
             try {
                 const response = await fetch('/api/folders', {
                     method: 'POST',
@@ -3468,23 +3516,57 @@ function noteApp() {
                     }
                     this.expandedFolders.add(folderPath);
                     await this.loadNotes();
-                    
-                    // Navigate to the newly created folder on the homepage
                     this.goToHomepageFolder(folderPath);
-                } else {
-                    ErrorHandler.handle('create folder', new Error('Server returned error'));
+                    return true;
                 }
+                ErrorHandler.handle('create folder', new Error('Server returned error'));
+                return false;
             } catch (error) {
                 ErrorHandler.handle('create folder', error);
+                return false;
             }
         },
         
-        // Rename a folder
-        async renameFolder(folderPath, currentName) {
-            const newName = prompt(this.t('folders.prompt_rename', { name: currentName }), currentName);
-            if (!newName || newName === currentName) return;
+        async createFolder(parentPath = null) {
+            const explicitTarget = parentPath !== null && parentPath !== undefined ? parentPath : undefined;
+            this.openCreateNameModal('folder', explicitTarget);
+        },
+        
+        renameFolder(folderPath, currentName) {
+            this.renameFolderPath = folderPath;
+            this.renameFolderOldName = currentName;
+            this.renameFolderInput = currentName;
+            this.showRenameFolderModal = true;
+            this.mobileSidebarOpen = false;
+            this.$nextTick(() => {
+                const el = document.getElementById('rename-folder-modal-input');
+                if (el) {
+                    el.focus();
+                    el.select();
+                }
+            });
+        },
+        
+        closeRenameFolderModal() {
+            this.showRenameFolderModal = false;
+            this.renameFolderPath = '';
+            this.renameFolderOldName = '';
+            this.renameFolderInput = '';
+        },
+        
+        cancelRenameFolderModal() {
+            this.closeRenameFolderModal();
+        },
+        
+        async submitRenameFolderModal() {
+            const folderPath = this.renameFolderPath;
+            const currentName = this.renameFolderOldName;
+            const newName = (this.renameFolderInput || '').trim();
+            if (!newName || newName === currentName) {
+                this.closeRenameFolderModal();
+                return;
+            }
             
-            // Validate the new name (single segment, no path separators)
             const validation = FilenameValidator.validateFilename(newName);
             if (!validation.valid) {
                 this.toast(this.getValidationErrorMessage(validation, 'folder'), { type: 'warning' });
@@ -3492,30 +3574,31 @@ function noteApp() {
             }
             
             const validatedName = validation.sanitized;
-            
-            // Calculate new path
             const pathParts = folderPath.split('/');
             pathParts[pathParts.length - 1] = validatedName;
             const newPath = pathParts.join('/');
             
+            const ok = await this._finalizeRenameFolder(folderPath, newPath);
+            if (ok) this.closeRenameFolderModal();
+        },
+        
+        async _finalizeRenameFolder(folderPath, newPath) {
             try {
                 const response = await fetch('/api/folders/rename', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
+                    body: JSON.stringify({
                         oldPath: folderPath,
                         newPath: newPath
                     })
                 });
                 
                 if (response.ok) {
-                    // Update expanded folders state
                     if (this.expandedFolders.has(folderPath)) {
                         this.expandedFolders.delete(folderPath);
                         this.expandedFolders.add(newPath);
                     }
                     
-                    // Update favorites that were in the renamed folder
                     const folderPrefix = folderPath + '/';
                     const newFolderPrefix = newPath + '/';
                     const newFavorites = this.favorites.map(f => {
@@ -3524,24 +3607,24 @@ function noteApp() {
                         }
                         return f;
                     });
-                    // Check if anything changed
                     if (JSON.stringify(newFavorites) !== JSON.stringify(this.favorites)) {
                         this.favorites = newFavorites;
                         this.favoritesSet = new Set(newFavorites);
                         this.saveFavorites();
                     }
                     
-                    // Update current note path if it's in the renamed folder
                     if (this.currentNote && this.currentNote.startsWith(folderPrefix)) {
                         this.currentNote = this.currentNote.replace(folderPrefix, newFolderPrefix);
                     }
                     
                     await this.loadNotes();
-                } else {
-                    ErrorHandler.handle('rename folder', new Error('Server returned error'));
+                    return true;
                 }
+                ErrorHandler.handle('rename folder', new Error('Server returned error'));
+                return false;
             } catch (error) {
                 ErrorHandler.handle('rename folder', error);
+                return false;
             }
         },
         

@@ -104,6 +104,9 @@
     "prompt_name_in_folder": "「{{folder}}」にサブフォルダを作成します。\nフォルダ名を入力:",
     "prompt_name_with_path": "新規フォルダを作成します。\nフォルダパスを入力（例：「プロジェクト」または「仕事/2025」）:",
     "prompt_rename": "フォルダ「{{name}}」の新しい名前:",
+    "rename_modal_title": "フォルダの名前を変更",
+    "rename_modal_description": "フォルダ「{{name}}」の新しい名前を入力してください。",
+    "rename_modal_label": "新しい名前",
     "invalid_name": "無効なフォルダ名です。",
     "cannot_move_into_self": "フォルダを自身またはそのサブフォルダに移動できません。",
     "empty": "空"

@@ -105,6 +105,9 @@
     "prompt_name_in_folder": "Unterordner in \"{{folder}}\" erstellen.\nOrdnername eingeben:",
     "prompt_name_with_path": "Neuen Ordner erstellen.\nOrdnerpfad eingeben (z.B. \"Projekte\" oder \"Arbeit/2025\"):",
     "prompt_rename": "Ordner \"{{name}}\" umbenennen zu:",
+    "rename_modal_title": "Ordner umbenennen",
+    "rename_modal_description": "Neuen Namen für den Ordner „{{name}}“ eingeben.",
+    "rename_modal_label": "Neuer Name",
     "invalid_name": "Ungültiger Ordnername.",
     "cannot_move_into_self": "Ordner kann nicht in sich selbst oder einen Unterordner verschoben werden.",
     "empty": "leer"

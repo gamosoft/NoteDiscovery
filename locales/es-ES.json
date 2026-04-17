@@ -105,6 +105,9 @@
     "prompt_name_in_folder": "Crear subcarpeta en \"{{folder}}\".\nIntroduce el nombre de la carpeta:",
     "prompt_name_with_path": "Crear nueva carpeta.\nIntroduce la ruta de la carpeta (ej., \"Proyectos\" o \"Trabajo/2025\"):",
     "prompt_rename": "Renombrar carpeta \"{{name}}\" a:",
+    "rename_modal_title": "Renombrar carpeta",
+    "rename_modal_description": "Introduce el nuevo nombre para la carpeta \"{{name}}\".",
+    "rename_modal_label": "Nombre nuevo",
     "invalid_name": "Nombre de carpeta inválido.",
     "cannot_move_into_self": "No se puede mover una carpeta dentro de sí misma o de una subcarpeta.",
     "empty": "vacía"
