@@ -64,20 +64,25 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 - 🧮 **Math Support** - LaTeX/MathJax for beautiful equations
 - 📄 **HTML Export & Print** - Export notes as standalone HTML or print
 - 🕸️ **Graph View** - Interactive visualization of connected notes
+- ✏️ **Drawing editor** - In-app canvas for sketches and annotations saved as `drawing-*.png` — **see the next section**
 - ⭐ **Favorites** - Star your most-used notes for instant access
 - 📑 **Outline Panel** - Navigate headings with click-to-jump TOC
 - 🤖 **AI Assistant Ready** - MCP integration for Claude, Cursor & more
 
 ## ✏️ Drawing editor
 
-NoteDiscovery isn’t only markdown—you can **sketch and annotate** without leaving the app. Create a **New drawing** from the sidebar; the app saves a `drawing-{timestamp}.png` next to your notes, same as any other file in your vault.
+NoteDiscovery isn’t only markdown—you can **sketch, diagram, and mark up ideas** without a separate app. Use **+ New → New drawing** in the sidebar: the app creates a **`drawing-{timestamp}.png`** in the folder you choose, next to your `.md` files. Open it from the tree like any image; files named `drawing-*.png` open in the **drawing viewer** instead of the static image viewer.
 
-- **Real tools** — Freehand pencil, straight lines, rectangles, ellipses, **eraser** (background-color stroke), **eyedropper** to sample colors from the canvas, and **clear** to replace the image with a blank canvas (with confirmation).
-- **Comfortable controls** — Color picker and stroke width on the drawing toolbar; **undo/redo** for strokes (same shortcuts as the editor when a drawing is open).
-- **Saves like everything else** — **Autosave** after you finish a stroke, plus **Ctrl+S** / **Cmd+S** to flush the PNG to disk immediately.
-- **Plain PNG** — Drawings are normal images on disk, so previews, export, and backups work the same as for screenshots or diagrams.
+**What you get**
 
-> 📖 **Full details:** [DRAWING.md](documentation/DRAWING.md) · Listed in [FEATURES.md](documentation/FEATURES.md)
+| | |
+|--|--|
+| **Tools** | Pencil, line, rectangle, ellipse, **eraser** (paints with the canvas background), **eyedropper** (sample color from the pixel under the cursor), **clear** (replace with a blank white image—confirmed, then saved). |
+| **Toolbar** | Color picker and stroke width next to the tools; main bar still has **undo/redo** for strokes when the drawing is focused. |
+| **Saving** | **Autosave** shortly after you release the pointer from a stroke; **Ctrl+S** / **Cmd+S** saves the PNG immediately (same key as saving a note). |
+| **On disk** | Ordinary PNG files—embed in notes with `![]()`, version in Git, back up with the rest of your vault. |
+
+> 📖 **Reference:** [documentation/DRAWING.md](documentation/DRAWING.md) · Also covered in [FEATURES.md](documentation/FEATURES.md)
 
 ## 🤖 AI-Powered Note Management
 
