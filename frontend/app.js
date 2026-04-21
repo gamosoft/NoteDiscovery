@@ -3218,14 +3218,16 @@ function noteApp() {
                     throw new Error(detail || res.statusText);
                 }
                 await this.loadNotes();
-                if (this._drawingObjectURL) {
-                    URL.revokeObjectURL(this._drawingObjectURL);
-                    this._drawingObjectURL = null;
-                }
-                this.drawingOps = [];
-                this.drawingRedoStack = [];
-                await this.initDrawingViewer();
+                // Manual save: flatten to PNG on disk and reset canvas state from file (clears stroke undo/redo).
+                // Autosave: only persist the PNG; keep drawingOps / redo stacks like note undo after save.
                 if (!silent) {
+                    if (this._drawingObjectURL) {
+                        URL.revokeObjectURL(this._drawingObjectURL);
+                        this._drawingObjectURL = null;
+                    }
+                    this.drawingOps = [];
+                    this.drawingRedoStack = [];
+                    await this.initDrawingViewer();
                     this.toast(this.t('drawing.saved'), { type: 'success' });
                 } else {
                     this.lastSaved = true;
