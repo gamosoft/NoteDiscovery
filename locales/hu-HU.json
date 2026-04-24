@@ -221,8 +221,8 @@
     "tool_eyedropper": "Pipetta — szín mintavétele a vászonról",
     "clear": "Törlés",
     "clear_hint": "Üres képre cserélés",
-    "clear_title": "Üres vászonra cserélés?",
-    "clear_confirm": "A mentett PNG és az ebben a munkamenetben rajzolt vonalak fehér üres képre cserélődnek. Ez nem vonható vissza."
+    "clear_title": "Lecseréled üres vászonra?",
+    "clear_confirm": "A jelenlegi PNG és ebben a munkamenetben lévő összes rajz törlődik, és egy üres, fehér képpel lesz helyettesítve. Ez a művelet nem vonható vissza."
   },
   "media": {
     "confirm_delete": "Biztos törlöd a következőt:  \"{{name}}\"?",
