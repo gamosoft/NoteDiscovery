@@ -5,6 +5,17 @@ const CONFIG = {
     AUTOSAVE_DELAY: 1000,              // ms - Debounce before note save (autoSave) and drawing PNG autosave (_drawingScheduleAutosave)
     /** Must match drawingRedraw() fill and eraser stroke color (opaque “whiteboard”). */
     DRAWING_BACKGROUND: '#ffffff',
+    /**
+     * Drawing document size (intrinsic resolution). The display canvas may render
+     * smaller on small screens, but pointer events, ops and the saved PNG always
+     * live in this fixed coordinate space. A future "new drawing" dialog can
+     * override the dimensions per drawing without any architectural change.
+     */
+    DRAWING_DEFAULT_DOC_W: 1600,
+    DRAWING_DEFAULT_DOC_H: 1000,
+    /** Hard bounds applied when (re)loading or creating a drawing. */
+    DRAWING_MIN_DOC_DIM: 64,
+    DRAWING_MAX_DOC_DIM: 4096,
     SEARCH_DEBOUNCE_DELAY: 500,        // ms - Delay before running note search while typing
     SAVE_INDICATOR_DURATION: 2000,     // ms - How long to show "saved" indicator
     SCROLL_SYNC_DELAY: 50,             // ms - Delay to prevent scroll sync interference
@@ -502,11 +513,17 @@ function noteApp() {
         currentMedia: '',  // Path to current media file (kept as 'currentMedia' for compatibility)
         currentMediaType: 'image',  // 'image', 'audio', 'video', 'document', 'drawing'
         
-        // Drawing canvas (drawing-*.png only) — ops are session-only until Save flattens to PNG
+        // Drawing canvas (drawing-*.png only) — ops are session-only until Save flattens to PNG.
+        // Coordinates in drawingOps[] are stored in DOCUMENT space (drawingDocW × drawingDocH),
+        // not display CSS pixels, so resizing the editor pane never moves strokes and exported
+        // PNGs are byte-deterministic regardless of screen size or device pixel ratio.
         drawingTool: 'freehand',
         drawingColor: '#1a1a1a',
         drawingLineWidth: 4,
         drawingOps: [],
+        /** Intrinsic drawing dimensions (in document px). Set when a drawing is created or loaded. */
+        drawingDocW: 1600,
+        drawingDocH: 1000,
         drawingRedoStack: [],
         drawingDraft: null,
         drawingIsPointerDown: false,
@@ -2811,16 +2828,24 @@ function noteApp() {
          * Create a blank drawing PNG and open it for editing.
          * Attachment folder matches "New note" / "New folder" from the same + menu (root vs folder row vs homepage folder).
          */
-        async createNewDrawing() {
+        /**
+         * Create a brand-new drawing PNG and open it in the editor.
+         * @param {{docW?: number, docH?: number}} [opts]
+         *   Optional intrinsic dimensions in document pixels. Phase-2: a "New drawing"
+         *   dialog (presets, A4, custom) only needs to pass these values here — no other
+         *   plumbing is required because every downstream function reads doc size from
+         *   either the loaded PNG or the in-memory drawingDocW/drawingDocH fields.
+         */
+        async createNewDrawing(opts = {}) {
             const targetFolder = this.inferredNewItemTargetFolder();
             this.closeDropdown();
-            const w = 1200;
-            const h = 675;
+            const w = this._drawingClampDim(opts.docW, CONFIG.DRAWING_DEFAULT_DOC_W);
+            const h = this._drawingClampDim(opts.docH, CONFIG.DRAWING_DEFAULT_DOC_H);
             const canvas = document.createElement('canvas');
             canvas.width = w;
             canvas.height = h;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = CONFIG.DRAWING_BACKGROUND;
             ctx.fillRect(0, 0, w, h);
             let blob;
             try {
@@ -2847,16 +2872,34 @@ function noteApp() {
         _drawingEncodeMediaPath() {
             return this.currentMedia.split('/').map((s) => encodeURIComponent(s)).join('/');
         },
-        
+
+        /**
+         * Clamp a dimension to the [MIN, MAX] document-px range. Falls back to `fallback`
+         * when value is missing, non-finite or non-positive. Always returns an integer.
+         */
+        _drawingClampDim(value, fallback) {
+            const n = Number(value);
+            if (!Number.isFinite(n) || n <= 0) return Math.round(fallback);
+            const clamped = Math.min(
+                CONFIG.DRAWING_MAX_DOC_DIM,
+                Math.max(CONFIG.DRAWING_MIN_DOC_DIM, n)
+            );
+            return Math.round(clamped);
+        },
+
+        /**
+         * Convert a pointer event to DOCUMENT-space coordinates (0..drawingDocW, 0..drawingDocH).
+         * The mapping is independent of CSS size, DPR and zoom — strokes stored from this
+         * function render identically on any device and round-trip cleanly through PNG export.
+         */
         _drawingCanvasCoords(event) {
             const canvas = this._drawingCanvasEl;
             if (!canvas) return { x: 0, y: 0 };
             const rect = canvas.getBoundingClientRect();
-            const scaleX = this._drawingCssW / rect.width;
-            const scaleY = this._drawingCssH / rect.height;
+            if (rect.width <= 0 || rect.height <= 0) return { x: 0, y: 0 };
             return {
-                x: (event.clientX - rect.left) * scaleX,
-                y: (event.clientY - rect.top) * scaleY,
+                x: ((event.clientX - rect.left) / rect.width)  * this.drawingDocW,
+                y: ((event.clientY - rect.top)  / rect.height) * this.drawingDocH,
             };
         },
         
@@ -2907,19 +2950,29 @@ function noteApp() {
             ctx.restore();
         },
         
+        /**
+         * Repaint the visible canvas. All drawing math runs in DOCUMENT space; a single
+         * setTransform call maps (docW, docH) → device pixels by combining the doc→display
+         * scale with the device pixel ratio. _drawingDrawOp itself is space-agnostic.
+         */
         drawingRedraw() {
             const canvas = this._drawingCanvasEl;
             const ctx = this._drawingCtx;
             if (!canvas || !ctx) return;
-            const w = this._drawingCssW;
-            const h = this._drawingCssH;
-            const dpr = this._drawingDpr;
-            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-            ctx.clearRect(0, 0, w, h);
+            const docW = this.drawingDocW;
+            const docH = this.drawingDocH;
+            const cssW = this._drawingCssW;
+            const cssH = this._drawingCssH;
+            const dpr = this._drawingDpr || 1;
+            if (!docW || !docH || !cssW || !cssH) return;
+            const sx = (cssW / docW) * dpr;
+            const sy = (cssH / docH) * dpr;
+            ctx.setTransform(sx, 0, 0, sy, 0, 0);
+            ctx.clearRect(0, 0, docW, docH);
             ctx.fillStyle = CONFIG.DRAWING_BACKGROUND;
-            ctx.fillRect(0, 0, w, h);
+            ctx.fillRect(0, 0, docW, docH);
             if (this._drawingBaseImage && this._drawingBaseImage.complete) {
-                ctx.drawImage(this._drawingBaseImage, 0, 0, w, h);
+                ctx.drawImage(this._drawingBaseImage, 0, 0, docW, docH);
             }
             for (const op of this.drawingOps) {
                 this._drawingDrawOp(ctx, op);
@@ -2982,24 +3035,52 @@ function noteApp() {
             this._drawingAutosaveTimeout = setTimeout(attemptSave, CONFIG.AUTOSAVE_DELAY);
         },
         
-        /** Size canvas to drawingCanvasWrap and redraw (fills available pane). */
+        /**
+         * Size the visible canvas as a letterbox of (drawingDocW × drawingDocH) inside the
+         * available wrap, preserving aspect ratio. The display canvas may be smaller than
+         * the wrap on narrow viewports — that is intentional. The document space stays
+         * fixed; only the on-screen viewport scales.
+         */
         _drawingLayoutCanvas() {
             const wrap = this.$refs.drawingCanvasWrap;
             const canvas = this.$refs.drawingCanvas;
             if (!wrap || !canvas || this.currentMediaType !== 'drawing') return;
-            let cssW = wrap.clientWidth;
-            let cssH = wrap.clientHeight;
-            if (cssW < 32) cssW = Math.max(320, wrap.parentElement ? wrap.parentElement.clientWidth : 320);
-            if (cssH < 32) {
+
+            // Available area (with sane fallbacks for the brief moment before layout settles).
+            let availW = wrap.clientWidth;
+            let availH = wrap.clientHeight;
+            if (availW < 32) {
+                availW = Math.max(320, wrap.parentElement ? wrap.parentElement.clientWidth : 320);
+            }
+            if (availH < 32) {
                 const col = wrap.closest('.flex-1.flex.flex-col') || wrap.closest('.flex-1');
                 const h = col ? col.clientHeight : 0;
-                cssH = h > 64 ? h : Math.max(240, Math.floor((cssW || 400) * 0.5));
+                availH = h > 64 ? h : Math.max(240, Math.floor((availW || 400) * 0.5));
             }
+
+            // Letterbox the document into the available area.
+            const docW = this.drawingDocW;
+            const docH = this.drawingDocH;
+            const docAspect = docW / docH;
+            const wrapAspect = availW / availH;
+            let cssW;
+            let cssH;
+            if (wrapAspect > docAspect) {
+                cssH = availH;
+                cssW = cssH * docAspect;
+            } else {
+                cssW = availW;
+                cssH = cssW / docAspect;
+            }
+
             const dpr = window.devicePixelRatio || 1;
-            canvas.style.width = `${cssW}px`;
+            canvas.style.width  = `${cssW}px`;
             canvas.style.height = `${cssH}px`;
-            canvas.width = Math.round(cssW * dpr);
-            canvas.height = Math.round(cssH * dpr);
+            // Backing store in device pixels — capped above by availW/availH * dpr, so this
+            // never allocates more than the viewport could ever show. Cheap on every device.
+            canvas.width  = Math.max(1, Math.round(cssW * dpr));
+            canvas.height = Math.max(1, Math.round(cssH * dpr));
+
             this._drawingCanvasEl = canvas;
             this._drawingCssW = cssW;
             this._drawingCssH = cssH;
@@ -3007,7 +3088,6 @@ function noteApp() {
             if (!this._drawingCtx) {
                 this._drawingCtx = canvas.getContext('2d');
             }
-            this._drawingCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
             this.drawingRedraw();
         },
         
@@ -3029,6 +3109,11 @@ function noteApp() {
             this.drawingIsPointerDown = false;
             this._drawingBaseImage = null;
             this.drawingHasRasterFromFile = false;
+            // Reset to defaults; replaced by the loaded PNG's natural size below.
+            // For drawings created via createNewDrawing() the file already matches the defaults
+            // (or the size requested by a future "new drawing" dialog).
+            this.drawingDocW = CONFIG.DRAWING_DEFAULT_DOC_W;
+            this.drawingDocH = CONFIG.DRAWING_DEFAULT_DOC_H;
             this._drawingLoadToken = Symbol();
             const token = this._drawingLoadToken;
             
@@ -3064,6 +3149,10 @@ function noteApp() {
                 if (token !== this._drawingLoadToken) return;
                 this._drawingBaseImage = img;
                 this.drawingHasRasterFromFile = true;
+                // Adopt the PNG's intrinsic size as the document size for this drawing.
+                // The PNG itself is the source of truth — no sidecar metadata required.
+                this.drawingDocW = this._drawingClampDim(img.naturalWidth, CONFIG.DRAWING_DEFAULT_DOC_W);
+                this.drawingDocH = this._drawingClampDim(img.naturalHeight, CONFIG.DRAWING_DEFAULT_DOC_H);
                 this._drawingLayoutCanvas();
             } catch (e) {
                 if (token !== this._drawingLoadToken) return;
@@ -3081,16 +3170,22 @@ function noteApp() {
             return `#${h(r)}${h(g)}${h(b)}`;
         },
 
-        /** Sample visible canvas color at logical (css) coordinates; sets drawingColor. */
+        /**
+         * Sample visible canvas color under the pointer; sets drawingColor.
+         * Pointer coords come in document space; we map to device pixels via the canvas's
+         * actual backing store (which already includes both the doc→display scale and DPR).
+         */
         drawingSampleColor(e) {
             const canvas = this._drawingCanvasEl;
             const ctx = this._drawingCtx;
             if (!canvas || !ctx) return;
+            const docW = this.drawingDocW;
+            const docH = this.drawingDocH;
+            if (!docW || !docH) return;
             const { x, y } = this._drawingCanvasCoords(e);
             this.drawingRedraw();
-            const dpr = this._drawingDpr || 1;
-            let ix = Math.floor(x * dpr);
-            let iy = Math.floor(y * dpr);
+            let ix = Math.floor((x / docW) * canvas.width);
+            let iy = Math.floor((y / docH) * canvas.height);
             ix = Math.max(0, Math.min(ix, canvas.width - 1));
             iy = Math.max(0, Math.min(iy, canvas.height - 1));
             const pix = ctx.getImageData(ix, iy, 1, 1).data;
@@ -3283,15 +3378,32 @@ function noteApp() {
             this._drawingSaveInFlight = true;
             try {
                 this._drawingCancelAutosave();
-                const canvas = this._drawingCanvasEl;
-                const ctx = this._drawingCtx;
-                if (!canvas || !ctx) return;
                 this.drawingDraft = null;
                 this.drawingIsPointerDown = false;
+                // Render onto an off-screen canvas at the exact document size. This makes the
+                // exported PNG byte-deterministic across devices: same ops, same dimensions →
+                // identical bytes regardless of DPR, window size, or zoom level. The off-screen
+                // canvas is allocated per save (microseconds for 1600×1000) so dimension changes
+                // from a future "resize drawing" feature can never leak between saves.
+                const docW = this._drawingClampDim(this.drawingDocW, CONFIG.DRAWING_DEFAULT_DOC_W);
+                const docH = this._drawingClampDim(this.drawingDocH, CONFIG.DRAWING_DEFAULT_DOC_H);
+                const off = document.createElement('canvas');
+                off.width = docW;
+                off.height = docH;
+                const offCtx = off.getContext('2d');
+                if (!offCtx) return;
+                offCtx.fillStyle = CONFIG.DRAWING_BACKGROUND;
+                offCtx.fillRect(0, 0, docW, docH);
+                if (this._drawingBaseImage && this._drawingBaseImage.complete) {
+                    offCtx.drawImage(this._drawingBaseImage, 0, 0, docW, docH);
+                }
+                for (const op of this.drawingOps) {
+                    this._drawingDrawOp(offCtx, op);
+                }
+                // Keep the visible canvas in sync (cosmetic; UI doesn't have to wait for the upload).
                 this.drawingRedraw();
-                await new Promise((r) => requestAnimationFrame(r));
                 const blob = await new Promise((resolve, reject) => {
-                    canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
+                    off.toBlob((b) => (b ? resolve(b) : reject(new Error('toBlob failed'))), 'image/png');
                 });
                 this.isSaving = true;
                 try {
