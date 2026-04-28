@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/gamosoft-notediscovery-badge.png)](https://mseep.ai/app/gamosoft-notediscovery)
+
 # 📝 NoteDiscovery
 
 ![GitHub Stars](https://img.shields.io/github/stars/gamosoft/notediscovery?style=flat)
