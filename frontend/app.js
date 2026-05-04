@@ -162,6 +162,89 @@ const FilenameValidator = {
     }
 };
 
+/** Max leading spaces Shift+Tab removes per line when matching one “tab indent” vs \t inserts. */
+const EDITOR_TAB_OUTDENT_MAX_SPACES = 4;
+
+function editorIndentRemoveLen(lineSegment) {
+    if (!lineSegment || lineSegment.length === 0) return 0;
+    if (lineSegment.charCodeAt(0) === 9 /* \t */) return 1;
+    let i = 0;
+    const max = Math.min(EDITOR_TAB_OUTDENT_MAX_SPACES, lineSegment.length);
+    while (i < max && lineSegment[i] === ' ') i++;
+    return i;
+}
+
+function editorOutdentChunk(chunk) {
+    if (chunk.length === 0) return { newChunk: chunk, changed: false };
+    const lines = chunk.split('\n');
+    const newLines = lines.map((line) => {
+        const n = editorIndentRemoveLen(line);
+        return n > 0 ? line.slice(n) : line;
+    });
+    const newChunk = newLines.join('\n');
+    return { newChunk, changed: newChunk !== chunk };
+}
+
+function editorRemovedBeforeInChunk(chunk, rel) {
+    const target = Math.min(Math.max(rel, 0), chunk.length);
+    let off = 0;
+    let removed = 0;
+    while (off < chunk.length && off < target) {
+        const nl = chunk.indexOf('\n', off);
+        const lineEnd = nl === -1 ? chunk.length : nl;
+        const lineSlice = chunk.slice(off, lineEnd);
+        const n = editorIndentRemoveLen(lineSlice);
+        if (target >= lineEnd) {
+            removed += n;
+            if (nl === -1) break;
+            off = lineEnd + 1;
+        } else {
+            const col = target - off;
+            removed += Math.min(col, n);
+            break;
+        }
+    }
+    return removed;
+}
+
+function editorMapCaretAfterOutdent(chunk, newChunk, rel) {
+    const r = Math.max(0, rel);
+    if (r >= chunk.length) return newChunk.length;
+    return r - editorRemovedBeforeInChunk(chunk, r);
+}
+
+/**
+ * Shift+Tab outdent while “tab inserts tab” is enabled: remove one leading \t or up to 4 spaces per affected line.
+ * @returns {{ changed: boolean, text: string, selStart: number, selEnd: number }}
+ */
+function applyEditorOutdent(text, selStart, selEnd) {
+    const a = Math.min(selStart, selEnd);
+    const b = Math.max(selStart, selEnd);
+    const blockStart = text.lastIndexOf('\n', Math.max(0, a - 1)) + 1;
+    const ref = b > a ? b - 1 : a;
+    let blockEnd = text.indexOf('\n', ref);
+    if (blockEnd === -1) blockEnd = text.length;
+
+    const chunk = text.slice(blockStart, blockEnd);
+    const { newChunk, changed } = editorOutdentChunk(chunk);
+    if (!changed) {
+        return { changed: false, text, selStart, selEnd };
+    }
+
+    const newText = text.slice(0, blockStart) + newChunk + text.slice(blockEnd);
+    const anchorRel = a - blockStart;
+    const focusRel = b - blockStart;
+    const newA = blockStart + editorMapCaretAfterOutdent(chunk, newChunk, anchorRel);
+    const newB = blockStart + editorMapCaretAfterOutdent(chunk, newChunk, focusRel);
+
+    return {
+        changed: true,
+        text: newText,
+        selStart: Math.min(newA, newB),
+        selEnd: Math.max(newA, newB),
+    };
+}
+
 function noteApp() {
     return {
         // App state
@@ -947,14 +1030,28 @@ function noteApp() {
             localStorage.setItem('tabInsertsTab', this.tabInsertsTab);
         },
 
-        // Handle Tab key in editor (inserts tab if setting enabled)
+        // Handle Tab key in editor (inserts tab if setting enabled; Shift+Tab outdents matching lines)
         handleTabKey(event) {
             if (!this.tabInsertsTab) return;
-            
-            event.preventDefault();
+
             const textarea = event.target;
             const start = textarea.selectionStart;
             const end = textarea.selectionEnd;
+
+            if (event.shiftKey) {
+                const result = applyEditorOutdent(this.noteContent, start, end);
+                if (!result.changed) return;
+                event.preventDefault();
+                this.noteContent = result.text;
+                this.$nextTick(() => {
+                    textarea.selectionStart = result.selStart;
+                    textarea.selectionEnd = result.selEnd;
+                });
+                this.autoSave();
+                return;
+            }
+
+            event.preventDefault();
             this.noteContent = this.noteContent.substring(0, start) + '\t' + this.noteContent.substring(end);
             this.$nextTick(() => {
                 textarea.selectionStart = textarea.selectionEnd = start + 1;

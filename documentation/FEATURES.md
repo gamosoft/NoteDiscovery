@@ -33,7 +33,7 @@
 - **Rename anything** - Files and folders, instantly
 - **Visual tree view** - Expandable/collapsible navigation
 - **Hide system folders** - Toggle to hide `_attachments`, `_templates` and other underscore-prefixed folders from sidebar
-- **Tab inserts tab** - Toggle to make Tab key insert a tab character in the editor instead of changing focus
+- **Tab inserts tab** - Toggle so Tab inserts a literal tab in the editor instead of changing focus; when this is on, Shift+Tab outdents (one leading tab or up to four leading spaces per line in the selection), and if nothing is removed, Shift+Tab still moves focus backward
 - **List & quote continuation (Enter)** - At the end of a line, Enter continues blockquotes (`>`), bullets (`-` / `*` / `+`), ordered lists (`1.` / `1)`), and task lists (`- [ ]` / `- [x]`); pressing Enter again on an empty continued line exits the list or quote. Disabled inside fenced code blocks and when using Shift+Enter (plain newline)
 
 ### Export & Print
