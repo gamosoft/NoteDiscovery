@@ -9,6 +9,10 @@
 
 > Your Self-Hosted Knowledge Base
 
+🌐 **[Visit the official website](https://www.notediscovery.com)**
+
+🚀 **[Try the Live Demo](https://gamosoft-notediscovery-demo.hf.space)** — *Contents reset daily, for demonstration purposes only*
+
 ## What is NoteDiscovery?
 
 NoteDiscovery is a **lightweight, self-hosted note-taking application** that puts you in complete control of your knowledge base. Write, organize, and discover your notes with a beautiful, modern interface—all running on your own server.
@@ -23,20 +27,13 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 - **Teams** looking for a self-hosted alternative to commercial apps
 - **Anyone** who values simplicity, speed, and ownership
 
----
+
+## 💖 Thanks for using NoteDiscovery!
+If this project has been useful to you, consider supporting its development, it truly makes a difference!
 
 <p align="center">
-  <a href="https://www.notediscovery.com"><img src="docs/website-button.svg" alt="Official Website"></a>
-  &nbsp;&nbsp;
-  <a href="https://gamosoft-notediscovery-demo.hf.space"><img src="docs/demo-button.svg" alt="Try Live Demo"></a>
+  <a href="https://ko-fi.com/gamosoft" target="_blank" rel="noopener noreferrer"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Buy Me a Coffee at ko-fi.com"></a>
 </p>
-<p align="center">
-  <a href="https://www.pikapods.com/pods?run=notediscovery"><img src="https://www.pikapods.com/static/run-button.svg" alt="Run on PikaPods"></a>
-  &nbsp;&nbsp;
-  <a href="https://ko-fi.com/gamosoft"><img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Buy Me a Coffee at ko-fi.com"></a>
-</p>
-
----
 
 ## ✨ Why NoteDiscovery?
 
@@ -62,106 +59,110 @@ NoteDiscovery is a **lightweight, self-hosted note-taking application** that put
 - 📱 **Responsive** - Works on desktop, tablet, and mobile
 - 📂 **Simple Storage** - Plain markdown files in folders
 - 🧮 **Math Support** - LaTeX/MathJax for beautiful equations
-- 📄 **HTML Export & Print** - Export notes as standalone HTML or print
+- 📄 **HTML Export** - Share notes as standalone HTML files
 - 🕸️ **Graph View** - Interactive visualization of connected notes
-- ✏️ **Drawing editor** - In-app sketches as `drawing-*.png` next to your notes — see [documentation/DRAWING.md](documentation/DRAWING.md)
 - ⭐ **Favorites** - Star your most-used notes for instant access
 - 📑 **Outline Panel** - Navigate headings with click-to-jump TOC
-- 🤖 **AI Assistant Ready** - MCP integration for Claude, Cursor & more
-
-## 🤖 AI-Powered Note Management
-
-<p align="center">
-  <img src="https://img.shields.io/badge/MCP-Compatible-blueviolet?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCI+PHBhdGggZD0iTTEyIDJhMTAgMTAgMCAxIDAgMTAgMTBIMTJWMnoiLz48cGF0aCBkPSJNMjEuMTggOC44MmMtLjI4LS40LS43Mi0uODItMS4xOC0uODJoLTNjLS40NiAwLS45LjQyLTEuMTguODItLjI4LjQtLjMyLjk4LS4xMiAxLjQybDEuNSAzYy4yLjQ0LjY2LjcgMS4xMi43aDEuMzZjLjQ2IDAgLjkyLS4yNiAxLjEyLS43bDEuNS0zYy4yLS40NC4xNi0xLjAyLS4xMi0xLjQyeiIvPjwvc3ZnPg==" alt="MCP Compatible">
-  <img src="https://img.shields.io/badge/Works%20with-Claude-orange?style=for-the-badge" alt="Works with Claude">
-  <img src="https://img.shields.io/badge/Works%20with-Cursor-blue?style=for-the-badge" alt="Works with Cursor">
-</p>
-
-NoteDiscovery includes a built-in **Model Context Protocol (MCP)** server, letting AI assistants directly interact with your notes:
-
-| What AI Can Do | Example |
-|----------------|---------|
-| 🔍 **Search & Discover** | *"Find all my notes about Docker deployment"* |
-| 📝 **Create & Edit** | *"Create a meeting notes template for tomorrow"* |
-| 📁 **Organize** | *"Move all project notes to the archive folder"* |
-| 🏷️ **Tag & Categorize** | *"List all notes tagged with #urgent"* |
-| 📊 **Explore Connections** | *"Show me the knowledge graph of my notes"* |
-| ✍️ **Append Ideas** | *"Add this thought to my daily journal"* |
-
-**One-line setup** for Cursor, Claude Desktop, and other MCP-compatible tools:
-
-```json
-{
-  "mcpServers": {
-    "notediscovery": {
-      "command": "docker",
-      "args": ["run", "--rm", "-i", "-e", "NOTEDISCOVERY_URL=http://host.docker.internal:8000", "ghcr.io/gamosoft/notediscovery:latest", "python", "-m", "mcp_server"]
-    }
-  }
-}
-```
-
-> 💡 **See [MCP.md](documentation/MCP.md)** for complete setup instructions and all available tools.
 
 ## 🚀 Quick Start
 
-### Quick Setup
+### Running from GitHub Container Registry (Easiest & Recommended)
 
-**Linux/macOS:**
+Use the pre-built image directly from GHCR - no building required!
+
+> **💡 Tip**: Always use `ghcr.io/gamosoft/notediscovery:latest` to get the newest features and fixes.
+
+> **📁 Volume Mapping**: All required files are included in the Docker image.
+> - **Required**: `data` folder - for your personal notes (create an empty folder)
+> - **Optional**: `config.yaml` - created automatically with defaults if missing
+> - **Optional**: `themes` folder - defaults from image used if not mounted
+> - **Optional**: `locales` folder - defaults from image used if not mounted
+> - **Optional**: `plugins` folder (can be empty)
+> - **Optional**: `documentation` folder - for in-app docs
+> 
+> **Setup Options:**
+> 
+> 1. **Minimal** (just create your notes folder):
+>    ```bash
+>    mkdir -p data
+>    ```
+> 
+> 2. **Full Setup** (clone the repo for all themes, docs, and plugins):
+>    ```bash
+>    git clone https://github.com/gamosoft/notediscovery.git
+>    cd notediscovery
+>    ```
+> 🔐 Security Note: Authentication is **disabled by default** with password `admin`. 
+> - ✅ **Local/Testing**: Default credentials are fine
+> - ⚠ **Public Network**: Change password immediately - see [AUTHENTICATION.md](documentation/AUTHENTICATION.md)
+> - 🎭 **Demo Deployment**: Uses default "admin" password
+> 
+
+docker-compose -f docker-compose.ghcr.yml down
+```
+
+**Option 2: Docker Run (Alternative)**
+
 ```bash
-mkdir -p notediscovery/data && cd notediscovery
-docker run -d --name notediscovery -p 8000:8000 \
+# Linux/macOS
+docker run -d \
+  --name notediscovery \
+  -p 8000:8000 \
   -v $(pwd)/data:/app/data \
+  -v $(pwd)/plugins:/app/plugins \
+  -v $(pwd)/themes:/app/themes \
+  -v $(pwd)/locales:/app/locales \
+  -v $(pwd)/config.yaml:/app/config.yaml \
+  --restart unless-stopped \
   ghcr.io/gamosoft/notediscovery:latest
 ```
 
-**Windows (PowerShell):**
 ```powershell
-mkdir notediscovery\data; cd notediscovery
-docker run -d --name notediscovery -p 8000:8000 `
+# Windows PowerShell
+docker run -d `
+  --name notediscovery `
+  -p 8000:8000 `
   -v ${PWD}/data:/app/data `
+  -v ${PWD}/plugins:/app/plugins `
+  -v ${PWD}/themes:/app/themes `
+  -v ${PWD}/locales:/app/locales `
+  -v ${PWD}/config.yaml:/app/config.yaml `
+  --restart unless-stopped `
   ghcr.io/gamosoft/notediscovery:latest
 ```
 
-Open **http://localhost:8000** — done! 🎉  
+Access at http://localhost:8000
 
+**Why use the GHCR image?**
+- ✅ No build time - instant deployment
+- ✅ Always up-to-date with the latest release
+- ✅ Tested and verified builds
+- ✅ Smaller download with optimized layers
 
-> 💡 Your notes are saved in `./data/`. Themes, plugins, locales and default configuration values are included in the image.
+### Running with Docker Compose (Recommended for Development)
 
-### Using Docker Compose
+Docker ensures consistent environment and easy deployment:
 
-Two docker-compose files are provided:
-
-| File | Use Case |
-|------|----------|
-| `docker-compose.ghcr.yml` | **Recommended** - Uses pre-built image from GitHub Container Registry |
-| `docker-compose.yml` | For development - Builds from local source |
-
-**Option 1: Pre-built image (fastest)**
-
-Linux/macOS:
 ```bash
-mkdir -p notediscovery/data && cd notediscovery
-curl -O https://raw.githubusercontent.com/gamosoft/notediscovery/main/docker-compose.ghcr.yml
-docker-compose -f docker-compose.ghcr.yml up -d
-```
-
-Windows (PowerShell):
-```powershell
-mkdir notediscovery\data; cd notediscovery
-Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/docker-compose.ghcr.yml -OutFile docker-compose.ghcr.yml
-docker-compose -f docker-compose.ghcr.yml up -d
-```
-
-**Option 2: Build from source (for development)**
-```bash
+# Clone the repository
 git clone https://github.com/gamosoft/notediscovery.git
 cd notediscovery
+
+# Start with Docker Compose
 docker-compose up -d
+
+# Access at http://localhost:8000
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
 ```
 
-See [Advanced Docker Setup](#advanced-docker-setup) for volume details.
-
+**Requirements:**
+- Docker
+- Docker Compose
 
 ### Running Locally (Without Docker)
 
@@ -185,55 +186,11 @@ python run.py
 - Python 3.8 or higher
 - pip (Python package manager)
 
-#### Using Virtual Environments (Recommended for Arch/Fedora/Ubuntu 23.04+)
-
-Modern Linux distributions enforce [PEP 668](https://peps.python.org/pep-0668/), which prevents system-wide pip installs. Use a virtual environment instead:
-
-```bash
-# Clone the repository
-git clone https://github.com/gamosoft/notediscovery.git
-cd notediscovery
-
-# Create a virtual environment
-python -m venv venv
-
-# Activate it (choose your shell):
-source venv/bin/activate        # Bash/Zsh (most Linux distros)
-source venv/bin/activate.fish   # Fish (CachyOS, etc.)
-source venv/bin/activate.csh    # Csh/Tcsh
-.\venv\Scripts\activate         # Windows PowerShell
-
-# Install dependencies and run
-pip install -r requirements.txt
-python run.py
-```
-
-> ⚠️ **Warning**
->
-> *You'll need to activate the virtual environment (source venv/bin/activate) each time you open a new terminal before running the app*
-
-### Advanced Docker Setup
-
-The image includes bundled config, themes, plugins, and locales. To customize, you must:
-1. **Map the volume** in your docker-compose or docker run command
-2. **Provide content** - the file/folder must exist with valid content (empty = app might break!)
-
-| Volume | Purpose | Bundled? |
-|--------|---------|----------|
-| `data/` | Your notes | ❌ You must create |
-| `config.yaml` | App settings | ✅ Yes |
-| `themes/` | Custom themes | ✅ Yes |
-| `plugins/` | Custom plugins | ✅ Yes |
-| `locales/` | Translations | ✅ Yes |
-
-### Dashboard Integration
-
-<a href="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons@master/svg/notediscovery.svg" target="_blank">
-  <img src="https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons@master/svg/notediscovery.svg" alt="NoteDiscovery Icon" width="64" height="64">
-</a>
-
-An official icon for NoteDiscovery is now available on [Dashboard Icons](https://dashboardicons.com/icons/notediscovery)!  
-Use it in your self-hosted dashboards like Homepage, Homarr, Dashy, Heimdall, etc...
+**Dependencies installed:**
+- FastAPI - Web framework
+- Uvicorn - ASGI server
+- PyYAML - Configuration handling
+- aiofiles - Async file operations
 
 ## 📚 Documentation
 
@@ -241,20 +198,24 @@ Want to learn more?
 
 - 🎨 **[THEMES.md](documentation/THEMES.md)** - Theme customization and creating custom themes
 - ✨ **[FEATURES.md](documentation/FEATURES.md)** - Complete feature list and keyboard shortcuts
-- ✏️ **[DRAWING.md](documentation/DRAWING.md)** - Built-in drawing editor (`drawing-*.png`), save behavior, and API notes
 - 🏷️ **[TAGS.md](documentation/TAGS.md)** - Organize notes with tags and combined filtering
 - 📋 **[TEMPLATES.md](documentation/TEMPLATES.md)** - Create notes from reusable templates with dynamic placeholders
 - 🧮 **[MATHJAX.md](documentation/MATHJAX.md)** - LaTeX/Math notation examples and syntax reference
 - 📊 **[MERMAID.md](documentation/MERMAID.md)** - Diagram creation with Mermaid (flowcharts, sequence diagrams, and more)
 - 🔌 **[PLUGINS.md](documentation/PLUGINS.md)** - Plugin system and available plugins
 - 🌐 **[API.md](documentation/API.md)** - REST API documentation and examples
-- 🤖 **[MCP.md](documentation/MCP.md)** - AI assistant integration (Claude, Cursor, and more)
 - 🔐 **[AUTHENTICATION.md](documentation/AUTHENTICATION.md)** - Enable password protection for your instance
 - 🔧 **[ENVIRONMENT_VARIABLES.md](documentation/ENVIRONMENT_VARIABLES.md)** - Configure settings via environment variables
 
 ## 🌍 Multiple Languages
 
-NoteDiscovery supports multiple interface languages via JSON locale files in `locales/`. Open **Settings** (gear icon) → **Language** to choose one; the list reflects whatever locales are installed (bundled files, mounts, or your own additions).
+NoteDiscovery supports multiple languages! Currently available:
+- 🇺🇸 English (en-US) - Default
+- 🇪🇸 Español (es-ES)
+- 🇩🇪 Deutsch (de-DE)
+- 🇫🇷 Français (fr-FR)
+
+**To change language:** Go to Settings (gear icon) → Language dropdown.
 
 **To add your own language:** See the [Contributing Guidelines](CONTRIBUTING.md#-contributing-translations) for instructions on creating translation files.
 
@@ -295,10 +256,11 @@ NoteDiscovery is designed for **self-hosted, private use**. Please keep these se
 - By default, the app listens on `0.0.0.0:8000` (all network interfaces)
 
 ### Authentication
-- **Password protection is DISABLED by default** (default password: `admin`)
-- ⚠️ **ENABLE AUTHENTICATION AND CHANGE THE DEFAULT PASSWORD** if exposing to a network!
+- **Password protection is ENABLED by default** with password: `admin`
+- ⚠️ **CHANGE THE DEFAULT PASSWORD IMMEDIATELY** if exposing to a network!
 - See **[AUTHENTICATION.md](documentation/AUTHENTICATION.md)** for complete setup instructions
 - To disable auth, set `authentication.enabled: false` in `config.yaml`
+- Change password with Docker: `docker-compose exec notediscovery python generate_password.py`
 - Perfect for single-user or small team deployments
 - For multi-user setups, consider a reverse proxy with OAuth/SSO
 
