@@ -550,6 +550,9 @@ def generate_export_html(
             padding: 0.5em 1em;
             text-align: left;
         }}
+        .markdown-preview th[align="left"],   .markdown-preview td[align="left"]   {{ text-align: left; }}
+        .markdown-preview th[align="right"],  .markdown-preview td[align="right"]  {{ text-align: right; }}
+        .markdown-preview th[align="center"], .markdown-preview td[align="center"] {{ text-align: center; }}
         
         .markdown-preview th {{
             background-color: var(--bg-secondary, #f6f8fa);
