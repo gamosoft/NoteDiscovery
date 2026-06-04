@@ -490,6 +490,9 @@ async def get_config():
         "alreadyDonated": ALREADY_DONATED,  # Hide support buttons if true
         "authentication": {
             "enabled": config.get('authentication', {}).get('enabled', False)
+        },
+        "ui": {
+            "autosaveDelayMs": config.get('ui', {}).get('autosave_delay_ms', 1000)
         }
     }
 

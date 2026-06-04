@@ -1,9 +1,8 @@
 // NoteDiscovery Frontend Application
 
-// Configuration constants
-const CONFIG = {
-    AUTOSAVE_DELAY: 1000,              // ms - Debounce before note save (autoSave) and drawing PNG autosave (_drawingScheduleAutosave)
-    /** Must match drawingRedraw() fill and eraser stroke color (opaque “whiteboard”). */
+// Default configuration (fallback if server config fails)
+const DEFAULT_CONFIG = {
+    AUTOSAVE_DELAY: 1000,              // ms - Debounce before note save (autoSave) and drawing PNG autosave
     DRAWING_BACKGROUND: '#ffffff',
     /**
      * Drawing document size (intrinsic resolution). The display canvas may render
@@ -29,6 +28,29 @@ const CONFIG = {
     TOAST_DURATION_INFO_MS: 4500,
     TOAST_DURATION_SUCCESS_MS: 3500,
 };
+
+// Configuration constants - Will be populated from server config
+let CONFIG = { ...DEFAULT_CONFIG };
+
+// Load relevant configuration from backend before initializing app
+(function() {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '/api/config', false); // Synchronous request
+    try {
+        xhr.send();
+        if (xhr.status === 200) {
+            const serverConfig = JSON.parse(xhr.responseText);
+            // Merge server UI config into CONFIG
+            if (serverConfig.ui && serverConfig.ui.autosaveDelayMs !== undefined) {
+                //TODO - expose the other configs through config.yml, not just the AUTOSAVE_DELAY
+                CONFIG.AUTOSAVE_DELAY = serverConfig.ui.autosaveDelayMs;
+                console.log(`✓ Autosave delay set to ${CONFIG.AUTOSAVE_DELAY}ms from server config`);
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to load frontend config from server, using defaults:', e);
+    }
+})();
 
 /** Heroicons outline "share" (same d= as shared-note icon in the file tree) */
 const SHARE_ICON_PATH = 'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z';

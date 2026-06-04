@@ -22,7 +22,12 @@ storage:
   
 search:
   enabled: true
-  
+
+# User Interface settings
+ui:
+  # Autosave interval in milliseconds - affects typing and drawing
+  autosave_delay_ms: 1000
+
 authentication:
   # Authentication settings
   # Set enabled to true to require login
