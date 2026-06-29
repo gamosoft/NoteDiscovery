@@ -528,9 +528,7 @@ def generate_export_html(
             color: var(--text-secondary, #6a737d);
         }}
 
-        /* Callouts / admonitions (GitHub-style: > [!NOTE], > [!TIP], etc.)
-           Mirrors the in-app preview styles so exported/shared notes match.
-           Hard-coded GitHub palette with rgba backgrounds blends with any theme. */
+        /* Callouts — mirror the in-app preview. */
         .markdown-preview .callout {{
             margin: 1rem 0;
             padding: 0.75rem 1rem;
@@ -797,11 +795,7 @@ def generate_export_html(
         // Raw markdown content
         const markdown = `{escaped_content}`;
 
-        // Convert GitHub/Obsidian-style callouts (admonitions) before marked parses.
-        // Mirrors the in-app preview preprocessor so exported/shared notes match.
-        // Code blocks are protected with placeholders so callout syntax inside
-        // fenced/inline code is preserved verbatim. Only the 5 GitHub-canonical
-        // types are recognised; unknown types fall through to plain blockquotes.
+        // GitHub-style callouts — mirrors the in-app preview preprocessor.
         let processed;
         {{
             const CALLOUT_RE = /^>\\s*\\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\\]\\s*(.*)$/i;

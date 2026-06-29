@@ -545,9 +545,7 @@
             color: var(--text-secondary);
         }
 
-        /* Callouts / admonitions (GitHub-style: > [!NOTE], > [!TIP], etc.)
-           Colors are hard-coded GitHub palette with rgba backgrounds so the
-           tint blends with any theme bg without needing per-theme overrides. */
+        /* Callouts — GitHub-style admonitions (> [!NOTE], etc.) */
         .markdown-preview .callout {
             margin: 1rem 0;
             padding: 0.75rem 1rem;
@@ -3061,6 +3059,7 @@
                                     @scroll="syncOverlayScroll()"
                                     @keydown.enter="handleEditorEnterKey($event)"
                                     @keydown.tab="handleTabKey($event)"
+                                    @dblclick="trimSelectionTrailingSpace($event)"
                                     @drop="onEditorDrop($event)"
                                     @dragover.prevent="onEditorDragOver($event)"
                                     @dragenter="onEditorDragEnter($event)"

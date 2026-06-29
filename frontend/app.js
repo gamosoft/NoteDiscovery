@@ -5190,6 +5190,21 @@ function noteApp() {
         },
         
         // Markdown formatting helpers
+        // Trim trailing whitespace from double-click word selections.
+        // No-op on browsers that already exclude it (Firefox, Safari).
+        trimSelectionTrailingSpace(event) {
+            const editor = event && event.target;
+            if (!editor) return;
+            const start = editor.selectionStart;
+            let end = editor.selectionEnd;
+            if (start >= end) return;
+            const text = editor.value;
+            while (end > start && /\s/.test(text.charAt(end - 1))) end--;
+            if (end !== editor.selectionEnd) {
+                editor.setSelectionRange(start, end);
+            }
+        },
+
         wrapSelection(before, after, placeholder) {
             const editor = document.getElementById('note-editor');
             if (!editor) return;
@@ -5197,23 +5212,29 @@ function noteApp() {
             const start = editor.selectionStart;
             const end = editor.selectionEnd;
             const selectedText = this.noteContent.substring(start, end);
-            const textToWrap = selectedText || placeholder;
+
+            // Push edge whitespace OUTSIDE inline wrappers — "**house **" is
+            // invalid per CommonMark. Block wrappers (with \n) keep it intact.
+            const isInline = !before.includes('\n') && !after.includes('\n');
+            let leading = '', trailing = '', core = selectedText;
+            if (isInline && selectedText) {
+                const m = selectedText.match(/^(\s*)([\s\S]*?)(\s*)$/);
+                leading = m[1];
+                core = m[2];
+                trailing = m[3];
+            }
+            const textToWrap = core || placeholder;
             
             // Build the new text
-            const newText = before + textToWrap + after;
+            const newText = leading + before + textToWrap + after + trailing;
             
             // Update content
             this.noteContent = this.noteContent.substring(0, start) + newText + this.noteContent.substring(end);
             
-            // Set cursor position (select the wrapped text or placeholder)
             this.$nextTick(() => {
-                if (selectedText) {
-                    // If text was selected, keep it selected (inside the wrapper)
-                    editor.setSelectionRange(start + before.length, start + before.length + selectedText.length);
-                } else {
-                    // If no text selected, select the placeholder
-                    editor.setSelectionRange(start + before.length, start + before.length + placeholder.length);
-                }
+                const coreStart = start + leading.length + before.length;
+                const coreEnd = coreStart + textToWrap.length;
+                editor.setSelectionRange(coreStart, coreEnd);
                 editor.focus();
             });
             
@@ -5811,13 +5832,8 @@ function noteApp() {
                 }
             );
             
-            // Step 2c: Convert GitHub/Obsidian-style callouts (admonitions).
-            // Runs while code blocks are still placeholders so callout syntax
-            // inside fenced/inline code is preserved verbatim. The body is
-            // emitted as a raw HTML block surrounded by blank lines so marked
-            // still parses inner markdown (bold, links, lists, etc.) per CommonMark.
-            // Only the 5 GitHub-canonical types are recognised; unknown types
-            // (e.g. `> [!CUSTOM]`) fall through to plain blockquotes.
+            // Step 2c: GitHub-style callouts. Runs inside the code-protection
+            // window. Unknown types fall through to plain blockquotes.
             {
                 const CALLOUT_RE = /^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$/i;
                 const CALLOUT_ICONS = { note: 'ℹ️', tip: '💡', important: '❗', warning: '⚠️', caution: '🛑' };
