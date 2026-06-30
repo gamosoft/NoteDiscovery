@@ -37,37 +37,26 @@ def get_port():
     return "8000"
 
 def main():
-    print("🚀 Starting NoteDiscovery...\n")
-    
-    # Check if requirements are installed
+    # Make sure runtime deps are present before invoking uvicorn.
     try:
-        import fastapi
-        import uvicorn
+        import fastapi  # noqa: F401
+        import uvicorn  # noqa: F401
     except ImportError:
-        print("📦 Installing dependencies...")
+        print("Installing dependencies...")
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
-    
-    # Create data directories
+
     Path("data").mkdir(parents=True, exist_ok=True)
     Path("plugins").mkdir(parents=True, exist_ok=True)
-    
-    # Get port from config or environment
+
     port = get_port()
-    
-    print("✓ Dependencies installed")
-    print("✓ Directories created")
-    print("\n" + "="*50)
-    print("🎉 NoteDiscovery is running!")
-    print("="*50)
-    print(f"\n📝 Open your browser to: http://localhost:{port}")
-    print("\n💡 Tips:")
-    print("   - Press Ctrl+C to stop the server")
-    print("   - Your notes are in ./data/")
-    print("   - Plugins go in ./plugins/")
-    print(f"   - Change port with: PORT={port} python run.py")
-    print("\n" + "="*50 + "\n")
-    
-    # Run the application
+
+    # Short pre-launch banner. Detailed startup logs come from uvicorn /
+    # backend.main below (INFO: / WARNING: / ERROR:), so the user can tell
+    # exactly when the server is actually accepting connections.
+    print(f"🚀 NoteDiscovery → http://localhost:{port}")
+    print(f"   notes: ./data/   plugins: ./plugins/   stop: Ctrl+C")
+    print()
+
     subprocess.call([
         sys.executable, "-m", "uvicorn",
         "backend.main:app",
