@@ -146,6 +146,20 @@ if config.get('authentication', {}).get('enabled', False):
     if _is_default_secret:
         logger.critical("Using default secret_key - sessions can be forged! Change it in config.yaml")
 
+# Storage paths: env vars override config.yaml. Logged either way so the
+# resolved location is visible at startup.
+_notes_source = "config.yaml"
+if 'NOTES_DIR' in os.environ:
+    config['storage']['notes_dir'] = os.getenv('NOTES_DIR')
+    _notes_source = "NOTES_DIR env var"
+logger.info("Notes directory: %s (from %s)", config['storage']['notes_dir'], _notes_source)
+
+_plugins_source = "config.yaml"
+if 'PLUGINS_DIR' in os.environ:
+    config['storage']['plugins_dir'] = os.getenv('PLUGINS_DIR')
+    _plugins_source = "PLUGINS_DIR env var"
+logger.info("Plugins directory: %s (from %s)", config['storage']['plugins_dir'], _plugins_source)
+
 # OpenAPI tag metadata for grouping endpoints in Swagger UI
 tags_metadata = [
     {"name": "Notes", "description": "Create, read, update, delete notes"},

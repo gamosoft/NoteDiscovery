@@ -12,6 +12,30 @@ NoteDiscovery supports environment variables to override configuration settings,
 
 > **Note**: Advanced server settings (CORS origins, debug mode) are configured via `config.yaml` only, not via environment variables. See [config.yaml](#advanced-server-configuration) for details.
 
+### Storage
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `NOTES_DIR` | string | `./data` | Path to the notes vault |
+| `PLUGINS_DIR` | string | `./plugins` | Path to the plugins directory |
+
+The resolved paths are logged at startup so you can confirm what's in use:
+
+```
+INFO:     Notes directory: /home/me/MyVault (from NOTES_DIR env var)
+INFO:     Plugins directory: ./plugins (from config.yaml)
+```
+
+#### Example: Pointing at an existing vault
+
+```bash
+# Local
+NOTES_DIR=/home/me/MyVault python run.py
+
+# Docker
+docker run -e NOTES_DIR=/vault -v /home/me/MyVault:/vault ...
+```
+
 ### Authentication
 
 | Variable | Type | Default | Description |
