@@ -111,6 +111,8 @@ NoteDiscovery includes a built-in **Model Context Protocol (MCP)** server, letti
 ```
 
 > 💡 **See [MCP.md](documentation/MCP.md)** for complete setup instructions and all available tools.
+>
+> 🧪 **Want a fully local setup with a bundled LLM?** [OLLAMA-STACK.md](OLLAMA-STACK.md) spins up NoteDiscovery + Ollama + Open WebUI with one command.
 
 ## 📺 Watch the tour
 
@@ -154,6 +156,7 @@ Two docker-compose files are provided:
 |------|----------|
 | `docker-compose.ghcr.yml` | **Recommended** - Uses pre-built image from GitHub Container Registry |
 | `docker-compose.yml` | For development - Builds from local source |
+| `docker-compose.ollama-stack.yml` | Bundled local AI stack (NoteDiscovery + Ollama + Open WebUI) — see [OLLAMA-STACK.md](OLLAMA-STACK.md) |
 
 **Option 1: Pre-built image (fastest)**
 

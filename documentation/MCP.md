@@ -459,3 +459,7 @@ NoteDiscovery/
 │   └── tools.py         # Tool definitions
 └── ...
 ```
+
+## Try it with a local LLM
+
+For a batteries-included setup that runs NoteDiscovery alongside [Ollama](https://ollama.com) (local LLM runtime) and [Open WebUI](https://openwebui.com) (browser chat UI), see **[OLLAMA-STACK.md](../OLLAMA-STACK.md)** in the repo root. One `docker compose` command spins everything up, and you can point Cursor at both your notes (via this MCP server) and your local model.

@@ -1,0 +1,90 @@
+services:
+  notediscovery:
+    image: ghcr.io/gamosoft/notediscovery:latest
+    container_name: notediscovery
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=UTC
+    volumes:
+      - ./data:/app/data
+      # Uncomment to customize (files/folders must exist first):
+      # - ./config.yaml:/app/config.yaml
+      # - ./plugins:/app/plugins
+      # - ./themes:/app/themes
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_KEEP_ALIVE=30m
+    volumes:
+      - ollama-models:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "--version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ChatGPT-style browser UI for Ollama.
+  # Available at http://localhost:3000 after startup.
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "3000:8080"
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      # Skip account creation on first launch (single-user local mode).
+      # Set to "true" for the login flow if you're exposing this beyond localhost.
+      - WEBUI_AUTH=false
+      # We only use Ollama, so disable the external OpenAI integration.
+      - ENABLE_OPENAI_API=false
+    volumes:
+      - open-webui-data:/app/backend/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  # One-shot service: pulls the model on first startup, then exits.
+  # No-op on subsequent runs if the model is already present.
+  # To change the model, edit MODEL below (any tag from https://ollama.com/library):
+  #   qwen2.5:0.5b        ~400 MB   fastest, minimal capability
+  #   qwen2.5:1.5b        ~1.0 GB   balanced (default)
+  #   qwen2.5-coder:1.5b  ~1.0 GB   code-focused
+  #   qwen2.5-coder:3b    ~2.0 GB   better code, still small
+  #   llama3.2:3b         ~2.0 GB   general-purpose
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    environment:
+      - OLLAMA_HOST=ollama:11434
+      - MODEL=qwen2.5:1.5b
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        echo "Pulling model: $$MODEL"
+        ollama pull "$$MODEL"
+        echo "Model ready."
+    restart: "no"
+
+volumes:
+  ollama-models:
+  open-webui-data:
