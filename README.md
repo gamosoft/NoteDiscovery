@@ -118,10 +118,12 @@ Use the pre-built image directly from GHCR - no building required!
 > 💡 **Multi-Architecture Support**: Docker images are available for both `x86_64` and `ARM64` (Raspberry Pi, Apple Silicon, etc.)
 
 ```bash
-# Download the docker-compose file
+# Linux/macOS - Create required directories and files, then start
+mkdir -p data plugins themes
+curl -O https://raw.githubusercontent.com/gamosoft/notediscovery/main/config.yaml
+curl -o themes/light.css https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/light.css
+curl -o themes/dark.css https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/dark.css
 curl -O https://raw.githubusercontent.com/gamosoft/notediscovery/main/docker-compose.ghcr.yml
-
-# Or if you cloned the repo, just use it directly
 docker-compose -f docker-compose.ghcr.yml up -d
 
 # Access at http://localhost:8000
@@ -134,10 +136,24 @@ docker-compose -f docker-compose.ghcr.yml logs -f
 docker-compose -f docker-compose.ghcr.yml down
 ```
 
+```powershell
+# Windows PowerShell
+mkdir data, plugins, themes -Force
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/config.yaml -OutFile config.yaml
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/light.css -OutFile themes/light.css
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/dark.css -OutFile themes/dark.css
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/docker-compose.ghcr.yml -OutFile docker-compose.ghcr.yml
+docker-compose -f docker-compose.ghcr.yml up -d
+```
+
 **Option 2: Docker Run (Alternative)**
 
 ```bash
 # Linux/macOS
+mkdir -p data plugins themes
+curl -O https://raw.githubusercontent.com/gamosoft/notediscovery/main/config.yaml
+curl -o themes/light.css https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/light.css
+curl -o themes/dark.css https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/dark.css
 docker run -d \
   --name notediscovery \
   -p 8000:8000 \
@@ -152,6 +168,10 @@ docker run -d \
 
 ```powershell
 # Windows PowerShell
+mkdir data, plugins, themes -Force
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/config.yaml -OutFile config.yaml
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/light.css -OutFile themes/light.css
+Invoke-WebRequest -Uri https://raw.githubusercontent.com/gamosoft/notediscovery/main/themes/dark.css -OutFile themes/dark.css
 docker run -d `
   --name notediscovery `
   -p 8000:8000 `
