@@ -113,6 +113,9 @@ Equivalent in `config.yaml`:
 ```yaml
 ui:
   autosave_delay_ms: 5000
+  # Used only when the browser has no saved theme preference.
+  # Set this to a CSS filename from themes/ without the .css suffix.
+  default_theme: "dracula"
 ```
 
 ## 🎯 Configuration Priority
@@ -178,4 +181,3 @@ When `debug: false` (recommended):
 ---
 
 **Pro Tip:** Use environment variables for **deployment-specific** settings, and `config.yaml` for **application defaults**. This keeps your configuration flexible and maintainable! 🎯
-

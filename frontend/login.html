@@ -51,7 +51,7 @@
     <script>
         // Load theme immediately (same approach as index.html)
         (async function() {
-            const savedTheme = localStorage.getItem('noteDiscoveryTheme') || 'light';
+            const savedTheme = localStorage.getItem('noteDiscoveryTheme') || '__DEFAULT_THEME__';
             
             try {
                 const response = await fetch(`/api/themes/${savedTheme}`);
@@ -282,4 +282,3 @@
     </script>
 </body>
 </html>
-
