@@ -261,6 +261,7 @@ function noteApp() {
         demoMode: false,
         alreadyDonated: false,
         autosaveDelayMs: CONFIG.AUTOSAVE_DELAY,  // hydrated from /api/config in loadConfig()
+        defaultTheme: 'light',
         notes: [],
 
         // True while /api/notes is in flight. Drives the "Loading your vault…"
@@ -1009,6 +1010,9 @@ function noteApp() {
                 if (Number.isFinite(config.autosaveDelayMs) && config.autosaveDelayMs > 0) {
                     this.autosaveDelayMs = config.autosaveDelayMs;
                 }
+                if (typeof config.defaultTheme === 'string' && config.defaultTheme) {
+                    this.defaultTheme = config.defaultTheme;
+                }
             } catch (error) {
                 console.error('Failed to load config:', error);
             }
@@ -1034,8 +1038,8 @@ function noteApp() {
         
         // Initialize theme system
         async initTheme() {
-            // Load saved theme preference from localStorage
-            const savedTheme = localStorage.getItem('noteDiscoveryTheme') || 'light';
+            // A user's saved preference takes priority over the configured default.
+            const savedTheme = localStorage.getItem('noteDiscoveryTheme') || this.defaultTheme;
             this.currentTheme = savedTheme;
             await this.applyTheme(savedTheme);
         },
@@ -7854,4 +7858,3 @@ function noteApp() {
         }
     }
 }
-

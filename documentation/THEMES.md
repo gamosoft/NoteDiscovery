@@ -4,6 +4,8 @@
 
 NoteDiscovery ships with **several built-in themes** (light and dark styles). Open **Settings → Theme** to browse what is available; your choice is saved automatically.
 
+To choose the theme shown to new browsers, set `ui.default_theme` in `config.yaml` to a theme ID (the CSS filename without `.css`). A theme previously selected in the browser is stored in `localStorage` and takes priority over this default.
+
 The set can grow over time—see the `themes/` folder in the repository for the current files. You can also add your own (see below) or override themes when self-hosting.
 
 ## Create Custom Themes
@@ -143,4 +145,3 @@ All these CSS variables **must** be defined for your theme to work properly:
 ---
 
 🎨 **Tip:** Use browser DevTools to experiment with colors in real-time before creating your theme!
-

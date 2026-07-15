@@ -260,6 +260,16 @@ except (TypeError, ValueError):
     _autosave_raw = 1000
 AUTOSAVE_DELAY_MS = max(250, min(60000, _autosave_raw))
 
+# Default UI theme for browsers that do not have a saved preference yet.
+DEFAULT_THEME = str(config.get('ui', {}).get('default_theme', 'light')).strip() or 'light'
+_themes_dir = Path(__file__).parent.parent / "themes"
+if not get_theme_css(str(_themes_dir), DEFAULT_THEME):
+    logger.warning(
+        "Configured ui.default_theme %r was not found; falling back to 'light'",
+        DEFAULT_THEME,
+    )
+    DEFAULT_THEME = 'light'
+
 if DEMO_MODE:
     # Enable rate limiting for demo deployments
     limiter = Limiter(key_func=get_remote_address, default_limits=["200/hour"])
@@ -460,6 +470,7 @@ async def login_page(request: Request, error: str = None):
     # Inject app name throughout the login page
     app_name = config['app']['name']
     content = content.replace('NoteDiscovery', app_name)
+    content = content.replace('__DEFAULT_THEME__', DEFAULT_THEME)
     
     return content
 
@@ -520,6 +531,7 @@ async def get_config():
         "demoMode": DEMO_MODE,  # Expose demo mode flag to frontend
         "alreadyDonated": ALREADY_DONATED,  # Hide support buttons if true
         "autosaveDelayMs": AUTOSAVE_DELAY_MS,  # Debounce for note/drawing autosave
+        "defaultTheme": DEFAULT_THEME,  # Used when the browser has no saved preference
         "authentication": {
             "enabled": config.get('authentication', {}).get('enabled', False)
         }
