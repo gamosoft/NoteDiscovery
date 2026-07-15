@@ -881,6 +881,50 @@ function noteApp() {
                         this.previousMatch();
                     }
                     
+                    // Ctrl/Cmd + Alt/Option + Z to toggle Zen mode.
+                    // Global (fires regardless of focus) so users can enter/exit Zen without
+                    // first clicking into the editor. Requires an open note; noop otherwise.
+                    if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'z') {
+                        if (this.currentNote) {
+                            e.preventDefault();
+                            this.toggleZenMode();
+                        }
+                    }
+                    
+                    // View-mode shortcuts (global — fire regardless of focus):
+                    //   Ctrl/Cmd + Alt/Option + 1  → Edit
+                    //   Ctrl/Cmd + Alt/Option + 2  → Split  (falls back to Edit on mobile)
+                    //   Ctrl/Cmd + Alt/Option + 3  → Preview
+                    //   Ctrl/Cmd + Alt/Option + V  → Cycle Edit → Split → Preview → Edit
+                    // Skipped when no note is open, in Zen mode (edit-only), or while the graph
+                    // overlay is showing. Uses e.code for digits so the physical top-row keys
+                    // fire on AZERTY/QWERTZ layouts (where 1/2/3 need Shift) and to bypass
+                    // Mac's Option+digit dead-key composer (Option+1 = ¡, etc.).
+                    if ((e.ctrlKey || e.metaKey) && e.altKey && !e.shiftKey
+                        && this.currentNote && !this.zenMode && !this.showGraph) {
+                        const isMobile = window.innerWidth <= 768;
+                        let targetMode = null;
+                        if (e.code === 'Digit1') {
+                            targetMode = 'edit';
+                        } else if (e.code === 'Digit2') {
+                            targetMode = isMobile ? 'edit' : 'split';
+                        } else if (e.code === 'Digit3') {
+                            targetMode = 'preview';
+                        } else if (e.key.toLowerCase() === 'v') {
+                            if (isMobile) {
+                                targetMode = this.viewMode === 'edit' ? 'preview' : 'edit';
+                            } else {
+                                const order = ['edit', 'split', 'preview'];
+                                const currentIdx = order.indexOf(this.viewMode);
+                                targetMode = order[(currentIdx + 1) % order.length];
+                            }
+                        }
+                        if (targetMode !== null) {
+                            e.preventDefault();
+                            this.viewMode = targetMode;
+                        }
+                    }
+                    
                     // Only apply markdown shortcuts when editor is focused and a note is open
                     const isEditorFocused = document.activeElement?.id === 'note-editor';
                     if (isEditorFocused && this.currentNote) {
@@ -906,12 +950,6 @@ function noteApp() {
                         if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 't') {
                             e.preventDefault();
                             this.insertTable();
-                        }
-                        
-                        // Ctrl/Cmd + Alt/Option + Z for Zen mode
-                        if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === 'z') {
-                            e.preventDefault();
-                            this.toggleZenMode();
                         }
                     }
                     
