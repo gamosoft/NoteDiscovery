@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/glama%2Fgamosoft%2FNoteDiscovery.svg)](https://mcptoplist.com/server/glama%2Fgamosoft%2FNoteDiscovery)
+
 <p align="center">
   <img alt="GitHub Stars" src="https://img.shields.io/github/stars/gamosoft/notediscovery?style=flat">
   <img alt="Build" src="https://img.shields.io/github/actions/workflow/status/gamosoft/notediscovery/docker-publish.yml">
