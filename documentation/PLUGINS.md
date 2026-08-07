@@ -14,7 +14,7 @@ Plugins are Python files that live in the `plugins/` directory. They use **event
 | `on_note_save` | Note is being saved | `note_path`, `content` | ✅ Yes (return transformed content, or None) |
 | `on_note_load` | Note is loaded from disk | `note_path`, `content` | ✅ Yes (return transformed content, or None) |
 | `on_note_delete` | Note is deleted | `note_path` | ❌ No |
-| `on_search` | Search is performed | `query`, `results` | ❌ No |
+| `on_search` | Search is performed | `query`, `results` | ⚠️ In place only ([see below](#advanced-example-open-tasks)) |
 | `on_app_startup` | App starts up | None | ❌ No |
 
 ## Creating a Plugin
@@ -67,6 +67,55 @@ class Plugin:
         """Log search queries"""
         print(f"🔍 Search: '{query}' → {len(results)} results")
 ```
+
+## Advanced Example: Open Tasks
+
+`plugins/open_tasks.py` (bundled) turns the search box into a task inbox. Search
+for **`@task`** (or `@tasks`) and, instead of a normal full-text search, you get
+every note that still has an unchecked checkbox:
+
+```markdown
+- [ ] Buy milk        ← found
+- [x] Bread           ← ignored, already done
+```
+
+Each result shows the note plus up to three of its open tasks, and carries an
+extra `open_tasks` field with the true count for API and MCP consumers.
+
+**What counts as an open task:** a list item whose box is empty — `- [ ]`,
+`* []`, `+ [ ]` or `1. [ ]`. `[x]`/`[X]` are done and never match. Checkboxes
+inside fenced code blocks are skipped, as are hidden files and folders.
+
+### The `on_search` trick
+
+`on_search` is listed as non-modifying because **its return value is discarded**
+— `PluginManager.run_hook()` only propagates returns for hooks that receive
+`content`. But `results` is the *same list object* that `/api/search` paginates
+afterwards, so replacing its contents in place does reach the response:
+
+```python
+TRIGGERS = {"@task", "@tasks"}
+
+def on_search(self, query: str, results: list):
+    if query.strip().lower() not in TRIGGERS:
+        return                      # leave every other search alone
+    replacement = self._scan(...)   # build the full list first
+    results[:] = replacement        # in-place swap — `results.clear()` + extend works too
+```
+
+Build the replacement list **before** the swap. If the scan raises halfway
+through, `results` is left untouched and the user still gets ordinary search
+results (`run_hook` catches and logs the exception).
+
+Two limits worth knowing:
+
+- **You cannot control ordering.** `/api/search` always re-sorts by path after
+  the hook runs.
+- **The normal search still runs first.** The hook fires after `search_notes()`,
+  so its work is discarded when you replace the results.
+
+Because snippets are rendered as HTML in the sidebar, **escape any note content**
+you put into a `context` field (`html.escape`), exactly as core search does.
 
 ### How to see the logs
 

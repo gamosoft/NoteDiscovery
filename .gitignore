@@ -57,3 +57,4 @@ video/
 
 # Browser libraries, downloaded by scripts/vendor_assets.py
 frontend/vendor/
+CLAUDE.md
