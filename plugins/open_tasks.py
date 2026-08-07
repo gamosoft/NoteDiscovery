@@ -32,7 +32,7 @@ OPEN_TASK_RE = re.compile(r'^[ \t]*(?:[-*+]|\d+[.)])[ \t]+\[ ?\][ \t]*(.*)$')
 
 # Snippets shown per note. Matches what search_notes() returns, and the sidebar
 # only renders the first one anyway.
-MAX_MATCHES_PER_NOTE = 3
+MAX_MATCHES_PER_NOTE = 1
 MAX_LABEL_CHARS = 120
 UNTITLED_TASK = "(untitled task)"
 
