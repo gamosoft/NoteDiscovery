@@ -2046,7 +2046,7 @@
                                             :class="{'active': currentNote === note.path}"
                                             :style="currentNote === note.path ? 'background-color: var(--accent-light); color: var(--accent-primary);' : 'color: var(--text-primary);'"
                                         >
-                                            <span class="truncate block" x-text="note.name" :title="note.name"></span>
+                                            <span class="truncate block" x-text="note.name" :title="note.path"></span>
                                         </div>
                                     </template>
                                     <div x-show="searchResults.length === 0" class="px-3 py-4 text-center text-xs" style="color: var(--text-tertiary);" x-text="t('tags.no_matches')">
