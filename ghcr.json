@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "label": "ghcr pulls",
-  "message": "402K",
+  "message": "404K",
   "color": "blue",
   "cacheSeconds": 3600,
-  "raw_downloads": 401755
+  "raw_downloads": 404006
 }
