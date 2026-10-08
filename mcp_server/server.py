@@ -1,8 +1,10 @@
 """
 MCP Server implementation for NoteDiscovery.
 
-Implements the Model Context Protocol (MCP) over stdio,
-enabling AI assistants to interact with NoteDiscovery notes.
+Implements the Model Context Protocol (MCP), enabling AI assistants to
+interact with NoteDiscovery notes. The dispatch logic is transport-agnostic:
+`run()` serves it over stdio, and the backend serves it over Streamable HTTP
+at /mcp (see backend/mcp_http.py).
 
 This implementation uses only Python stdlib for minimal dependencies.
 """
@@ -19,8 +21,14 @@ from .client import NoteDiscoveryClient, APIResponse
 from .tools import TOOLS, get_tool_names
 
 
-# MCP Protocol version
-MCP_VERSION = "2024-11-05"
+# MCP protocol versions we can speak, newest first. The tool result shape is
+# the same across all of them, so negotiation is just picking one.
+SUPPORTED_PROTOCOL_VERSIONS = (
+    "2025-11-25",
+    "2025-06-18",
+    "2025-03-26",
+    "2024-11-05",
+)
 
 # Server info: version comes from the package (resolved against the VERSION
 # file at repo root, or importlib.metadata when pip-installed).
@@ -34,28 +42,32 @@ class MCPServer:
     """
     MCP Server that bridges AI assistants with NoteDiscovery.
     
-    Implements the MCP protocol over stdio (JSON-RPC 2.0).
+    Implements the MCP protocol (JSON-RPC 2.0). `handle_message` is
+    transport-agnostic; `run` serves it over stdio.
     """
-    
-    def __init__(self, config: MCPConfig) -> None:
+
+    def __init__(self, config: MCPConfig, require_initialize: bool = True) -> None:
         """
         Initialize the MCP server.
-        
+
         Args:
             config: MCP configuration
+            require_initialize: Reject tool requests until `initialize` has been
+                received. Stateless transports (HTTP) create a fresh server per
+                request, so they turn this off.
         """
         self.config = config
         self.client = NoteDiscoveryClient(config)
-        self._initialized = False
-    
+        self._initialized = not require_initialize
+
     def _log(self, message: str) -> None:
         """Log message to stderr (not stdout which is for MCP protocol)."""
         print(f"[notediscovery-mcp] {message}", file=sys.stderr)
-    
-    def _send_response(self, id: Any, result: Any = None, error: Optional[dict] = None) -> None:
+
+    def _response(self, id: Any, result: Any = None, error: Optional[dict] = None) -> dict:
         """
-        Send a JSON-RPC response.
-        
+        Build a JSON-RPC response.
+
         Args:
             id: Request ID
             result: Result data (for success)
@@ -65,32 +77,14 @@ class MCPServer:
             "jsonrpc": "2.0",
             "id": id,
         }
-        
+
         if error is not None:
             response["error"] = error
         else:
             response["result"] = result
-        
-        # Write to stdout with newline
-        print(json.dumps(response), flush=True)
-    
-    def _send_notification(self, method: str, params: Optional[dict] = None) -> None:
-        """
-        Send a JSON-RPC notification (no response expected).
-        
-        Args:
-            method: Notification method
-            params: Optional parameters
-        """
-        notification: dict[str, Any] = {
-            "jsonrpc": "2.0",
-            "method": method,
-        }
-        if params is not None:
-            notification["params"] = params
-        
-        print(json.dumps(notification), flush=True)
-    
+
+        return response
+
     def _error(self, code: int, message: str, data: Any = None) -> dict:
         """Create a JSON-RPC error object."""
         error = {"code": code, "message": message}
@@ -106,9 +100,16 @@ class MCPServer:
         """Handle initialize request."""
         self._initialized = True
         self._log(f"Initialized with client: {params.get('clientInfo', {}).get('name', 'unknown')}")
-        
+
+        # Echo the client's version if we speak it, otherwise offer our newest
+        requested = params.get("protocolVersion")
+        if requested in SUPPORTED_PROTOCOL_VERSIONS:
+            version = requested
+        else:
+            version = SUPPORTED_PROTOCOL_VERSIONS[0]
+
         return {
-            "protocolVersion": MCP_VERSION,
+            "protocolVersion": version,
             "serverInfo": SERVER_INFO,
             "capabilities": {
                 "tools": {},  # We support tools
@@ -675,66 +676,69 @@ class MCPServer:
     # Main Loop
     # =========================================================================
     
-    def handle_request(self, request: dict) -> None:
+    def handle_message(self, message: Any) -> Optional[dict]:
         """
-        Handle a single JSON-RPC request.
+        Handle a single JSON-RPC message.
         
         Args:
-            request: Parsed JSON-RPC request
+            message: Parsed JSON-RPC message
+            
+        Returns:
+            The JSON-RPC response to send back, or None when the message
+            needs no reply (notifications and client responses).
         """
-        request_id = request.get("id")
-        method = request.get("method", "")
-        params = request.get("params", {})
+        if not isinstance(message, dict):
+            return self._response(None, error=self._error(-32600, "Invalid Request"))
+        
+        request_id = message.get("id")
+        method = message.get("method", "")
+        params = message.get("params") or {}
+        
+        # A client response to a server request; we never send any
+        if not method:
+            return None
         
         try:
             # Route to handler
             if method == "initialize":
-                result = self.handle_initialize(params)
-                self._send_response(request_id, result)
+                return self._response(request_id, self.handle_initialize(params))
             
-            elif method == "notifications/initialized":
+            if method == "notifications/initialized":
                 self.handle_initialized(params)
-                # Notifications don't get responses
+                return None
             
-            elif method == "tools/list":
-                if not self._initialized:
-                    self._send_response(
-                        request_id,
-                        error=self._error(-32002, "Server not initialized")
-                    )
-                    return
-                result = self.handle_list_tools(params)
-                self._send_response(request_id, result)
+            if method in ("tools/list", "tools/call") and not self._initialized:
+                return self._response(
+                    request_id,
+                    error=self._error(-32002, "Server not initialized")
+                )
             
-            elif method == "tools/call":
-                if not self._initialized:
-                    self._send_response(
-                        request_id,
-                        error=self._error(-32002, "Server not initialized")
-                    )
-                    return
-                result = self.handle_call_tool(params)
-                self._send_response(request_id, result)
+            if method == "tools/list":
+                return self._response(request_id, self.handle_list_tools(params))
             
-            elif method == "ping":
-                self._send_response(request_id, {})
+            if method == "tools/call":
+                return self._response(request_id, self.handle_call_tool(params))
             
-            else:
-                # Unknown method
-                if request_id is not None:
-                    self._send_response(
-                        request_id,
-                        error=self._error(-32601, f"Method not found: {method}")
-                    )
+            if method == "ping":
+                return self._response(request_id, {})
+            
+            # Unknown method; unknown notifications are ignored
+            if request_id is None:
+                return None
+            return self._response(
+                request_id,
+                error=self._error(-32601, f"Method not found: {method}")
+            )
         
         except Exception as e:
             self._log(f"Error handling {method}: {e}")
             traceback.print_exc(file=sys.stderr)
-            if request_id is not None:
-                self._send_response(
-                    request_id,
-                    error=self._error(-32603, f"Internal error: {str(e)}")
-                )
+            if request_id is None:
+                return None
+            return self._response(
+                request_id,
+                error=self._error(-32603, f"Internal error: {str(e)}")
+            )
     
     def run(self) -> None:
         """
@@ -751,15 +755,16 @@ class MCPServer:
                 continue
             
             try:
-                request = json.loads(line)
-                self.handle_request(request)
+                response = self.handle_message(json.loads(line))
             except json.JSONDecodeError as e:
                 self._log(f"Invalid JSON: {e}")
-                # Send parse error
-                self._send_response(
+                response = self._response(
                     None,
                     error=self._error(-32700, f"Parse error: {str(e)}")
                 )
+            
+            if response is not None:
+                print(json.dumps(response), flush=True)
         
         self._log("Server shutting down")
 

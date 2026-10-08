@@ -112,6 +112,8 @@ NoteDiscovery includes a built-in **Model Context Protocol (MCP)** server, letti
 }
 ```
 
+> 🌐 **Prefer a URL?** Set `MCP_ENABLED=true` and point your client at `http://your-server:8000/mcp` (Streamable HTTP).
+>
 > 💡 **See [MCP.md](documentation/MCP.md)** for complete setup instructions and all available tools.
 >
 > 🧪 **Want a fully local setup with a bundled LLM?** [OLLAMA-STACK.md](OLLAMA-STACK.md) spins up NoteDiscovery + Ollama + Open WebUI with one command.
