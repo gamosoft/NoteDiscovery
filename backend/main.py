@@ -79,6 +79,7 @@ from .share import (
     ShareSlugError,
 )
 from .export import generate_export_html, embed_images_as_base64, convert_wikilinks_to_html, strip_frontmatter
+from .mcp_http import build_mcp_router
 
 # Load configuration
 config_path = Path(__file__).parent.parent / "config.yaml"
@@ -170,6 +171,12 @@ if config.get('authentication', {}).get('enabled', False):
     
     if _is_default_secret:
         logger.critical("Using default secret_key - sessions can be forged! Change it in config.yaml")
+
+# MCP over Streamable HTTP at /mcp (opt-in)
+# Priority: MCP_ENABLED env var > mcp.enabled in config.yaml
+config['mcp'] = config.get('mcp') or {}
+if 'MCP_ENABLED' in os.environ:
+    config['mcp']['enabled'] = os.getenv('MCP_ENABLED', 'false').lower() in ('true', '1', 'yes')
 
 # Storage paths: env vars override config.yaml. Logged either way so the
 # resolved location is visible at startup.
@@ -553,8 +560,8 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     """
     # Only handle 401 errors specially
     if exc.status_code == 401:
-        # Check if this is an API request
-        if request.url.path.startswith('/api/'):
+        # Check if this is an API request (MCP clients need the 401 too)
+        if request.url.path.startswith('/api/') or request.url.path == '/mcp':
             return JSONResponse(
                 status_code=401,
                 content={"detail": exc.detail}
@@ -2248,6 +2255,16 @@ async def catch_all(full_path: str, request: Request):
 # mounted last so a plugin cannot shadow a core endpoint.
 api_router.include_router(plugin_manager.build_router())
 app.include_router(api_router)
+
+# Mounted before pages_router so its catch-all GET doesn't shadow /mcp.
+# The tool client calls back in with the API key, so auth needs one.
+if config['mcp'].get('enabled', False):
+    if auth_enabled() and not get_api_key():
+        logger.warning("MCP endpoint NOT enabled: authentication is on but no API key is configured")
+    else:
+        app.include_router(build_mcp_router(get_api_key, require_auth, allowed_origins))
+        logger.info("MCP Streamable HTTP endpoint enabled at /mcp")
+
 app.include_router(pages_router)
 
 

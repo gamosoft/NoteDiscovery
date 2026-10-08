@@ -87,67 +87,74 @@ Add this to your `~/.cursor/mcp.json` (or Claude Desktop config):
 
 > **Note:** The `PYTHONPATH` is required so Python can find the `mcp_server` module. On Windows, use backslashes: `"PYTHONPATH": "C:\\path\\to\\NoteDiscovery"`
 
-### Advanced: 24×7 / Remote Access (mcp-proxy)
+### Remote Access (Streamable HTTP)
 
-The setups above spawn the MCP server **per session** — your AI client starts a fresh container/process every time you open a chat and tears it down when you close it. That's the recommended default: zero setup, no auth surface, no long-lived process to maintain.
+The setups above spawn the MCP server **per session**. Your AI client starts a fresh container or process every time you open a chat and tears it down when you close it. That's the recommended default: zero setup and no extra network exposure.
 
-If you'd rather run the MCP server as a **long-lived service** so one host serves many devices, use the community tool [mcp-proxy](https://github.com/sparfenyuk/mcp-proxy) to wrap the stdio server and expose it over SSE:
+If you'd rather connect by URL, so that several devices share one NoteDiscovery instance or the client runs on another machine, NoteDiscovery can serve MCP itself over **Streamable HTTP** at `/mcp`. It runs in the NoteDiscovery process, so there's no extra service or port to manage.
 
-```bash
-# Make sure the image is fresh
-docker pull ghcr.io/gamosoft/notediscovery:latest
+**1. Enable it** (it is off by default):
 
-# Run mcp-proxy in front of the stdio server
-# (`--` separates mcp-proxy flags from the wrapped command — required so the
-#  parser doesn't try to interpret `--rm`, `-i`, etc. as its own arguments)
-mcp-proxy --port 3000 -- docker run --rm -i \
-  -e NOTEDISCOVERY_URL=https://notediscovery.homelab.local \
-  ghcr.io/gamosoft/notediscovery:latest python -m mcp_server
+```yaml
+# config.yaml
+mcp:
+  enabled: true
 ```
 
-> If you get `unrecognized arguments` from mcp-proxy, your version may use `--sse-port` instead of `--port`. Run `mcp-proxy --help` to check.
+or set `MCP_ENABLED=true` (Docker: `-e MCP_ENABLED=true`). The startup log confirms it with `MCP Streamable HTTP endpoint enabled at /mcp`.
 
-The example above assumes a specific topology: mcp-proxy runs on your host, the MCP server spawns as a short-lived container per SSE connection, and a separately-running NoteDiscovery instance is reachable at `https://notediscovery.homelab.local`. That's just one valid placement — **NoteDiscovery and mcp-proxy don't need to live in the same place**. `NOTEDISCOVERY_URL` can point at any reachable URL, for example:
+**2. Authentication.** `/mcp` uses the same auth as the REST API. With authentication enabled, you **must** set an API key (`authentication.api_key` or `AUTHENTICATION_API_KEY`). Without one, the endpoint stays off and a warning is logged. Clients send the key as `Authorization: Bearer <key>` or `X-API-Key: <key>`.
 
-- Remote homelab / LAN server (as in the example above): `https://notediscovery.homelab.local`
-- Same host via Docker's special hostname: `http://host.docker.internal:8000`
-- Sibling service in the same `docker-compose.yml`: `http://notediscovery:8000`
-- Native Python install on the same host: `http://localhost:8000`
-
-If you want both in one stack (NoteDiscovery + mcp-proxy together), a `docker-compose.yml` with both as services on the same Docker network is the cleanest setup — use the Docker service name for `NOTEDISCOVERY_URL` (`http://notediscovery:8000`) rather than a host-bound URL, which keeps the traffic on the internal network and survives host networking changes.
-
-> **Heads up on scope:** [`mcp-proxy`](https://github.com/sparfenyuk/mcp-proxy) is a community project maintained independently from NoteDiscovery, and its CLI flags, configuration options, and behavior can (and do) change between releases. This section shows the general integration pattern. for anything proxy-specific (CLI changes, TLS termination, auth in front of the proxy, multi-client behavior, daemonization, compose recipes, etc.) please consult their docs and issue tracker. If you hit something that looks NoteDiscovery-side (a tool returning unexpected data, the underlying MCP server crashing, missing capabilities) — just open an issue here. 🙂
-
-Then point each client at the SSE endpoint — one shared config across all your devices:
+**3. Point your client at it:**
 
 ```json
 {
   "mcpServers": {
     "notediscovery": {
-      "url": "http://your-host:3000/sse"
+      "type": "http",
+      "url": "https://notes.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer your-secure-api-key-here"
+      }
     }
   }
 }
 ```
 
-For production use, wrap `mcp-proxy` in a `systemd` unit or a `docker-compose` service with a restart policy so it survives reboots and crashes, or use a container.
+Claude Code:
+
+```bash
+claude mcp add --transport http notediscovery https://notes.example.com/mcp \
+  --header "Authorization: Bearer your-secure-api-key-here"
+```
+
+The exact JSON shape varies a little between clients (some infer the transport from `url` and don't need `"type"`), so check your client's docs for remote/HTTP servers.
+
+> **Exposure:** this is an HTTP endpoint on your NoteDiscovery server, so anyone who can reach it and holds the API key can read and write your notes. Serve it over HTTPS (e.g. behind a reverse proxy) when it leaves your LAN. If `server.allowed_origins` lists specific origins instead of `"*"`, requests carrying any other `Origin` header are rejected.
+
+The endpoint is stateless and returns plain JSON responses. It doesn't use SSE streams or session IDs, so it works through ordinary reverse proxies with no buffering or sticky-session configuration.
+
+#### Migrating from mcp-proxy / SSE
+
+Earlier versions of this guide used [mcp-proxy](https://github.com/sparfenyuk/mcp-proxy) to expose the stdio server over the now-deprecated SSE transport (`http://your-host:3000/sse`). The built-in endpoint replaces that: enable `mcp.enabled`, change your client config's URL to `https://<your NoteDiscovery URL>/mcp`, add the auth header, and retire the proxy.
 
 #### Trade-offs vs. the default per-session setup
 
-| | Per-session (default) | 24×7 with mcp-proxy |
+| | Per-session stdio (default) | Streamable HTTP (`/mcp`) |
 |---|---|---|
-| Setup complexity | None — JSON config and done | Persistent process to manage (systemd, docker-compose, etc.) |
-| Startup cost | ~1–2s container cold start per session | None — server is always warm |
-| Multi-device | Each device spawns its own | One shared instance |
-| Network exposure | None (local pipes only) | HTTP endpoint — **you** own the auth, TLS, and firewalling |
-| Concurrent clients | One per spawned container | Depends on how `mcp-proxy` is configured |
-| State / leak resilience | Fresh process every session | Long-running — restart policy recommended |
+| Setup complexity | None. Add the JSON config and you're done | Flip `mcp.enabled`, set an API key |
+| Startup cost | ~1–2s container cold start per session | None. The server is already running |
+| Multi-device | Each device spawns its own | Every device uses the same URL |
+| Network exposure | None (local pipes only) | Same as NoteDiscovery itself. **You** own the TLS and firewalling |
+| Extra processes | One per session | None |
 
-**Per-session stdio is the right default** for single-user, single-machine setups. Reach for the 24×7 setup only if you genuinely need shared or remote access and you're comfortable owning the auth and network-exposure side of it (e.g., LAN-only, or behind a reverse proxy with authentication).
+**Per-session stdio is the right default** for single-user, single-machine setups. Use `/mcp` when you want shared or remote access and NoteDiscovery is already reachable from where your AI client runs.
 
 ## Configuration
 
 ### Environment Variables
+
+These configure the stdio server (`python -m mcp_server` / `notediscovery-mcp`). The `/mcp` HTTP endpoint is configured on the NoteDiscovery server instead: see [Remote Access](#remote-access-streamable-http).
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
@@ -372,6 +379,8 @@ If you have authentication enabled in NoteDiscovery:
    }
    ```
 
+   For the `/mcp` HTTP endpoint, send it as a header instead: `"headers": { "Authorization": "Bearer your-secure-api-key-here" }`.
+
 ## Troubleshooting
 
 ### "Connection refused" error
@@ -384,6 +393,11 @@ If you have authentication enabled in NoteDiscovery:
 
 - Check that your API key is correct
 - Ensure the API key in MCP config matches `config.yaml`
+
+### `/mcp` returns 404, 405, or HTML
+
+- The endpoint is off. Set `mcp.enabled: true` or `MCP_ENABLED=true` and restart
+- With authentication enabled, also set an API key. Check the startup log for `MCP endpoint NOT enabled`
 
 ### MCP server not starting
 
@@ -436,6 +450,8 @@ The MCP server is a **separate process** that:
 1. Communicates with AI assistants via stdio (stdin/stdout)
 2. Translates MCP requests into HTTP API calls
 3. Returns results back to the AI assistant
+
+With [Streamable HTTP](#remote-access-streamable-http) enabled, the same MCP server code runs inside NoteDiscovery instead. AI assistants POST JSON-RPC to `/mcp`, and tool calls reach the REST API over loopback using the configured API key.
 
 Your notes stay local. The MCP server just provides a bridge for AI access.
 

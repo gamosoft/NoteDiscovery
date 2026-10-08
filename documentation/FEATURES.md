@@ -438,6 +438,7 @@ Built-in **Model Context Protocol (MCP)** server for AI assistant integration:
 - **Knowledge graph** - AI can explore note relationships
 - **Discover backlinks** - AI can find what notes reference a specific note
 - **Zero setup** - Works with Docker or Python, just add config to Cursor/Claude
+- **Remote access** - Optional built-in Streamable HTTP endpoint at `/mcp` (`MCP_ENABLED=true`)
 
 ### Quick Setup (Docker)
 ```json

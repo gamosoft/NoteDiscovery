@@ -96,6 +96,13 @@ docker run -e AUTHENTICATION_ENABLED=true -e AUTHENTICATION_PASSWORD=mysecretpas
 AUTHENTICATION_PASSWORD=mysecretpassword
 ```
 
+### MCP
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `MCP_ENABLED` | boolean | `false` | Serve MCP over Streamable HTTP at `/mcp`. Requires `AUTHENTICATION_API_KEY` when authentication is enabled. See [MCP.md](MCP.md#remote-access-streamable-http) |
+| `MCP_LOOPBACK_URL` | string | `http://127.0.0.1:<listening port>` | URL the `/mcp` endpoint uses to call back into NoteDiscovery for tool calls. Only needed for unusual setups (e.g. listening on a unix socket) |
+
 ### Demo Mode
 
 | Variable | Type | Default | Description |

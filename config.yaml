@@ -73,3 +73,11 @@ authentication:
   #
   # Leave empty to disable API key authentication (only session auth works)
   api_key: ""
+
+mcp:
+  # Serve MCP (Model Context Protocol) over Streamable HTTP at /mcp, so AI
+  # assistants can connect by URL instead of spawning the stdio server.
+  # Uses the same auth as the REST API. When authentication is enabled,
+  # authentication.api_key must be set or the endpoint stays off.
+  # Override via the MCP_ENABLED env var.
+  enabled: false
