@@ -57,6 +57,31 @@
         })();
     </script>
     
+    <!-- Preload the saved theme before Alpine renders, so a reload doesn't flash
+         the default theme. Mirrors the synchronous locale preload above; app.js
+         reuses this #dynamic-theme element later in applyTheme(). -->
+    <script>
+        (function() {
+            try {
+                const themeId = localStorage.getItem('noteDiscoveryTheme');
+                if (!themeId) return; // No saved preference: default theme applies as before
+                document.documentElement.setAttribute('data-theme', themeId);
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', '/api/themes/' + encodeURIComponent(themeId), false); // Synchronous
+                xhr.send();
+                if (xhr.status === 200) {
+                    const styleEl = document.createElement('style');
+                    styleEl.id = 'dynamic-theme';
+                    styleEl.textContent = JSON.parse(xhr.responseText).css;
+                    document.head.appendChild(styleEl);
+                }
+            } catch (e) {
+                // Fall back to the normal async applyTheme() path in app.js
+                console.error('Failed to preload theme:', e);
+            }
+        })();
+    </script>
+    
     <script defer src="/static/vendor/alpinejs/cdn.min.js"></script>
     <script src="/static/vendor/marked/marked.min.js"></script>
     
