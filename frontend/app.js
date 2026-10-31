@@ -5117,6 +5117,66 @@ function noteApp() {
             this.highlightInPreview(searchTerm);
         },
         
+        // Fold text the way the backend search does (case and accents ignored),
+        // so a note found with "esparragos" also highlights "Espárragos".
+        // ς and ß follow Python's casefold(), which the backend uses.
+        foldForSearch(text) {
+            return text.toLowerCase()
+                .replace(/ς/g, 'σ')
+                .replace(/ß/g, 'ss')
+                .normalize('NFD')
+                .replace(/\p{Mn}/gu, '');
+        },
+        
+        // Find the term in the folded text and return [start, end] spans in the
+        // original text, so the highlight covers the text as written. Folding can
+        // change the length ("ß" becomes "ss", a combining accent disappears), so
+        // each folded character remembers where it came from.
+        findFoldedMatches(text, term, limit = Infinity) {
+            const foldedTerm = this.foldForSearch(term);
+            if (!foldedTerm) return [];
+            
+            let folded;
+            let start = null;
+            let end = null;
+            if (/^[\x00-\x7f]*$/.test(text)) {
+                folded = text.toLowerCase();
+            } else {
+                const parts = [];
+                start = [];
+                end = [];
+                let i = 0;
+                for (const ch of text) {
+                    const foldedCh = this.foldForSearch(ch);
+                    parts.push(foldedCh);
+                    for (let k = 0; k < foldedCh.length; k++) {
+                        start.push(i);
+                        end.push(i + ch.length);
+                    }
+                    i += ch.length;
+                }
+                folded = parts.join('');
+            }
+            
+            const spans = [];
+            let pos = folded.indexOf(foldedTerm);
+            while (pos !== -1 && spans.length < limit) {
+                const matchEnd = pos + foldedTerm.length;
+                if (start === null) {
+                    spans.push([pos, matchEnd]);
+                } else {
+                    let stop = end[matchEnd - 1];
+                    // Keep a combining accent with the letter it belongs to
+                    while (stop < text.length && /\p{Mn}/u.test(text[stop])) {
+                        stop++;
+                    }
+                    spans.push([start[pos], stop]);
+                }
+                pos = folded.indexOf(foldedTerm, matchEnd);
+            }
+            return spans;
+        },
+        
         // Highlight search term in the editor textarea
         highlightInEditor(searchTerm, shouldFocus = false) {
             const editor = this._domCache.editor || document.getElementById('editor');
@@ -5124,11 +5184,11 @@ function noteApp() {
             
             // For textarea, we can't directly highlight text, but we can scroll to first match
             const content = editor.value;
-            const lowerContent = content.toLowerCase();
-            const lowerTerm = searchTerm.toLowerCase();
-            const index = lowerContent.indexOf(lowerTerm);
+            const [match] = this.findFoldedMatches(content, searchTerm, 1);
             
-            if (index !== -1) {
+            if (match) {
+                const [index, matchEnd] = match;
+                
                 // Calculate line number to scroll to
                 const textBefore = content.substring(0, index);
                 const lineNumber = textBefore.split('\n').length;
@@ -5140,7 +5200,7 @@ function noteApp() {
                 // Only focus and select if explicitly requested (e.g., from search result click)
                 if (shouldFocus) {
                     editor.focus();
-                    editor.setSelectionRange(index, index + searchTerm.length);
+                    editor.setSelectionRange(index, matchEnd);
                     
                     // Blur immediately so the selection stays visible but editor isn't focused
                     setTimeout(() => editor.blur(), 100);
@@ -5175,20 +5235,18 @@ function noteApp() {
                 textNodes.push(node);
             }
             
-            const lowerTerm = searchTerm.toLowerCase();
             let matchIndex = 0;
             
             // Highlight matches in text nodes
             textNodes.forEach(textNode => {
                 const text = textNode.textContent;
-                const lowerText = text.toLowerCase();
+                const spans = this.findFoldedMatches(text, searchTerm);
                 
-                if (lowerText.includes(lowerTerm)) {
+                if (spans.length > 0) {
                     const fragment = document.createDocumentFragment();
                     let lastIndex = 0;
-                    let index;
                     
-                    while ((index = lowerText.indexOf(lowerTerm, lastIndex)) !== -1) {
+                    for (const [index, matchEnd] of spans) {
                         // Add text before match
                         if (index > lastIndex) {
                             fragment.appendChild(
@@ -5200,7 +5258,7 @@ function noteApp() {
                         const mark = document.createElement('mark');
                         mark.className = 'search-highlight';
                         mark.setAttribute('data-match-index', matchIndex);
-                        mark.textContent = text.substring(index, index + searchTerm.length);
+                        mark.textContent = text.substring(index, matchEnd);
                         
                         // First match is active (styled via CSS)
                         if (matchIndex === 0) {
@@ -5210,7 +5268,7 @@ function noteApp() {
                         fragment.appendChild(mark);
                         matchIndex++;
                         
-                        lastIndex = index + searchTerm.length;
+                        lastIndex = matchEnd;
                     }
                     
                     // Add remaining text
