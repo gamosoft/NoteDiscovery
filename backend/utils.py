@@ -769,6 +769,7 @@ def _folded_match_spans(content: str, folded_query: str, limit: int) -> List[Tup
     combining accent), so each folded character remembers which original
     character it came from."""
     if content.isascii():
+        # casefold() and lower() agree on ASCII, and the length stays the same
         folded, origin = content.lower(), None
     else:
         parts: List[str] = []
