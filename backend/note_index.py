@@ -50,8 +50,12 @@ def extract_links_from_content(content: str) -> Dict[str, List[str]]:
 def fold_for_search(text: str) -> str:
     """Lowercase and drop accents, so "Espárragos" and "esparragos" compare
     equal. The indexed words, the query and the final match all go through
-    this, or a query typed without accents would miss on one side."""
-    decomposed = unicodedata.normalize("NFD", text.lower())
+    this, or a query typed without accents would miss on one side.
+
+    casefold() rather than lower(): lower() depends on context (a Greek "Σ"
+    becomes "ς" only at the end of a word), so folding a whole query and
+    folding a note one character at a time would disagree."""
+    decomposed = unicodedata.normalize("NFD", text.casefold())
     return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
 
 
