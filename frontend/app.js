@@ -667,7 +667,11 @@ function noteApp() {
         },
 
         homepageVisibleFolders() {
-            return this._filterHomepageByName(this.homepageFolders(), 'folders');
+// vault: honor hideUnderscoreFolders in the main pane too (sidebar + graph already do)
+            const folders = this.hideUnderscoreFolders
+                ? this.homepageFolders().filter(f => !f.name.startsWith("_"))
+                : this.homepageFolders();
+            return this._filterHomepageByName(folders, "folders");
         },
         
         // Helper: Format file size nicely
