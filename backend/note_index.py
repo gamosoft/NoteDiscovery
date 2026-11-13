@@ -243,7 +243,11 @@ class NoteIndex:
                 self._tags_forward[record.path] = new_tags
 
             self._raw_links[record.path] = raw_links
-            self._resolve_single_source_unlocked(record.path)
+            if old_record is None:
+                # Other notes may already link to the new path; resolve them again.
+                self._rebuild_links_unlocked()
+            else:
+                self._resolve_single_source_unlocked(record.path)
 
             # Search index only gets patched if it's already been built —
             # otherwise the first /api/search will build it from scratch.
