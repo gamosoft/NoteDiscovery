@@ -49,7 +49,7 @@ class NoteDiscoveryClient:
         self,
         method: str,
         endpoint: str,
-        params: Optional[dict[str, str]] = None,
+        params: Optional[dict[str, str | list[str]]] = None,
         data: Optional[dict[str, Any]] = None,
     ) -> APIResponse:
         """
@@ -67,7 +67,7 @@ class NoteDiscoveryClient:
         # Build URL with query parameters
         url = f"{self.base_url}{endpoint}"
         if params:
-            query_string = urllib.parse.urlencode(params)
+            query_string = urllib.parse.urlencode(params, doseq=True)
             url = f"{url}?{query_string}"
         
         # Prepare request body
@@ -142,7 +142,9 @@ class NoteDiscoveryClient:
     def list_notes(
         self,
         limit: int | None = None,
-        offset: int = 0
+        offset: int = 0,
+        folder: str | None = None,
+        recursive: bool = True
     ) -> APIResponse:
         """
         List all notes with metadata.
@@ -150,6 +152,8 @@ class NoteDiscoveryClient:
         Args:
             limit: Maximum number of notes to return (None = no limit)
             offset: Number of notes to skip (default: 0)
+            folder: Only return notes under this folder
+            recursive: With folder, also include subfolders (default: True)
         
         Returns:
             APIResponse with notes and folders data
@@ -158,6 +162,9 @@ class NoteDiscoveryClient:
         if limit is not None:
             params["limit"] = str(limit)
             params["offset"] = str(offset)
+        if folder:
+            params["folder"] = folder
+            params["recursive"] = "true" if recursive else "false"
         return self._request("GET", "/api/notes", params=params if params else None)
     
     def get_note(self, path: str) -> APIResponse:
@@ -259,7 +266,7 @@ class NoteDiscoveryClient:
         return self._request(
             "POST",
             "/api/notes/move",
-            data={"oldPath": old_path, "newPath": new_path}
+            data={"oldPath": old_path, "newPath": new_path, "reportBrokenLinks": True}
         )
     
     def create_note_from_template(
@@ -297,7 +304,9 @@ class NoteDiscoveryClient:
         self,
         query: str,
         limit: int | None = None,
-        offset: int = 0
+        offset: int = 0,
+        folder: str | None = None,
+        recursive: bool = True
     ) -> APIResponse:
         """
         Search notes by query.
@@ -306,6 +315,8 @@ class NoteDiscoveryClient:
             query: Search query string
             limit: Maximum number of results to return (None = no limit)
             offset: Number of results to skip (default: 0)
+            folder: Only return results under this folder
+            recursive: With folder, also include subfolders (default: True)
             
         Returns:
             APIResponse with search results
@@ -314,6 +325,9 @@ class NoteDiscoveryClient:
         if limit is not None:
             params["limit"] = str(limit)
             params["offset"] = str(offset)
+        if folder:
+            params["folder"] = folder
+            params["recursive"] = "true" if recursive else "false"
         return self._request("GET", "/api/search", params=params)
     
     # =========================================================================
@@ -357,6 +371,31 @@ class NoteDiscoveryClient:
             params=params if params else None
         )
     
+    def get_notes_by_tags(
+        self,
+        tags: list[str],
+        match: str = "all",
+        limit: int | None = None,
+        offset: int = 0
+    ) -> APIResponse:
+        """
+        Get notes that have several tags.
+
+        Args:
+            tags: Tag names
+            match: "all" for notes with every tag, "any" for notes with at least one
+            limit: Maximum number of notes to return (None = no limit)
+            offset: Number of notes to skip (default: 0)
+
+        Returns:
+            APIResponse with matching notes
+        """
+        params: dict[str, str | list[str]] = {"tags": tags, "match": match}
+        if limit is not None:
+            params["limit"] = str(limit)
+            params["offset"] = str(offset)
+        return self._request("GET", "/api/tags-match", params=params)
+
     # =========================================================================
     # Folders API
     # =========================================================================
@@ -373,6 +412,36 @@ class NoteDiscoveryClient:
         """
         return self._request("POST", "/api/folders", data={"path": path})
     
+    def move_folder(self, old_path: str, new_path: str) -> APIResponse:
+        """
+        Move or rename a folder with everything inside it.
+
+        Args:
+            old_path: Current folder path
+            new_path: New folder path
+
+        Returns:
+            APIResponse with move result
+        """
+        return self._request(
+            "POST",
+            "/api/folders/move",
+            data={"oldPath": old_path, "newPath": new_path, "reportBrokenLinks": True}
+        )
+
+    def delete_folder(self, path: str) -> APIResponse:
+        """
+        Delete an empty folder.
+
+        Args:
+            path: Folder path
+
+        Returns:
+            APIResponse with deletion result
+        """
+        encoded_path = urllib.parse.quote(path, safe="")
+        return self._request("DELETE", f"/api/folders/{encoded_path}", params={"require_empty": "true"})
+
     # =========================================================================
     # Graph API
     # =========================================================================

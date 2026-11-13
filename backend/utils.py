@@ -317,6 +317,12 @@ def ensure_directories(config: dict):
         Path(dir_path).mkdir(parents=True, exist_ok=True)
 
 
+def is_in_folder(path: str, folder: str, recursive: bool = True) -> bool:
+    """True when a vault-relative path sits under `folder`. Paths use forward slashes."""
+    parent = path.rpartition('/')[0]
+    return parent == folder or (recursive and parent.startswith(f"{folder}/"))
+
+
 def create_folder(notes_dir: str, folder_path: str) -> bool:
     """Create a new folder in the notes directory."""
     full_path = Path(notes_dir) / folder_path
@@ -536,6 +542,14 @@ def delete_folder(notes_dir: str, folder_path: str) -> bool:
         logger.error("Error deleting folder '%s': %s", folder_path, e)
         logger.error(traceback.format_exc())
         return False
+
+
+def folder_is_empty(notes_dir: str, folder_path: str) -> bool:
+    """True when the folder holds nothing at all, hidden files included."""
+    full_path = Path(notes_dir) / folder_path
+    if not validate_path_security(notes_dir, full_path) or not full_path.is_dir():
+        return False
+    return not any(full_path.iterdir())
 
 
 def _drop_path_caches(full_path: Path) -> None:
@@ -1143,9 +1157,16 @@ def get_all_tags(notes_dir: str) -> Dict[str, int]:
 
 def get_notes_by_tag(notes_dir: str, tag: str) -> List[Dict]:
     """All notes carrying `tag` (case-insensitive)."""
+    return get_notes_by_tags(notes_dir, [tag])
+
+
+def get_notes_by_tags(notes_dir: str, tags: List[str], match: str = "all") -> List[Dict]:
+    """Notes carrying all of `tags`, or any of them when `match` is "any" (case-insensitive)."""
     ensure_index_built(notes_dir)
     idx = note_index.get_index()
-    records = [idx.get_note_record(p) for p in note_index.get_paths_for_tag(tag.lower())]
+    path_sets = [set(note_index.get_paths_for_tag(tag.lower())) for tag in tags]
+    paths = set.union(*path_sets) if match == "any" else set.intersection(*path_sets)
+    records = [idx.get_note_record(p) for p in paths]
     matching = [
         {
             "name": r.name,
