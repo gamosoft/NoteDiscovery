@@ -19,6 +19,12 @@ Returns all notes with their metadata and folder structure.
 
 When `limit` is provided, the response includes pagination metadata.
 
+**Optional Folder Filter:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `folder` | string | - | Only return notes under this folder |
+| `recursive` | boolean | true | With `folder`, also include subfolders |
+
 **Examples:**
 ```bash
 # Get all notes (default)
@@ -248,9 +254,12 @@ Content-Type: application/json
 
 {
   "oldPath": "note.md",
-  "newPath": "folder/note.md"
+  "newPath": "folder/note.md",
+  "reportBrokenLinks": true
 }
 ```
+
+`reportBrokenLinks` is optional and defaults to `false`. When `true`, the response adds `brokenLinksIn`: the notes with links to the old path that no longer work. Other notes do not change.
 
 ## 🎬 Media
 
@@ -383,6 +392,9 @@ DELETE /api/folders/{folder_path}
 ```
 Deletes a folder and all its contents.
 
+**Query Parameters:**
+- `require_empty` (optional): when `true`, returns `409` and deletes nothing if the folder is not empty. Defaults to `false`.
+
 **Example:**
 ```bash
 curl -X DELETE http://localhost:8000/api/folders/Projects/Archive
@@ -395,9 +407,12 @@ Content-Type: application/json
 
 {
   "oldPath": "OldFolder",
-  "newPath": "NewFolder"
+  "newPath": "NewFolder",
+  "reportBrokenLinks": true
 }
 ```
+
+`reportBrokenLinks` works as in [Move Note](#-notes). It also checks the links inside the moved folder.
 
 ### Rename Folder
 ```http
@@ -429,6 +444,12 @@ match most of a vault and cannot use the search index.
 |-----------|------|---------|-------------|
 | `limit` | integer | - | Max results to return (omit for all) |
 | `offset` | integer | 0 | Number of results to skip |
+
+**Optional Folder Filter:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `folder` | string | - | Only return results under this folder |
+| `recursive` | boolean | true | With `folder`, also include subfolders |
 
 **Examples:**
 ```bash
@@ -777,7 +798,7 @@ GET /api/tags/{tag_name}
 GET /api/tags/{tag_name}?limit=10&offset=0
 ```
 
-Returns all notes that have a specific tag.
+Returns all notes that have a specific tag. To filter by several tags, see [Get Notes by Several Tags](#get-notes-by-several-tags).
 
 **Optional Pagination:**
 | Parameter | Type | Default | Description |
@@ -800,6 +821,19 @@ Returns all notes that have a specific tag.
   ]
 }
 ```
+
+### Get Notes by Several Tags
+```http
+GET /api/tags-match?tags=python&tags=tutorial
+GET /api/tags-match?tags=python&tags=tutorial&match=any
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `tags` | string | - | Tag to filter by. Repeat it for each tag (required) |
+| `match` | string | `all` | `all` for notes with every tag, `any` for notes with at least one |
+| `limit` | integer | - | Max notes to return (omit for all) |
+| `offset` | integer | 0 | Number of notes to skip |
 
 ---
 

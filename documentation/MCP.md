@@ -182,6 +182,7 @@ The MCP server provides these tools to AI assistants:
 |------|-------------|
 | `search_notes` | Full-text search across all notes (supports pagination) |
 | `list_notes` | List all notes with metadata (supports pagination) |
+| `list_folders` | List folders, including empty ones, with note and subfolder counts |
 | `get_note` | Read a specific note's content |
 | `get_recent_notes` | Get recently modified notes (last N days) |
 
@@ -190,7 +191,7 @@ The MCP server provides these tools to AI assistants:
 | Tool | Description |
 |------|-------------|
 | `list_tags` | List all tags with note counts |
-| `get_notes_by_tag` | Find notes with a specific tag (supports pagination) |
+| `get_notes_by_tag` | Find notes with one tag, or several with `tags` and `match` (`all` or `any`) (supports pagination) |
 | `get_graph` | Get knowledge graph data |
 | `get_backlinks` | Get notes that link to a specific note (reverse links) |
 
@@ -204,6 +205,8 @@ The MCP server provides these tools to AI assistants:
 | `move_note` | Move or rename a note |
 | `delete_note` | Delete a note |
 | `create_folder` | Create a new folder |
+| `move_folder` | Move or rename a folder with everything inside it |
+| `delete_folder` | Delete an empty folder. Refuses a folder with anything in it, and the vault root |
 
 ### Templates
 
@@ -234,6 +237,8 @@ Some tools support optional pagination parameters for large vaults:
 
 - `limit` - Maximum items to return (omit for all)
 - `offset` - Number of items to skip (for pagination)
+
+`search_notes` and `list_notes` also accept `folder`, to return only notes under that folder, and `recursive` (default: true), to include or skip its subfolders. Pagination applies after the folder filter.
 
 **Example prompts:**
 - "Search for notes about Python, but just show me the first 5 results"
@@ -296,6 +301,8 @@ Move or rename a note to a different location.
 |-----------|------|----------|-------------|
 | `old_path` | string | Yes | Current note path |
 | `new_path` | string | Yes | New path (can include folder) |
+
+Other notes do not change. The response lists the notes with links that pointed to the old path and no longer work, so you can fix them. A link by note name, like `[[note]]`, keeps working, so it is not listed. Links inside code blocks and inline code are ignored. `move_folder` works the same way.
 
 **Example prompt:** "Move draft.md to published/final-article.md"
 

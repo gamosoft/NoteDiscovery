@@ -13,6 +13,8 @@ import json
 import re
 import sys
 import traceback
+from collections import Counter
+from pathlib import PurePosixPath
 from typing import Any, Optional
 
 from . import __version__
@@ -214,11 +216,19 @@ class MCPServer:
         limit = args.get("limit")
         offset = args.get("offset", 0)
 
+        folder = args.get("folder")
+        recursive = args.get("recursive", True)
+
         if not query:
             return "No search term provided. Please specify a query."
 
+        if folder:
+            is_valid, error = self._validate_path(folder)
+            if not is_valid:
+                return f"Error: {error.replace('path', 'folder')}"
+
         # Use server-side pagination if limit is specified
-        response = self.client.search(query, limit=limit, offset=offset)
+        response = self.client.search(query, limit=limit, offset=offset, folder=folder, recursive=recursive)
         
         if not response.success:
             return f"Search failed: {response.error}"
@@ -263,9 +273,16 @@ class MCPServer:
         """List all notes."""
         limit = args.get("limit")
         offset = args.get("offset", 0)
+        folder = args.get("folder")
+        recursive = args.get("recursive", True)
+
+        if folder:
+            is_valid, error = self._validate_path(folder)
+            if not is_valid:
+                return f"Error: {error.replace('path', 'folder')}"
 
         # Use server-side pagination if limit is specified
-        response = self.client.list_notes(limit=limit, offset=offset)
+        response = self.client.list_notes(limit=limit, offset=offset, folder=folder, recursive=recursive)
         
         if not response.success:
             return f"Failed to list notes: {response.error}"
@@ -302,6 +319,53 @@ class MCPServer:
         # Add pagination hint if there are more results
         if pagination and pagination.get("has_more"):
             output.append(f"... more notes available (use limit and offset to paginate)")
+
+        return "\n".join(output)
+
+    def _tool_list_folders(self, args: dict) -> str:
+        """List folders, including empty ones."""
+        parent = args.get("parent", "").rstrip("/")
+        recursive = args.get("recursive", True)
+
+        if parent:
+            is_valid, error = self._validate_path(parent)
+            if not is_valid:
+                return f"Error: {error.replace('path', 'parent')}"
+
+        response = self.client.list_notes()
+
+        if not response.success:
+            return f"Failed to list folders: {response.error}"
+
+        data = response.data or {}
+        folders = data.get("folders", [])
+
+        if parent and parent not in folders:
+            return f"Folder not found: {parent}"
+
+        note_counts = Counter(
+            note.get("folder", "")
+            for note in data.get("notes", [])
+            if note.get("type") == "note"
+        )
+        subfolder_counts = Counter(folder.rpartition("/")[0] for folder in folders)
+
+        prefix = f"{parent}/" if parent else ""
+        selected = [
+            folder for folder in folders
+            if folder.startswith(prefix)
+            and (recursive or "/" not in folder[len(prefix):])
+        ]
+
+        if not selected:
+            return f"No folders found under {parent}" if parent else "No folders found"
+
+        output = [f"Found {len(selected)} folder(s):\n"]
+        for folder in selected:
+            output.append(
+                f"📁 {folder}/ "
+                f"(notes: {note_counts[folder]}, subfolders: {subfolder_counts[folder]})"
+            )
 
         return "\n".join(output)
 
@@ -353,14 +417,23 @@ class MCPServer:
     def _tool_get_notes_by_tag(self, args: dict) -> str:
         """Get notes with a specific tag."""
         tag = args.get("tag", "")
+        tags = [t for t in args.get("tags") or [] if t]
+        if tag and tag not in tags:
+            tags.insert(0, tag)
+        match = args.get("match", "all")
         limit = args.get("limit")
         offset = args.get("offset", 0)
 
-        if not tag:
-            return "Error: tag is required"
+        if not tags:
+            return "Error: tag or tags is required"
+        if match not in ("all", "any"):
+            return "Error: match must be 'all' or 'any'"
 
         # Use server-side pagination if limit is specified
-        response = self.client.get_notes_by_tag(tag, limit=limit, offset=offset)
+        if len(tags) == 1:
+            response = self.client.get_notes_by_tag(tags[0], limit=limit, offset=offset)
+        else:
+            response = self.client.get_notes_by_tags(tags, match=match, limit=limit, offset=offset)
 
         if not response.success:
             return f"Failed to get notes by tag: {response.error}"
@@ -370,14 +443,19 @@ class MCPServer:
         count = data.get("count", len(notes))
         pagination = data.get("pagination")
 
+        separator = " and " if match == "all" else " or "
+        label = separator.join(f"#{t}" for t in tags)
+
         if not notes:
-            return f"No notes found with tag '#{tag}'"
+            if len(tags) == 1:
+                return f"No notes found with tag '{label}'"
+            return f"No notes found with tags {label}"
 
         # Build header with pagination info if available
         if pagination:
-            output = [f"Notes with tag #{tag} ({count} total, showing {len(notes)}):\n"]
+            output = [f"Notes with tag {label} ({count} total, showing {len(notes)}):\n"]
         else:
-            output = [f"Notes with tag #{tag} ({count} total):\n"]
+            output = [f"Notes with tag {label} ({count} total):\n"]
         
         for note in notes:
             path = note.get("path", "unknown")
@@ -499,6 +577,54 @@ class MCPServer:
         
         return f"📁 Folder created: {path}"
     
+    def _describe_move(self, moved: str, response: APIResponse) -> str:
+        """Describe a finished move and the notes whose links it broke."""
+        broken = (response.data or {}).get("brokenLinksIn", [])
+        if not broken:
+            return moved
+        output = [moved, f"Links that no longer work in {len(broken)} note(s):"]
+        output.extend(f"  ⚠️ {path}" for path in broken)
+        return "\n".join(output)
+
+    def _validate_folder_path(self, path: str) -> tuple[bool, str]:
+        """Validate a path that names a folder other than the vault root."""
+        is_valid, error = self._validate_path(path)
+        if is_valid and not PurePosixPath(path).parts:
+            return False, "path cannot be the vault root"
+        return is_valid, error
+
+    def _tool_move_folder(self, args: dict) -> str:
+        """Move or rename a folder."""
+        old_path = args.get("old_path", "")
+        new_path = args.get("new_path", "")
+
+        for path in (old_path, new_path):
+            is_valid, error = self._validate_folder_path(path)
+            if not is_valid:
+                return f"Error: {error}"
+
+        response = self.client.move_folder(old_path, new_path)
+
+        if not response.success:
+            return f"Failed to move folder: {response.error}"
+
+        return self._describe_move(f"Moved folder {old_path} to {new_path}", response)
+
+    def _tool_delete_folder(self, args: dict) -> str:
+        """Delete a folder."""
+        path = args.get("path", "")
+
+        is_valid, error = self._validate_folder_path(path)
+        if not is_valid:
+            return f"Error: {error}"
+
+        response = self.client.delete_folder(path)
+
+        if not response.success:
+            return f"Failed to delete folder: {response.error}"
+
+        return f"Deleted folder {path}"
+
     def _tool_list_templates(self, args: dict) -> str:
         """List templates."""
         response = self.client.list_templates()
@@ -595,7 +721,7 @@ class MCPServer:
         if not response.success:
             return f"Failed to move note: {response.error}"
         
-        return f"✅ Note moved: {old_path} → {new_path}"
+        return self._describe_move(f"✅ Note moved: {old_path} → {new_path}", response)
     
     def _tool_get_recent_notes(self, args: dict) -> str:
         """Get recently modified notes."""
