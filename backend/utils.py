@@ -1062,6 +1062,13 @@ def get_media_type(filename: str) -> Optional[str]:
     return None
 
 
+def _unquote_tag(tag: str) -> str:
+    """Drop the YAML quotes around a tag value: "2026" and '2026' are the tag 2026."""
+    if len(tag) >= 2 and tag[0] == tag[-1] and tag[0] in ('"', "'"):
+        return tag[1:-1].strip()
+    return tag
+
+
 def parse_tags(content: str) -> List[str]:
     """
     Extract tags from YAML frontmatter in markdown content.
@@ -1121,12 +1128,12 @@ def parse_tags(content: str) -> List[str]:
                 if rest.startswith('[') and rest.endswith(']'):
                     # Parse inline array
                     tags_str = rest[1:-1]  # Remove [ and ]
-                    raw_tags = [t.strip() for t in tags_str.split(',')]
+                    raw_tags = [_unquote_tag(t.strip()) for t in tags_str.split(',')]
                     tags.extend([t.lower() for t in raw_tags if t])
                     break
                 elif rest:
                     # Single tag without brackets
-                    tags.append(rest.lower())
+                    tags.append(_unquote_tag(rest).lower())
                     break
                 else:
                     # Multi-line list format
@@ -1134,7 +1141,7 @@ def parse_tags(content: str) -> List[str]:
             elif in_tags_list:
                 if stripped.startswith('-'):
                     # List item
-                    tag = stripped[1:].strip()
+                    tag = _unquote_tag(stripped[1:].strip())
                     if tag:
                         tags.append(tag.lower())
                 elif stripped and not stripped.startswith('#'):
