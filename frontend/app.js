@@ -2515,6 +2515,10 @@ function noteApp() {
                 
                 if (endIdx === -1) return [];
                 
+                // "2026" and '2026' are the tag 2026: drop the YAML quotes
+                const unquote = (tag) => (tag.length >= 2 && tag[0] === tag[tag.length - 1] && (tag[0] === '"' || tag[0] === "'"))
+                    ? tag.slice(1, -1).trim()
+                    : tag;
                 const frontmatterLines = lines.slice(1, endIdx);
                 const tags = [];
                 let inTagsList = false;
@@ -2527,18 +2531,18 @@ function noteApp() {
                         const rest = stripped.substring(5).trim();
                         if (rest.startsWith('[') && rest.endsWith(']')) {
                             const tagsStr = rest.substring(1, rest.length - 1);
-                            const rawTags = tagsStr.split(',').map(t => t.trim());
+                            const rawTags = tagsStr.split(',').map(t => unquote(t.trim()));
                             tags.push(...rawTags.filter(t => t).map(t => t.toLowerCase()));
                             break;
                         } else if (rest) {
-                            tags.push(rest.toLowerCase());
+                            tags.push(unquote(rest).toLowerCase());
                             break;
                         } else {
                             inTagsList = true;
                         }
                     } else if (inTagsList) {
                         if (stripped.startsWith('-')) {
-                            const tag = stripped.substring(1).trim();
+                            const tag = unquote(stripped.substring(1).trim());
                             if (tag && !tag.startsWith('#')) {
                                 tags.push(tag.toLowerCase());
                             }
