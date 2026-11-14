@@ -289,6 +289,8 @@ Change part of an existing note without resending the whole file. The text in `o
 
 To edit a section, include its heading in `old_str`.
 
+Search ignores accents, so `search_notes` for `strasse` can find a note that contains `Straße`. The snippet and `get_note` show the word as written. Copy `old_str` from that text. The search query itself will not match.
+
 **Example prompt:** "In project-alpha.md, change the deadline from March to April"
 
 ---
@@ -347,6 +349,12 @@ Once configured, you can interact with your notes naturally:
 > **AI:** *Uses `search_notes` to find relevant notes, then `get_note` to read them*
 > 
 > "I found 3 notes about Kubernetes. In your 'devops/k8s-setup.md' note from last week, you documented..."
+
+> **User:** "Find the note about strasse and change Straße to Spargel"
+>
+> **AI:** *Uses `search_notes` for `strasse`. The snippet shows `Straße`. `get_note` returns that same text, and `edit_note` copies it into `old_str`.*
+>
+> "Done. I updated Straße in recipes/sides.md."
 
 > **User:** "Create a new note summarizing our conversation"
 > 
