@@ -296,7 +296,11 @@
     "new_button_option_template": "Nouvelle note depuis un modèle",
     "new_button_option_drawing": "Nouveau dessin",
     "auto_fill_note_title": "Titre avec horodatage",
-    "auto_fill_note_title_desc": "aaaammjjHHMMSS. Entrée accepte, tapez pour remplacer."
+    "auto_fill_note_title_desc": "aaaammjjHHMMSS. Entrée accepte, tapez pour remplacer.",
+    "your_notes": "Vos notes",
+    "download_notes": "Télécharger",
+    "download_notes_all": "Toutes les notes",
+    "download_notes_desc": "Toutes les notes ou un seul dossier, pièces jointes comprises, sans aucune modification, dans un seul fichier zip."
   },
   "homepage": {
     "title": "Accueil",

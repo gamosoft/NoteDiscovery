@@ -1980,7 +1980,35 @@
                                     </label>
                                     <p class="text-xs mt-1" style="color: var(--text-tertiary);" x-text="t('settings.auto_fill_note_title_desc')"></p>
                                 </div>
-                                
+
+                                <!-- Download notes as a zip (/api/archive): all of them, or one folder. Hidden in demo mode, where the
+                                     endpoint is disabled. A plain link, so the browser streams the file and shows its own progress.
+                                     Underscore folders are listed even when hidden in the tree: they hold attachments too. -->
+                                <div x-show="!demoMode" class="mb-4">
+                                    <label for="archive-folder" class="block text-xs font-medium mb-2" style="color: var(--text-secondary);" x-text="t('settings.your_notes')"></label>
+                                    <select
+                                        id="archive-folder"
+                                        x-model="archiveFolder"
+                                        class="w-full px-3 py-2 rounded border text-sm"
+                                        style="background-color: var(--bg-tertiary); color: var(--text-primary); border-color: var(--border-primary);"
+                                    >
+                                        <option value="" x-text="t('settings.download_notes_all')"></option>
+                                        <template x-for="folder in [...allFolders].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))" :key="folder">
+                                            <option :value="folder" x-text="folder"></option>
+                                        </template>
+                                    </select>
+                                    <a
+                                        :href="allFolders.includes(archiveFolder) ? '/api/archive?folder=' + encodeURIComponent(archiveFolder) : '/api/archive'"
+                                        download
+                                        class="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm rounded transition-colors cursor-pointer"
+                                        style="background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-primary);"
+                                        onmouseover="this.style.backgroundColor='var(--bg-hover)'"
+                                        onmouseout="this.style.backgroundColor='var(--bg-primary)'"
+                                        x-text="'📦 ' + t('settings.download_notes')"
+                                    ></a>
+                                    <p class="text-xs mt-1" style="color: var(--text-tertiary);" x-text="t('settings.download_notes_desc')"></p>
+                                </div>
+
                                 <!-- Logout (if auth enabled) - uses authEnabled from main app state -->
                                 <div x-show="authEnabled" class="mb-4">
                                     <label class="block text-xs font-medium mb-2" style="color: var(--text-secondary);" x-text="t('settings.account')"></label>

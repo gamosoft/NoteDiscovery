@@ -296,7 +296,11 @@
     "new_button_option_template": "Nowa notatka z szablonu",
     "new_button_option_drawing": "Nowy szkic",
     "auto_fill_note_title": "Automatycznie uzupełnij tytuł znacznikiem czasu",
-    "auto_fill_note_title_desc": "yyyymmddHHMMSS. Naciśnij Enter, aby zaakceptować, lub zacznij pisać, aby zastąpić."
+    "auto_fill_note_title_desc": "yyyymmddHHMMSS. Naciśnij Enter, aby zaakceptować, lub zacznij pisać, aby zastąpić.",
+    "your_notes": "Twoje notatki",
+    "download_notes": "Pobierz",
+    "download_notes_all": "Wszystkie notatki",
+    "download_notes_desc": "Wszystkie notatki lub jeden folder, razem z załącznikami, dokładnie tak, jak są zapisane, w jednym pliku zip."
   },
   "homepage": {
     "title": "Strona główna",

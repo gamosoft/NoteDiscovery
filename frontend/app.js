@@ -398,6 +398,7 @@ function noteApp() {
         // Folder state
         folderTree: [],
         allFolders: [],
+        archiveFolder: '',  // Settings > Your notes: '' for all notes, else a path from allFolders
         expandedFolders: new Set(),
         dragOverFolder: null,  // Track which folder is being hovered during drag
         

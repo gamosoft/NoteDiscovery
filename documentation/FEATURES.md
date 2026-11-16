@@ -47,6 +47,7 @@
 - **Self-contained** - Exported files work offline with no dependencies
 - **Theme-aware** - Export uses your current theme for consistent appearance
 - **Full rendering** - MathJax equations, Mermaid diagrams, and syntax highlighting included
+- **Download notes** - Settings → *Your notes* gets all notes, or one folder, with attachments, exactly as stored, in one zip (the `/api/archive` endpoint, see [API.md](API.md))
 
 ## ✏️ Drawing editor
 

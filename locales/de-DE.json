@@ -296,7 +296,11 @@
     "new_button_option_template": "Neue Notiz aus Vorlage",
     "new_button_option_drawing": "Neue Zeichnung",
     "auto_fill_note_title": "Titel mit Zeitstempel",
-    "auto_fill_note_title_desc": "jjjjmmttHHMMSS. Enter akzeptiert, Tippen ersetzt."
+    "auto_fill_note_title_desc": "jjjjmmttHHMMSS. Enter akzeptiert, Tippen ersetzt.",
+    "your_notes": "Deine Notizen",
+    "download_notes": "Herunterladen",
+    "download_notes_all": "Alle Notizen",
+    "download_notes_desc": "Alle Notizen oder ein einzelner Ordner, mit Anhängen, genau wie gespeichert, in einer ZIP-Datei."
   },
   "homepage": {
     "title": "Startseite",

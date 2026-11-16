@@ -296,7 +296,11 @@
     "new_button_option_template": "从模板新建笔记",
     "new_button_option_drawing": "新建绘图",
     "auto_fill_note_title": "用时间戳自动填充标题",
-    "auto_fill_note_title_desc": "yyyymmddHHMMSS。Enter 接受，输入以替换。"
+    "auto_fill_note_title_desc": "yyyymmddHHMMSS。Enter 接受，输入以替换。",
+    "your_notes": "你的笔记",
+    "download_notes": "下载",
+    "download_notes_all": "所有笔记",
+    "download_notes_desc": "所有笔记或单个文件夹（含附件）按原样打包为一个 zip 文件。"
   },
   "homepage": {
     "title": "首页",
