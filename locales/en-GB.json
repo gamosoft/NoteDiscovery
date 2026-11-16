@@ -296,7 +296,11 @@
     "new_button_option_template": "New note from template",
     "new_button_option_drawing": "New drawing",
     "auto_fill_note_title": "Auto-fill title with timestamp",
-    "auto_fill_note_title_desc": "yyyymmddHHMMSS. Enter to accept, type to replace."
+    "auto_fill_note_title_desc": "yyyymmddHHMMSS. Enter to accept, type to replace.",
+    "your_notes": "Your notes",
+    "download_notes": "Download",
+    "download_notes_all": "All notes",
+    "download_notes_desc": "All notes or a single folder, attachments included, exactly as stored, in one zip file."
   },
   "homepage": {
     "title": "Home",

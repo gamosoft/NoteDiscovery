@@ -296,7 +296,11 @@
     "new_button_option_template": "Új jegyzet sablonból",
     "new_button_option_drawing": "Új rajz",
     "auto_fill_note_title": "Cím kitöltése időbélyeggel",
-    "auto_fill_note_title_desc": "éééé.hh.nn.ÓÓ.PP.MM."
+    "auto_fill_note_title_desc": "éééé.hh.nn.ÓÓ.PP.MM.",
+    "your_notes": "A jegyzeteid",
+    "download_notes": "Letöltés",
+    "download_notes_all": "Összes jegyzet",
+    "download_notes_desc": "Az összes jegyzet vagy egyetlen mappa, a mellékletekkel együtt, pontosan úgy, ahogy tárolva vannak, egyetlen zip-fájlban."
   },
   "homepage": {
     "title": "Főoldal",

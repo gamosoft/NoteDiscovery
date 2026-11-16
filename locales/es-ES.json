@@ -296,7 +296,11 @@
     "new_button_option_template": "Nueva nota desde plantilla",
     "new_button_option_drawing": "Nuevo dibujo",
     "auto_fill_note_title": "Título con marca de tiempo",
-    "auto_fill_note_title_desc": "aaaammddHHMMSS. Intro acepta, escribe para reemplazar."
+    "auto_fill_note_title_desc": "aaaammddHHMMSS. Intro acepta, escribe para reemplazar.",
+    "your_notes": "Tus notas",
+    "download_notes": "Descargar",
+    "download_notes_all": "Todas las notas",
+    "download_notes_desc": "Todas las notas o una sola carpeta, con sus adjuntos, tal como están guardadas, en un solo archivo zip."
   },
   "homepage": {
     "title": "Inicio",

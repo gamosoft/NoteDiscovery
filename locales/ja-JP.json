@@ -296,7 +296,11 @@
     "new_button_option_template": "テンプレートから新規ノート",
     "new_button_option_drawing": "新規お絵描き",
     "auto_fill_note_title": "タイトルに日時を自動入力",
-    "auto_fill_note_title_desc": "yyyymmddHHMMSS。Enterで確定、入力で置換。"
+    "auto_fill_note_title_desc": "yyyymmddHHMMSS。Enterで確定、入力で置換。",
+    "your_notes": "あなたのノート",
+    "download_notes": "ダウンロード",
+    "download_notes_all": "すべてのノート",
+    "download_notes_desc": "すべてのノート、または1つのフォルダを、添付ファイルも含めて保存されているそのままの形で1つの zip ファイルにまとめます。"
   },
   "homepage": {
     "title": "ホーム",

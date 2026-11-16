@@ -296,7 +296,11 @@
     "new_button_option_template": "Nuova nota da modello",
     "new_button_option_drawing": "Nuovo disegno",
     "auto_fill_note_title": "Compila titolo con timestamp",
-    "auto_fill_note_title_desc": "aaaammddHHMMSS. Invio accetta, digita per sostituire."
+    "auto_fill_note_title_desc": "aaaammddHHMMSS. Invio accetta, digita per sostituire.",
+    "your_notes": "Le tue note",
+    "download_notes": "Scarica",
+    "download_notes_all": "Tutte le note",
+    "download_notes_desc": "Tutte le note o una sola cartella, allegati compresi, così come sono salvati, in un unico file zip."
   },
   "homepage": {
     "title": "Home",

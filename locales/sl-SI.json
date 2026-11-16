@@ -296,7 +296,11 @@
     "new_button_option_template": "Nova zabeležka iz predloge",
     "new_button_option_drawing": "Nova risba",
     "auto_fill_note_title": "Časovni žig v naslovu",
-    "auto_fill_note_title_desc": "llllmmddUUMMSS. Enter potrdi, tipkanje zamenja."
+    "auto_fill_note_title_desc": "llllmmddUUMMSS. Enter potrdi, tipkanje zamenja.",
+    "your_notes": "Vaši zapiski",
+    "download_notes": "Prenesi",
+    "download_notes_all": "Vsi zapiski",
+    "download_notes_desc": "Vsi zapiski ali ena mapa, s priponkami, natanko tako, kot so shranjeni, v eni datoteki zip."
   },
   "homepage": {
     "title": "Domov",

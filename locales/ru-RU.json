@@ -296,7 +296,11 @@
     "new_button_option_template": "Новая заметка из шаблона",
     "new_button_option_drawing": "Новый рисунок",
     "auto_fill_note_title": "Метка времени в названии",
-    "auto_fill_note_title_desc": "ггггммддЧЧММСС. Enter — принять, печатать — заменить."
+    "auto_fill_note_title_desc": "ггггммддЧЧММСС. Enter — принять, печатать — заменить.",
+    "your_notes": "Ваши заметки",
+    "download_notes": "Скачать",
+    "download_notes_all": "Все заметки",
+    "download_notes_desc": "Все заметки или одна папка вместе с вложениями, в том виде, в каком они хранятся, в одном zip-файле."
   },
   "homepage": {
     "title": "Главная",
