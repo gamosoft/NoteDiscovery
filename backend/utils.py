@@ -19,7 +19,9 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any, TypeVar, Callable
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
+
+import yaml
 
 from . import note_index
 from .note_index import NoteRecord, extract_links_from_content
@@ -1060,6 +1062,126 @@ def get_media_type(filename: str) -> Optional[str]:
         if ext in extensions:
             return media_type
     return None
+
+
+def _frontmatter_block(content: str) -> Optional[str]:
+    """Text between the opening and closing --- of a leading YAML block."""
+    if not content or not content.strip().startswith("---"):
+        return None
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            return "\n".join(lines[1:i])
+    return None
+
+
+def _json_ready(value: Any) -> Any:
+    """Turn a YAML value into something json.dumps can emit."""
+    if value is None or isinstance(value, (str, int, bool)):
+        return value
+    if isinstance(value, float):
+        if value != value or value in (float("inf"), float("-inf")):
+            return None
+        return value
+    if isinstance(value, datetime):
+        if value.tzinfo is not None and value.utcoffset() is not None:
+            value = value.astimezone(timezone.utc)
+            text = value.isoformat()
+            if text.endswith("+00:00"):
+                return text[:-6] + "Z"
+            return text
+        return value.isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {str(key): _json_ready(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_ready(item) for item in value]
+    return str(value)
+
+
+_FRONTMATTER_KEY_RE = re.compile(r"^([a-zA-Z_][\w-]*):\s*(.*)$")
+_FRONTMATTER_LIST_RE = re.compile(r"^\s*-\s*(.+)$")
+_FRONTMATTER_NUMBER_RE = re.compile(r"^-?\d+(\.\d+)?$")
+
+
+def _unquote_yaml_scalar(value: str) -> str:
+    """Drop one quote from each end, the same way the properties panel does."""
+    return re.sub(r'''^["']|["']$''', "", value)
+
+
+def _parse_yaml_value_lenient(value: str) -> Any:
+    """One frontmatter value, matching parseYamlValue in the properties panel."""
+    if not value or not value.strip():
+        return None
+    value = value.strip()
+    if value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1]
+        return [
+            _unquote_yaml_scalar(part.strip())
+            for part in inner.split(",")
+            if _unquote_yaml_scalar(part.strip())
+        ]
+    if "\n  -" in value or value.startswith("  -"):
+        items = []
+        for line in value.split("\n"):
+            match = _FRONTMATTER_LIST_RE.match(line)
+            if match:
+                items.append(_unquote_yaml_scalar(match.group(1).strip()))
+        return items or value
+    lowered = value.lower()
+    if lowered == "true":
+        return True
+    if lowered == "false":
+        return False
+    if _FRONTMATTER_NUMBER_RE.fullmatch(value):
+        if "." in value:
+            return float(value)
+        return int(value)
+    return _unquote_yaml_scalar(value)
+
+
+def _parse_frontmatter_lenient(block: str) -> Optional[Dict[str, Any]]:
+    """Read a block the way the properties panel does when it is not valid YAML."""
+    metadata: Dict[str, Any] = {}
+    current_key = None
+    current_value: List[str] = []
+    for line in block.split("\n"):
+        key_match = _FRONTMATTER_KEY_RE.match(line)
+        if key_match:
+            if current_key is not None:
+                metadata[current_key] = _parse_yaml_value_lenient("\n".join(current_value))
+            current_key = key_match.group(1)
+            current_value = [key_match.group(2).strip()]
+        elif re.match(r"^\s+-\s+", line) and current_key is not None:
+            current_value.append(line)
+        elif line.startswith("  ") and current_key is not None:
+            current_value.append(line)
+    if current_key is not None:
+        metadata[current_key] = _parse_yaml_value_lenient("\n".join(current_value))
+    return metadata or None
+
+
+def parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
+    """YAML frontmatter as a JSON object, or None when the note has no block.
+
+    Valid YAML is parsed as YAML. Dates and times become strings so the note
+    response stays valid JSON. A block YAML rejects is read the same way the
+    properties panel reads it, so a broken value does not drop the other fields.
+    content is left unchanged; this only reads the leading block.
+    """
+    block = _frontmatter_block(content)
+    if block is None:
+        return None
+    try:
+        loaded = yaml.safe_load(block)
+    except yaml.YAMLError:
+        loaded = None
+    if isinstance(loaded, dict):
+        return _json_ready(loaded)
+    return _parse_frontmatter_lenient(block)
 
 
 def _unquote_tag(tag: str) -> str:

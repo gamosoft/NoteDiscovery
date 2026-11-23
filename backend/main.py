@@ -62,6 +62,7 @@ from .utils import (
     resolve_vault_folder,
     collect_folder_files,
     get_all_tags,
+    parse_frontmatter,
     get_notes_by_tag,
     get_notes_by_tags,
     get_templates,
@@ -1693,6 +1694,7 @@ async def get_note(note_path: str, include_backlinks: bool = True):
             "path": note_path,
             "content": content,
             "hash": stored_hash,
+            "frontmatter": parse_frontmatter(content),
             "metadata": create_note_metadata(config['storage']['notes_dir'], note_path)
         }
         
