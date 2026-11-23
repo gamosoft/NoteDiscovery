@@ -96,7 +96,7 @@ curl http://localhost:8000/api/notes/folder/mynote.md
 
 `hash` is the SHA-256 of the note as stored on disk (before any `on_note_load` plugin transforms it). Send it back as `base_hash` when saving to detect changes made in the meantime.
 
-`frontmatter` is the note's leading YAML block as an object, or `null` when the note has no block. `content` still includes that block as stored. A date or time in valid YAML is a string (`2026-10-10`, or `2024-06-28T06:53:59Z` when the value had a time). Tag values are as written in the YAML. A block that is not valid YAML is still returned, read the same way as the properties panel, so one broken value does not drop the other fields. `GET /api/notes` does not include this field; that list still carries the lowercased `tags` array only.
+`frontmatter` is the note's leading YAML block as an object, or `null` when the note has no block. `content` still includes that block as stored. Each field is parsed on its own. A date or time is a string (`2026-10-10`, or `2024-06-28T06:53:59Z` when the value had a time). A field that is not valid YAML is still included, as the text that was written, so one broken value does not drop the others. `GET /api/notes` does not include this field; that list still carries the lowercased `tags` array only.
 
 ```json
 "frontmatter": {

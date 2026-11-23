@@ -2502,7 +2502,7 @@ function noteApp() {
             }
             
             try {
-                const lines = content.split('\n');
+                const lines = content.replace(/\r/g, '').split('\n');
                 if (lines[0].trim() !== '---') return [];
                 
                 // Find closing ---
@@ -8088,7 +8088,7 @@ function noteApp() {
             }
             
             try {
-                const lines = content.split('\n');
+                const lines = content.replace(/\r/g, '').split('\n');
                 if (lines[0].trim() !== '---') {
                     this.noteMetadata = null;
                     this._lastFrontmatter = null;

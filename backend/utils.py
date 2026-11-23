@@ -1102,86 +1102,69 @@ def _json_ready(value: Any) -> Any:
     return str(value)
 
 
-_FRONTMATTER_KEY_RE = re.compile(r"^([a-zA-Z_][\w-]*):\s*(.*)$")
-_FRONTMATTER_LIST_RE = re.compile(r"^\s*-\s*(.+)$")
-_FRONTMATTER_NUMBER_RE = re.compile(r"^-?\d+(\.\d+)?$")
+_FIELD_KEY_RE = re.compile(r"^([a-zA-Z_][\w-]*)\s*:\s*(.*)$")
 
 
-def _unquote_yaml_scalar(value: str) -> str:
-    """Drop one quote from each end, the same way the properties panel does."""
-    return re.sub(r'''^["']|["']$''', "", value)
+def _split_frontmatter_fields(block: str) -> List[Tuple[str, str, str]]:
+    """Top-level fields as (key, YAML snippet, value text).
 
+    A field starts at a non-indented key. Indented lines, blanks, and anything
+    else stay with that field, so one bad value does not swallow the next key.
+    """
+    fields: List[Tuple[str, str, str]] = []
+    key: Optional[str] = None
+    key_line = ""
+    inline = ""
+    continuations: List[str] = []
 
-def _parse_yaml_value_lenient(value: str) -> Any:
-    """One frontmatter value, matching parseYamlValue in the properties panel."""
-    if not value or not value.strip():
-        return None
-    value = value.strip()
-    if value.startswith("[") and value.endswith("]"):
-        inner = value[1:-1]
-        return [
-            _unquote_yaml_scalar(part.strip())
-            for part in inner.split(",")
-            if _unquote_yaml_scalar(part.strip())
-        ]
-    if "\n  -" in value or value.startswith("  -"):
-        items = []
-        for line in value.split("\n"):
-            match = _FRONTMATTER_LIST_RE.match(line)
-            if match:
-                items.append(_unquote_yaml_scalar(match.group(1).strip()))
-        return items or value
-    lowered = value.lower()
-    if lowered == "true":
-        return True
-    if lowered == "false":
-        return False
-    if _FRONTMATTER_NUMBER_RE.fullmatch(value):
-        if "." in value:
-            return float(value)
-        return int(value)
-    return _unquote_yaml_scalar(value)
+    def flush() -> None:
+        nonlocal key
+        if key is None:
+            return
+        snippet = "\n".join([key_line, *continuations])
+        raw_parts = [inline, *continuations] if inline else continuations
+        fields.append((key, snippet, "\n".join(raw_parts).strip()))
 
-
-def _parse_frontmatter_lenient(block: str) -> Optional[Dict[str, Any]]:
-    """Read a block the way the properties panel does when it is not valid YAML."""
-    metadata: Dict[str, Any] = {}
-    current_key = None
-    current_value: List[str] = []
     for line in block.split("\n"):
-        key_match = _FRONTMATTER_KEY_RE.match(line)
-        if key_match:
-            if current_key is not None:
-                metadata[current_key] = _parse_yaml_value_lenient("\n".join(current_value))
-            current_key = key_match.group(1)
-            current_value = [key_match.group(2).strip()]
-        elif re.match(r"^\s+-\s+", line) and current_key is not None:
-            current_value.append(line)
-        elif line.startswith("  ") and current_key is not None:
-            current_value.append(line)
-    if current_key is not None:
-        metadata[current_key] = _parse_yaml_value_lenient("\n".join(current_value))
-    return metadata or None
+        match = _FIELD_KEY_RE.match(line)
+        if match:
+            flush()
+            key = match.group(1)
+            inline = match.group(2)
+            key_line = line
+            continuations = []
+        elif key is not None:
+            continuations.append(line)
+    flush()
+    return fields
+
+
+def _parse_frontmatter_field(snippet: str, raw: str) -> Any:
+    """One field as JSON, or the text that was written when YAML rejects it."""
+    try:
+        loaded = yaml.safe_load(snippet)
+    except yaml.YAMLError:
+        loaded = None
+    if isinstance(loaded, dict) and len(loaded) == 1:
+        return _json_ready(next(iter(loaded.values())))
+    return raw if raw else None
 
 
 def parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
     """YAML frontmatter as a JSON object, or None when the note has no block.
 
-    Valid YAML is parsed as YAML. Dates and times become strings so the note
-    response stays valid JSON. A block YAML rejects is read the same way the
-    properties panel reads it, so a broken value does not drop the other fields.
-    content is left unchanged; this only reads the leading block.
+    Each top-level field is parsed on its own. Dates and times become strings
+    so the note response stays valid JSON. A field YAML rejects is kept as the
+    text that was written, and the other fields are still returned. content is
+    left unchanged; this only reads the leading block.
     """
     block = _frontmatter_block(content)
     if block is None:
         return None
-    try:
-        loaded = yaml.safe_load(block)
-    except yaml.YAMLError:
-        loaded = None
-    if isinstance(loaded, dict):
-        return _json_ready(loaded)
-    return _parse_frontmatter_lenient(block)
+    fields = _split_frontmatter_fields(block)
+    if not fields:
+        return None
+    return {key: _parse_frontmatter_field(snippet, raw) for key, snippet, raw in fields}
 
 
 def _unquote_tag(tag: str) -> str:
