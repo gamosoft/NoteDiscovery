@@ -1150,13 +1150,33 @@ def _parse_frontmatter_field(snippet: str, raw: str) -> Any:
     return raw if raw else None
 
 
+def _unique_tags(value: Any) -> Any:
+    """Drop repeated tags. The first spelling wins, compared case-insensitively."""
+    if not isinstance(value, list):
+        return value
+    seen = set()
+    unique = []
+    for item in value:
+        marker = item.lower() if isinstance(item, str) else item
+        try:
+            hash(marker)
+        except TypeError:
+            marker = str(marker)
+        if marker in seen:
+            continue
+        seen.add(marker)
+        unique.append(item)
+    return unique
+
+
 def parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
     """YAML frontmatter as a JSON object, or None when the note has no block.
 
     Each top-level field is parsed on its own. Dates and times become strings
     so the note response stays valid JSON. A field YAML rejects is kept as the
-    text that was written, and the other fields are still returned. content is
-    left unchanged; this only reads the leading block.
+    text that was written, and the other fields are still returned. Repeated
+    tags are returned once. content is left unchanged; this only reads the
+    leading block.
     """
     block = _frontmatter_block(content)
     if block is None:
@@ -1164,7 +1184,11 @@ def parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
     fields = _split_frontmatter_fields(block)
     if not fields:
         return None
-    return {key: _parse_frontmatter_field(snippet, raw) for key, snippet, raw in fields}
+    parsed = {}
+    for key, snippet, raw in fields:
+        value = _parse_frontmatter_field(snippet, raw)
+        parsed[key] = _unique_tags(value) if key == "tags" else value
+    return parsed
 
 
 def _unquote_tag(tag: str) -> str:

@@ -8313,7 +8313,16 @@ function noteApp() {
         // Get tags from metadata
         getMetadataTags() {
             if (!this.noteMetadata || !this.noteMetadata.tags) return [];
-            return Array.isArray(this.noteMetadata.tags) ? this.noteMetadata.tags : [this.noteMetadata.tags];
+            const tags = Array.isArray(this.noteMetadata.tags) ? this.noteMetadata.tags : [this.noteMetadata.tags];
+            const seen = new Set();
+            const unique = [];
+            for (const tag of tags) {
+                const marker = String(tag).toLowerCase();
+                if (seen.has(marker)) continue;
+                seen.add(marker);
+                unique.push(tag);
+            }
+            return unique;
         },
         
         // Save sidebar width to localStorage
