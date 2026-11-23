@@ -2502,7 +2502,7 @@ function noteApp() {
             }
             
             try {
-                const lines = content.split('\n');
+                const lines = content.replace(/\r/g, '').split('\n');
                 if (lines[0].trim() !== '---') return [];
                 
                 // Find closing ---
@@ -8088,7 +8088,7 @@ function noteApp() {
             }
             
             try {
-                const lines = content.split('\n');
+                const lines = content.replace(/\r/g, '').split('\n');
                 if (lines[0].trim() !== '---') {
                     this.noteMetadata = null;
                     this._lastFrontmatter = null;
@@ -8313,7 +8313,16 @@ function noteApp() {
         // Get tags from metadata
         getMetadataTags() {
             if (!this.noteMetadata || !this.noteMetadata.tags) return [];
-            return Array.isArray(this.noteMetadata.tags) ? this.noteMetadata.tags : [this.noteMetadata.tags];
+            const tags = Array.isArray(this.noteMetadata.tags) ? this.noteMetadata.tags : [this.noteMetadata.tags];
+            const seen = new Set();
+            const unique = [];
+            for (const tag of tags) {
+                const marker = String(tag).toLowerCase();
+                if (seen.has(marker)) continue;
+                seen.add(marker);
+                unique.push(tag);
+            }
+            return unique;
         },
         
         // Save sidebar width to localStorage

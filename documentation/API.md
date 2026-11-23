@@ -60,6 +60,7 @@ curl http://localhost:8000/api/notes/folder/mynote.md
   "path": "folder/mynote.md",
   "content": "# My Note\n\nNote content here...",
   "hash": "9f2c…e41a",
+  "frontmatter": null,
   "metadata": {
     "created": "2026-03-15T10:00:00+01:00",
     "modified": "2026-03-17T14:30:00+01:00",
@@ -94,6 +95,16 @@ curl http://localhost:8000/api/notes/folder/mynote.md
 | `references[].type` | Link type: `wikilink` or `markdown` |
 
 `hash` is the SHA-256 of the note as stored on disk (before any `on_note_load` plugin transforms it). Send it back as `base_hash` when saving to detect changes made in the meantime.
+
+`frontmatter` is the note's leading YAML block as an object, or `null` when the note has no block. `content` still includes that block as stored. Each field is parsed on its own. A date or time is a string (`2026-10-10`, or `2024-06-28T06:53:59Z` when the value had a time). A field that is not valid YAML is still included, as the text that was written, so one broken value does not drop the others. Repeated tags are returned once, keeping the first spelling. Other lists keep repeated values. `GET /api/notes` does not include this field; that list still carries the lowercased `tags` array only.
+
+```json
+"frontmatter": {
+  "tags": ["welcome", "demo", "my new note"],
+  "date": "2026-10-10",
+  "author": "Ada"
+}
+```
 
 **Without Backlinks:**
 ```bash

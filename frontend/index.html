@@ -2948,7 +2948,7 @@
                                     <span class="text-xs opacity-60">⚙️</span>
                                     
                                     <!-- Tags as pills -->
-                                    <template x-for="tag in getMetadataTags().slice(0, 5)" :key="tag">
+                                    <template x-for="(tag, index) in getMetadataTags().slice(0, 5)" :key="'tag-' + index">
                                         <span 
                                             @click.stop="toggleTag(tag.toLowerCase())"
                                             class="metadata-tag px-2 py-0.5 text-xs rounded-full cursor-pointer transition-colors"
@@ -3000,7 +3000,7 @@
                                             <div class="flex flex-wrap gap-1.5 items-start">
                                                 <span class="text-xs w-16 shrink-0 pt-0.5" style="color: var(--text-tertiary);">tags</span>
                                                 <div class="flex flex-wrap gap-1">
-                                                    <template x-for="tag in getMetadataTags()" :key="tag">
+                                                    <template x-for="(tag, index) in getMetadataTags()" :key="'tag-' + index">
                                                         <span 
                                                             @click="toggleTag(tag.toLowerCase())"
                                                             class="metadata-tag px-2 py-0.5 text-xs rounded-full cursor-pointer transition-colors"
@@ -3021,7 +3021,7 @@
                                                 <!-- Array values -->
                                                 <template x-if="field.isArray">
                                                     <div class="flex flex-wrap gap-1">
-                                                        <template x-for="item in field.value" :key="item">
+                                                        <template x-for="(item, index) in field.value" :key="field.key + '-' + index">
                                                             <span 
                                                                 class="px-1.5 py-0.5 rounded text-xs"
                                                                 style="background-color: var(--bg-hover); color: var(--text-primary);"

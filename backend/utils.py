@@ -19,7 +19,9 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 from typing import List, Dict, Optional, Tuple, Any, TypeVar, Callable
-from datetime import datetime, timezone
+from datetime import datetime, date, timezone
+
+import yaml
 
 from . import note_index
 from .note_index import NoteRecord, extract_links_from_content
@@ -1060,6 +1062,133 @@ def get_media_type(filename: str) -> Optional[str]:
         if ext in extensions:
             return media_type
     return None
+
+
+def _frontmatter_block(content: str) -> Optional[str]:
+    """Text between the opening and closing --- of a leading YAML block."""
+    if not content or not content.strip().startswith("---"):
+        return None
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == "---":
+            return "\n".join(lines[1:i])
+    return None
+
+
+def _json_ready(value: Any) -> Any:
+    """Turn a YAML value into something json.dumps can emit."""
+    if value is None or isinstance(value, (str, int, bool)):
+        return value
+    if isinstance(value, float):
+        if value != value or value in (float("inf"), float("-inf")):
+            return None
+        return value
+    if isinstance(value, datetime):
+        if value.tzinfo is not None and value.utcoffset() is not None:
+            value = value.astimezone(timezone.utc)
+            text = value.isoformat()
+            if text.endswith("+00:00"):
+                return text[:-6] + "Z"
+            return text
+        return value.isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, dict):
+        return {str(key): _json_ready(item) for key, item in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_json_ready(item) for item in value]
+    return str(value)
+
+
+_FIELD_KEY_RE = re.compile(r"^([a-zA-Z_][\w-]*)\s*:\s*(.*)$")
+
+
+def _split_frontmatter_fields(block: str) -> List[Tuple[str, str, str]]:
+    """Top-level fields as (key, YAML snippet, value text).
+
+    A field starts at a non-indented key. Indented lines, blanks, and anything
+    else stay with that field, so one bad value does not swallow the next key.
+    """
+    fields: List[Tuple[str, str, str]] = []
+    key: Optional[str] = None
+    key_line = ""
+    inline = ""
+    continuations: List[str] = []
+
+    def flush() -> None:
+        nonlocal key
+        if key is None:
+            return
+        snippet = "\n".join([key_line, *continuations])
+        raw_parts = [inline, *continuations] if inline else continuations
+        fields.append((key, snippet, "\n".join(raw_parts).strip()))
+
+    for line in block.split("\n"):
+        match = _FIELD_KEY_RE.match(line)
+        if match:
+            flush()
+            key = match.group(1)
+            inline = match.group(2)
+            key_line = line
+            continuations = []
+        elif key is not None:
+            continuations.append(line)
+    flush()
+    return fields
+
+
+def _parse_frontmatter_field(snippet: str, raw: str) -> Any:
+    """One field as JSON, or the text that was written when YAML rejects it."""
+    try:
+        loaded = yaml.safe_load(snippet)
+    except yaml.YAMLError:
+        loaded = None
+    if isinstance(loaded, dict) and len(loaded) == 1:
+        return _json_ready(next(iter(loaded.values())))
+    return raw if raw else None
+
+
+def _unique_tags(value: Any) -> Any:
+    """Drop repeated tags. The first spelling wins, compared case-insensitively."""
+    if not isinstance(value, list):
+        return value
+    seen = set()
+    unique = []
+    for item in value:
+        marker = item.lower() if isinstance(item, str) else item
+        try:
+            hash(marker)
+        except TypeError:
+            marker = str(marker)
+        if marker in seen:
+            continue
+        seen.add(marker)
+        unique.append(item)
+    return unique
+
+
+def parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
+    """YAML frontmatter as a JSON object, or None when the note has no block.
+
+    Each top-level field is parsed on its own. Dates and times become strings
+    so the note response stays valid JSON. A field YAML rejects is kept as the
+    text that was written, and the other fields are still returned. Repeated
+    tags are returned once. content is left unchanged; this only reads the
+    leading block.
+    """
+    block = _frontmatter_block(content)
+    if block is None:
+        return None
+    fields = _split_frontmatter_fields(block)
+    if not fields:
+        return None
+    parsed = {}
+    for key, snippet, raw in fields:
+        value = _parse_frontmatter_field(snippet, raw)
+        parsed[key] = _unique_tags(value) if key == "tags" else value
+    return parsed
 
 
 def _unquote_tag(tag: str) -> str:
