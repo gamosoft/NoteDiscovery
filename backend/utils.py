@@ -1020,12 +1020,14 @@ def save_uploaded_image(
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     final_filename = f"{name_without_ext}-{timestamp}{ext}"
     attachments_dir = get_attachment_dir(notes_dir, note_path)
-    attachments_dir.mkdir(parents=True, exist_ok=True)
     full_path = attachments_dir / final_filename
+    # Reject a path outside the vault before creating anything. mkdir would
+    # otherwise leave an _attachments directory behind when the write is refused.
     if not validate_path_security(notes_dir, full_path):
         logger.warning("Security: Attempted to save image outside notes directory: %s", full_path)
         return None
     try:
+        attachments_dir.mkdir(parents=True, exist_ok=True)
         with open(full_path, "wb") as f:
             f.write(file_data)
         _scan_cache_invalidate()
