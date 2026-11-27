@@ -1567,7 +1567,7 @@ function noteApp() {
         // ==================== INTERNATIONALIZATION ====================
         
         // Translation function - get translated string by key
-        t(key, params = {}) {
+        t(key, params = {}, fallback = key) {
             const keys = key.split('.');
             let value = this.translations;
             
@@ -1575,9 +1575,9 @@ function noteApp() {
                 value = value?.[k];
             }
             
-            // Fallback to key if translation not found (silently - default translations are inline)
+            // Older or custom locales may not have a newer label yet.
             if (typeof value !== 'string') {
-                return key;
+                value = fallback;
             }
             
             // Replace {{param}} placeholders
