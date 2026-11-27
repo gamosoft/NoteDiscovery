@@ -1,0 +1,349 @@
+{
+  "_meta": {
+    "code": "sv-SE",
+    "name": "Svenska",
+    "flag": "🇸🇪"
+  },
+  "app": {
+    "tagline": "Din kunskapsbas på din egen server"
+  },
+  "common": {
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Ta bort",
+    "rename": "Byt namn",
+    "create": "Skapa",
+    "close": "Stäng",
+    "confirm_title": "Bekräfta",
+    "yes": "✓ Ja",
+    "no": "✗ Nej",
+    "ok": "OK",
+    "error": "Fel",
+    "loading": "Läser in…",
+    "saved": "✓ Sparat",
+    "saving": "Sparar…",
+    "copied": "Kopierat!",
+    "copy_to_clipboard": "Kopiera till urklipp",
+    "failed": "Det gick inte att {{action}}. Försök igen."
+  },
+  "toast": {
+    "region_label": "Aviseringar",
+    "dismiss": "Stäng aviseringen"
+  },
+  "sidebar": {
+    "title": "FILER",
+    "favorites_title": "Favoriter",
+    "folders_and_notes": "Mappar och anteckningar",
+    "new_button": "+ Nytt",
+    "new_note": "Ny anteckning",
+    "new_folder": "Ny mapp",
+    "new_from_template": "Ny anteckning från mall",
+    "new_drawing": "Ny teckning",
+    "rename_folder": "Byt namn på mappen",
+    "delete_folder": "Ta bort mappen",
+    "search_placeholder": "Sök bland anteckningarna…",
+    "search_hint": "Skriv för att söka bland dina anteckningar",
+    "clear_search": "Rensa sökningen",
+    "drag_hint": "💡 Dra för att flytta",
+    "root_folder": "📂 Rotmapp",
+    "no_notes": "Inga anteckningar än. Skapa din första anteckning!",
+    "no_notes_yet": "Inga anteckningar eller mappar än.",
+    "create_first": "Skapa din första anteckning eller mapp!",
+    "loading_notes": "Läser in dina anteckningar…",
+    "no_favorites": "Inga favoriter än",
+    "no_results": "Inga träffar",
+    "expand_all": "Fäll ut alla mappar",
+    "collapse_all": "Fäll ihop alla mappar",
+    "sort_a-z": "Sortera i bokstavsordning",
+    "sort_z-a": "Sortera i omvänd bokstavsordning",
+    "sort_newest": "Senast ändrade först (endast filer)",
+    "sort_oldest": "Tidigast ändrade först (endast filer)",
+    "sort_largest": "Störst först (endast filer)",
+    "sort_smallest": "Minst först (endast filer)",
+    "toggle_sidebar": "Visa eller dölj sidopanelen",
+    "go_to_homepage": "Gå till startsidan",
+    "hide_panel": "Dölj sidopanelen",
+    "show_panel": "Visa sidopanelen",
+    "files": "Filer",
+    "search": "Sök",
+    "search_title": "SÖK",
+    "settings": "Inställningar",
+    "settings_title": "INSTÄLLNINGAR",
+    "filtered_notes": "Filtrerade anteckningar"
+  },
+  "editor": {
+    "placeholder": "Börja skriva i Markdown…",
+    "drop_hint": "💡 Släpp här för att infoga vid markören…",
+    "mode_edit": "Redigera",
+    "mode_split": "Delad vy",
+    "mode_preview": "Förhandsvisa",
+    "edited": "Senast ändrad {{time}}",
+    "just_now": "nyss",
+    "minutes_ago": "för {{count}} min sedan",
+    "hours_ago": "för {{count}} tim sedan",
+    "days_ago": "för {{count}} dygn sedan",
+    "tasks_all_checked": "Uppgifter som bockades av: {{changed}} av {{total}}",
+    "tasks_all_unchecked": "Uppgifter som avmarkerades: {{changed}} av {{total}}"
+  },
+  "notes": {
+    "confirm_delete": "Ta bort ”{{name}}”?",
+    "already_exists": "Det finns redan en anteckning med namnet ”{{name}}” här.\nVälj ett annat namn.",
+    "prompt_name": "Ange anteckningens namn:",
+    "input_placeholder": "Anteckningens namn",
+    "prompt_name_in_folder": "Skapa en anteckning i ”{{folder}}”.",
+    "prompt_name_with_path": "Skriv mapp/namn för att lägga anteckningen i en undermapp.",
+    "prompt_rename": "Ange ett nytt namn:",
+    "invalid_name": "Ogiltigt namn på anteckningen.",
+    "empty_name": "Anteckningen måste ha ett namn.",
+    "not_found": "Anteckningen hittades inte: {{path}}",
+    "create_from_link": "Anteckningen ”{{path}}” finns inte.\n\nVill du skapa den?",
+    "no_content": "Det finns inget innehåll att exportera.",
+    "open_first": "Öppna en anteckning innan du laddar upp bilder.",
+    "save_conflict_title": "Anteckningen har ändrats på annat håll",
+    "save_conflict_message": "”{{name}}” har ändrats på disken sedan du öppnade anteckningen. En annan flik, ett synkroniseringsverktyg eller en AI-agent har skrivit till filen.\n\nVälj ”Läs in på nytt” för att visa den sparade versionen. Då försvinner dina osparade ändringar.\nVälj ”Skriv över” för att ersätta den sparade versionen med din egen.",
+    "save_conflict_overwrite": "Skriv över",
+    "save_conflict_reload": "Läs in på nytt",
+    "save_conflict_unsaved": "Dina senaste ändringar i ”{{name}}” sparades inte eftersom anteckningen har ändrats på annat håll."
+  },
+  "folders": {
+    "confirm_delete": "⚠️ VARNING ⚠️\n\nVill du ta bort mappen ”{{name}}”?\n\nFöljande tas bort PERMANENT:\n• Alla anteckningar i mappen\n• Alla undermappar och deras innehåll\n\nDet går INTE att ångra!",
+    "already_exists": "Det finns redan en mapp med namnet ”{{name}}” här.\nVälj ett annat namn.",
+    "prompt_name": "Ange mappens namn:",
+    "folder_name": "Mappnamn",
+    "input_placeholder": "Mappnamn",
+    "prompt_name_in_folder": "Skapa en undermapp i ”{{folder}}”.",
+    "prompt_name_with_path": "Ange ett mappnamn, till exempel ”Projekt”. Använd snedstreck för att skapa undermappar, till exempel ”Arbete/2025”.",
+    "prompt_rename": "Byt namn på mappen ”{{name}}” till:",
+    "rename_modal_title": "Byt namn på mappen",
+    "rename_modal_description": "Ange ett nytt namn på mappen ”{{name}}”.",
+    "rename_modal_label": "Nytt namn",
+    "invalid_name": "Ogiltigt mappnamn.",
+    "cannot_move_into_self": "Det går inte att flytta en mapp till sig själv eller till någon av dess undermappar.",
+    "empty": "tom"
+  },
+  "toolbar": {
+    "undo": "Ångra (Ctrl+Z)",
+    "redo": "Gör om (Ctrl+Y)",
+    "delete_note": "Ta bort anteckningen",
+    "delete_image": "Ta bort bilden",
+    "delete_drawing": "Ta bort teckningen",
+    "export_html": "Exportera som HTML",
+    "print_preview": "Förhandsgranska utskriften",
+    "copy_link": "Kopiera länken till urklipp",
+    "add_favorite": "Lägg till i favoriter",
+    "remove_favorite": "Ta bort från favoriter"
+  },
+  "zen_mode": {
+    "title": "Fokusläge",
+    "tooltip": "Fokusläge (Ctrl+Alt+Z)",
+    "exit": "Avsluta fokusläget",
+    "exit_hint": "Avsluta fokusläget (Esc)"
+  },
+  "share": {
+    "button_tooltip": "Dela anteckningen",
+    "modal_title": "Dela anteckningen",
+    "not_shared_description": "Anteckningen delas inte. Skapa en länk om du vill dela den med andra.",
+    "shared_description": "Alla som har länken kan läsa anteckningen:",
+    "create_link": "Skapa delningslänk",
+    "copy": "Kopiera",
+    "stop_sharing": "Sluta dela",
+    "confirm_revoke": "Vill du sluta dela anteckningen? Delningslänken slutar då att fungera.",
+    "error_creating": "Det gick inte att skapa delningslänken: {{error}}",
+    "error_revoking": "Det gick inte att återkalla delningslänken: {{error}}",
+    "show_qr": "Visa QR-kod",
+    "hide_qr": "Dölj QR-kod",
+    "panel_title": "Delade anteckningar",
+    "no_shared": "Inga delade anteckningar",
+    "link_name": "Länknamn",
+    "use_random_link": "Använd en slumpmässig länk",
+    "custom_link_warning": "Den som gissar länknamnet kan öppna anteckningen. Använd en slumpmässig länk för känsligt innehåll.",
+    "slug_available": "Namnet är ledigt",
+    "slug_taken": "Namnet används redan av en annan länk",
+    "slug_invalid_chars": "Använd bara bokstäverna A–Z och a–z, siffror, bindestreck och understreck",
+    "slug_too_short": "Använd minst {{min}} tecken",
+    "slug_too_long": "Använd högst {{max}} tecken",
+    "update_link": "Uppdatera länken",
+    "link_not_saved": "ändringen har inte sparats",
+    "confirm_slug_change": "Vill du ändra länknamnet? Den nuvarande delningslänken slutar fungera direkt.",
+    "error_updating": "Det gick inte att uppdatera delningslänken: {{error}}"
+  },
+  "quick_switcher": {
+    "placeholder": "Sök bland anteckningar…",
+    "no_results": "Inga matchande anteckningar",
+    "recent_hint": "Här visas de senaste anteckningarna. Skriv för att söka bland alla.",
+    "navigate": "bläddra",
+    "open": "öppna",
+    "close": "stäng"
+  },
+  "tags": {
+    "title": "Taggar",
+    "no_tags": "Inga taggar hittades",
+    "hint": "Lägg till taggar i YAML-blocket i början av anteckningen",
+    "no_matches": "Inga anteckningar matchar de valda taggarna",
+    "clear_all": "Rensa taggfiltren",
+    "filter_by": "Filtrera på {{tag}} (antal anteckningar: {{count}})"
+  },
+  "outline": {
+    "title": "Disposition",
+    "no_headings": "Inga rubriker hittades",
+    "hint": "Börja en rad med # för att lägga till en rubrik"
+  },
+  "backlinks": {
+    "title": "Bakåtlänkar",
+    "no_backlinks": "Inga bakåtlänkar hittades",
+    "hint": "Här visas andra anteckningar som länkar till den här anteckningen",
+    "select_note": "Välj en anteckning för att se dess bakåtlänkar",
+    "more_refs": "till"
+  },
+  "stats": {
+    "words": "ord",
+    "reading_time": "ca {{minutes}} min läsning",
+    "links": "Länkar: {{count}}",
+    "click_details": "▼ Klicka för mer information"
+  },
+  "graph": {
+    "title": "Grafvy",
+    "empty": "Inga kopplingar att visa",
+    "markdown_links": "Markdown-länkar",
+    "click_hint": "Klicka för att markera • Dubbelklicka för att öppna"
+  },
+  "templates": {
+    "title": "Mallar",
+    "select": "Välj en mall…",
+    "prompt_name": "Ange anteckningens namn:",
+    "no_templates": "Inga mallar hittades. Skapa mallar i mappen _templates.",
+    "create_failed": "Kunde inte skapa en anteckning från mallen",
+    "create_from_template": "Skapa från mall",
+    "select_template": "Välj mall",
+    "choose_template": "Välj en mall",
+    "note_name": "Anteckningens namn",
+    "available_placeholders": "Tillgängliga platshållare",
+    "create_note": "Skapa anteckning"
+  },
+  "export": {
+    "failed": "Kunde inte exportera till HTML: {{error}}"
+  },
+  "login": {
+    "title": "Logga in",
+    "tagline": "Din kunskapsbas på din egen server",
+    "password_placeholder": "Ange ditt lösenord",
+    "unlock_button": "🔓 Lås upp",
+    "footer": "🔒 Säkert på din egen server",
+    "error_incorrect_password": "Fel lösenord. Försök igen."
+  },
+  "drawing": {
+    "tool_freehand": "Penna – rita på fri hand",
+    "tool_line": "Rak linje",
+    "tool_rect": "Rektangel",
+    "tool_ellipse": "Cirkel",
+    "color": "Färg",
+    "width": "Linjebredd",
+    "tool_eraser": "Suddgummi (målar med bakgrundsfärgen)",
+    "tool_eyedropper": "Pipett – hämta en färg från ritytan",
+    "tool_fill": "Färghink – fyll ett sammanhängande område med färg",
+    "tool_text": "Text – klicka på ritytan för att skriva",
+    "clear": "Rensa",
+    "clear_hint": "Ersätt med en tom bild",
+    "clear_title": "Ersätt teckningen med en tom rityta?",
+    "clear_confirm": "Den sparade PNG-bilden och alla streck du har ritat under den här sessionen ersätts med en tom, vit bild. Det går inte att ångra."
+  },
+  "media": {
+    "confirm_delete": "Ta bort ”{{name}}”?",
+    "upload_failed": "Det gick inte att ladda upp filen",
+    "no_valid_files": "Inga giltiga filer hittades. Format som stöds: {{formats}}"
+  },
+  "move": {
+    "failed_note": "Det gick inte att flytta anteckningen.",
+    "failed_folder": "Det gick inte att flytta mappen.",
+    "failed_media": "Det gick inte att flytta mediefilen."
+  },
+  "search": {
+    "previous": "Föregående (Shift+F3)",
+    "next": "Nästa (F3)",
+    "matches": "{{current}} av {{total}}",
+    "match_of": "Träff {{current}} av {{total}}",
+    "result_singular": "träff",
+    "result_plural": "träffar",
+    "no_results": "Inga anteckningar innehåller ”{{query}}”",
+    "searching": "Söker efter ”{{query}}”…"
+  },
+  "theme": {
+    "title": "Tema"
+  },
+  "language": {
+    "title": "Språk"
+  },
+  "syntax_highlight": {
+    "title": "Syntaxmarkering i redigeraren",
+    "description": "Färgmarkera Markdown-syntaxen i redigeraren",
+    "enable": "Aktivera syntaxmarkering",
+    "disable": "Inaktivera syntaxmarkering"
+  },
+  "settings": {
+    "account": "Konto",
+    "logout": "Logga ut",
+    "readable_line_length": "Läsvänlig radlängd",
+    "readable_line_length_desc": "Begränsa förhandsvisningens bredd så att texten blir lättare att läsa",
+    "hide_underscore_folders": "Dölj systemmappar",
+    "hide_underscore_folders_desc": "Dölj mappar vars namn börjar med understreck, till exempel _attachments och _templates, i sidopanelen och grafen",
+    "tab_inserts_tab": "Infoga tabbtecken med Tab",
+    "tab_inserts_tab_desc": "Tryck på Tab för att infoga ett tabbtecken i stället för att flytta fokus",
+    "new_button_action": "När du klickar på +",
+    "new_button_action_desc": "Om du håller ned Shift när du klickar visas alltid alternativen.",
+    "new_button_option_chooser": "Visa meny (standard)",
+    "new_button_option_note": "Ny anteckning",
+    "new_button_option_folder": "Ny mapp",
+    "new_button_option_template": "Anteckning från mall",
+    "new_button_option_drawing": "Ny teckning",
+    "auto_fill_note_title": "Fyll i titeln med datum och tid",
+    "auto_fill_note_title_desc": "ÅÅÅÅMMDDttmmss. Tryck på Enter för att använda titeln eller skriv en egen.",
+    "your_notes": "Dina anteckningar",
+    "download_notes": "Ladda ner",
+    "download_notes_all": "Alla anteckningar",
+    "download_notes_desc": "Ladda ner alla anteckningar eller en enskild mapp som en zip-fil. Anteckningar och bilagor ingår precis som de är lagrade."
+  },
+  "homepage": {
+    "title": "Startsida",
+    "welcome": "Välkommen till NoteDiscovery",
+    "get_started": "Skapa en anteckning eller mapp för att komma igång",
+    "no_notes_title": "Inga anteckningar än",
+    "no_notes_desc": "Skapa din första anteckning eller mapp",
+    "folder_empty": "Mappen är tom",
+    "note_singular": "anteckning",
+    "note_plural": "anteckningar",
+    "folder_singular": "mapp",
+    "folder_plural": "mappar",
+    "view_cards": "Kortvy",
+    "view_list": "Listvy"
+  },
+  "format": {
+    "bold": "Fetstil",
+    "italic": "Kursiv",
+    "strikethrough": "Genomstruken",
+    "heading": "Rubrik",
+    "link": "Länk",
+    "image": "Bild",
+    "code": "Kod i löptext",
+    "codeblock": "Kodblock",
+    "quote": "Citat",
+    "bullet_list": "Punktlista",
+    "numbered_list": "Numrerad lista",
+    "checkbox": "Kryssruta",
+    "table": "Tabell"
+  },
+  "validation": {
+    "forbidden_chars": "Namnet innehåller otillåtna tecken: {{chars}}",
+    "reserved_name": "Namnet är reserverat av operativsystemet.",
+    "invalid_dot": "Namnet får inte bestå av en enda punkt.",
+    "trailing_dot_space": "Namnet får inte sluta med punkt eller mellanslag."
+  },
+  "support": {
+    "enjoying_demo": "Stöd projektet",
+    "deploy_own": "Installera på din egen server",
+    "thank_you": "Tack för ditt stöd! 💚"
+  },
+  "demo": {
+    "title": "DEMOLÄGE",
+    "warning": "Innehållet återställs varje dag. Andra användare kan skriva över dina ändringar."
+  }
+}
