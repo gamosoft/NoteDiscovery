@@ -1610,12 +1610,13 @@
                             @click="clearTagFilters()"
                             class="w-full px-2 py-1.5 text-xs rounded flex items-center justify-center gap-1"
                             style="background-color: var(--accent-primary); color: white;"
-                            :title="t('tags.clear_all')"
+                            :title="t('tags.clear_all', {}, 'Clear tag filters')"
                         >
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
-                            Clear Filters (<span x-text="selectedTags.length"></span>)
+                            <span x-text="t('tags.clear_all', {}, 'Clear Filters')"></span>
+                            <span x-text="`(${selectedTags.length})`"></span>
                         </button>
                     </div>
                     
@@ -3185,21 +3186,21 @@
                              onmouseout="this.style.backgroundColor='transparent'">
                             <div class="flex items-center space-x-4 text-sm" style="color: var(--text-secondary);">
                                 <span class="font-medium">📊</span>
-                                <span x-text="noteStats ? noteStats.words.toLocaleString() + ' words' : ''"></span>
+                                <span x-text="noteStats ? noteStats.words.toLocaleString(currentLocale) + ' ' + t('stats.words', {}, 'words') : ''"></span>
                                 <span>·</span>
-                                <span x-text="noteStats ? '~' + noteStats.reading_time_minutes + 'm read' : ''"></span>
+                                <span x-text="noteStats ? t('stats.reading_time', { minutes: noteStats.reading_time_minutes }, '~{{minutes}}m read') : ''"></span>
                                 <template x-if="noteStats && noteStats.links > 0">
                                     <span>
-                                        · <span x-text="noteStats.links + ' links'"></span>
+                                        · <span x-text="t('stats.links', { count: noteStats.links }, '{{count}} links')"></span>
                                     </span>
                                 </template>
                                 <template x-if="noteStats && noteStats.tasks.total > 0">
                                     <span>
-                                        · <span x-text="noteStats.tasks.completed + '/' + noteStats.tasks.total + ' tasks'"></span>
+                                        · <span x-text="t('stats.tasks_summary', { completed: noteStats.tasks.completed, total: noteStats.tasks.total }, '{{completed}}/{{total}} tasks')"></span>
                                     </span>
                                 </template>
                             </div>
-                            <span class="text-xs" style="color: var(--text-tertiary);">▼ Click for details</span>
+                            <span class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.click_details', {}, '▼ Click for details')"></span>
                         </div>
                         
                         <!-- Expanded State -->
@@ -3207,61 +3208,60 @@
                              class="px-4 py-3"
                              style="background-color: var(--bg-tertiary);">
                             <div class="flex items-center justify-between mb-3">
-                                <h3 class="font-semibold text-sm" style="color: var(--text-primary);">📊 Note Statistics</h3>
+                                <h3 class="font-semibold text-sm" style="color: var(--text-primary);">📊 <span x-text="t('stats.title', {}, 'Note Statistics')"></span></h3>
                                 <button 
                                     @click="statsExpanded = false"
                                     class="text-xs px-2 py-1 rounded hover:bg-opacity-80"
                                     style="color: var(--text-secondary); background-color: var(--bg-hover);">
-                                    ▲ Collapse
+                                    ▲ <span x-text="t('stats.collapse', {}, 'Collapse')"></span>
                                 </button>
                             </div>
                             
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                                 <!-- Basic Stats -->
                                 <div>
-                                    <div class="text-xs" style="color: var(--text-tertiary);">Words</div>
-                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.words.toLocaleString() : '0'"></div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.word_label', {}, 'Words')"></div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.words.toLocaleString(currentLocale) : '0'"></div>
                                 </div>
                                 <div>
-                                    <div class="text-xs" style="color: var(--text-tertiary);">Characters</div>
-                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.characters.toLocaleString() : '0'"></div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.characters_label', {}, 'Characters')"></div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.characters.toLocaleString(currentLocale) : '0'"></div>
                                 </div>
                                 <div>
-                                    <div class="text-xs" style="color: var(--text-tertiary);">Reading Time</div>
-                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? '~' + noteStats.reading_time_minutes + ' min' : '0 min'"></div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.reading_time_label', {}, 'Reading Time')"></div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? t('stats.reading_duration', { minutes: noteStats.reading_time_minutes }, '~{{minutes}} min') : ''"></div>
                                 </div>
                                 <div>
-                                    <div class="text-xs" style="color: var(--text-tertiary);">Lines</div>
-                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.lines.toLocaleString() : '0'"></div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.lines_label', {}, 'Lines')"></div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.lines.toLocaleString(currentLocale) : '0'"></div>
                                 </div>
                                 
                                 <!-- Sentences -->
                                 <div>
-                                    <div class="text-xs" style="color: var(--text-tertiary);">Sentences</div>
-                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.sentences.toLocaleString() : '0'"></div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.sentences_label', {}, 'Sentences')"></div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.sentences.toLocaleString(currentLocale) : '0'"></div>
                                 </div>
 
                                 <!-- Lists -->
                                 <div>
-                                    <div class="text-xs" style="color: var(--text-tertiary);">Lists</div>
-                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.list_items.toLocaleString() : '0'"></div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.list_items_label', {}, 'Lists')"></div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.list_items.toLocaleString(currentLocale) : '0'"></div>
                                 </div>
 
                                 <!-- Tables -->
                                 <div>
-                                    <div class="text-xs" style="color: var(--text-tertiary);">Tables</div>
-                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.tables.toLocaleString() : '0'"></div>
+                                    <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.tables_label', {}, 'Tables')"></div>
+                                    <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats ? noteStats.tables.toLocaleString(currentLocale) : '0'"></div>
                                 </div>
                                 
                                 <!-- Links -->
                                 <template x-if="noteStats && noteStats.links > 0">
                                     <div>
-                                        <div class="text-xs" style="color: var(--text-tertiary);">Links</div>
+                                        <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.links_label', {}, 'Links')"></div>
                                         <div class="font-semibold" style="color: var(--text-primary);">
                                             <span x-text="noteStats.links"></span>
-                                            <span class="text-xs font-normal" style="color: var(--text-tertiary);">
-                                                (<span x-text="noteStats.internal_links"></span> internal)
-                                            </span>
+                                            <span class="text-xs font-normal" style="color: var(--text-tertiary);"
+                                                  x-text="t('stats.internal_links', { count: noteStats.internal_links }, '({{count}} internal)')"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -3269,12 +3269,11 @@
                                 <!-- Headings -->
                                 <template x-if="noteStats && noteStats.headings.total > 0">
                                     <div>
-                                        <div class="text-xs" style="color: var(--text-tertiary);">Headings</div>
+                                        <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.headings_label', {}, 'Headings')"></div>
                                         <div class="font-semibold" style="color: var(--text-primary);">
                                             <span x-text="noteStats.headings.total"></span>
-                                            <span class="text-xs font-normal" style="color: var(--text-tertiary);">
-                                                (H1: <span x-text="noteStats.headings.h1"></span>, H2: <span x-text="noteStats.headings.h2"></span>)
-                                            </span>
+                                            <span class="text-xs font-normal" style="color: var(--text-tertiary);"
+                                                  x-text="t('stats.heading_levels', { h1: noteStats.headings.h1, h2: noteStats.headings.h2 }, '(H1: {{h1}}, H2: {{h2}})')"></span>
                                         </div>
                                     </div>
                                 </template>
@@ -3282,7 +3281,7 @@
                                 <!-- Code Blocks -->
                                 <template x-if="noteStats && noteStats.code_blocks > 0">
                                     <div>
-                                        <div class="text-xs" style="color: var(--text-tertiary);">Code Blocks</div>
+                                        <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.code_blocks_label', {}, 'Code Blocks')"></div>
                                         <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats.code_blocks"></div>
                                     </div>
                                 </template>
@@ -3290,11 +3289,11 @@
                                 <!-- Tasks -->
                                 <template x-if="noteStats && noteStats.tasks.total > 0">
                                     <div>
-                                        <div class="text-xs" style="color: var(--text-tertiary);">Tasks</div>
+                                        <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.tasks_label', {}, 'Tasks')"></div>
                                         <div class="font-semibold" style="color: var(--text-primary);">
                                             <span x-text="noteStats.tasks.completed + '/' + noteStats.tasks.total"></span>
                                             <span class="text-xs font-normal" style="color: var(--text-tertiary);">
-                                                (<span x-text="noteStats.tasks.completion_rate"></span>%)
+                                                (<span x-text="(noteStats.tasks.completion_rate / 100).toLocaleString(currentLocale, { style: 'percent' })"></span>)
                                             </span>
                                         </div>
                                     </div>
@@ -3303,7 +3302,7 @@
                                 <!-- Images -->
                                 <template x-if="noteStats && noteStats.images > 0">
                                     <div>
-                                        <div class="text-xs" style="color: var(--text-tertiary);">Images</div>
+                                        <div class="text-xs" style="color: var(--text-tertiary);" x-text="t('stats.images_label', {}, 'Images')"></div>
                                         <div class="font-semibold" style="color: var(--text-primary);" x-text="noteStats.images"></div>
                                     </div>
                                 </template>
